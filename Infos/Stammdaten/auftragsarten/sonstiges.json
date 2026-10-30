@@ -1,0 +1,25 @@
+{
+  "dateien": {
+    "arbeitsdatei": "Arbeitsdatei.ai"
+  },
+  "massstab": {
+    "standard": 1
+  },
+  "_hinweis": "Sonstiges (Stufe 14): keine neuen Ebenen, Dokument unverändert; ohne offenes Dokument ein neues mit 600 × 300 mm. Keine Kalkulation, nur Zeiterfassung.",
+  "id": "sonstiges",
+  "name": "Sonstiges",
+  "aktiv": true,
+  "reihenfolge": 7,
+  "typ": "unveraendert",
+  "ebenen": [],
+  "arten": [],
+  "werkzeuge": [],
+  "neu": {
+    "breite_mm": 600,
+    "hoehe_mm": 300
+  },
+  "export": {
+    "preset": "pam x4",
+    "name": "druck"
+  }
+}

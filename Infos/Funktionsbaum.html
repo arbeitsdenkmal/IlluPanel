@@ -1,0 +1,276 @@
+<title>Illustrator Panels Funktionsbaum</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Code+Pro:wght@400;500&display=swap">
+<style>
+/* Layout: Kopfzeile, Legende, dann ein aufklappbarer Baum mit Verbindungslinien; rechts daneben (breit) bzw. darunter (schmal) Datenquellen und Ablage */
+:root{
+  --bg:#ECECEA; --surface:#F7F7F5; --line:#C9C9C4; --fg:#232323; --muted:#6A6A66;
+  --btn:#DCDCD8; --btn-fg:#1E1E1E; --win:#1C66C9; --win-bg:#E3ECF9; --file:#3D6B3A; --file-bg:#E4EEE2;
+  --accent:#C95F08; --accent-bg:#FBE8D7; --state:#3A3A38;
+  --sans:"Source Sans 3","Segoe UI",system-ui,sans-serif; --mono:"Source Code Pro",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#262626; --surface:#323232; --line:#4A4A4A; --fg:#E4E4E2; --muted:#9C9C98;
+  --btn:#4A4A4A; --btn-fg:#F0F0F0; --win:#6FA8FF; --win-bg:#1F2F47; --file:#9BCB94; --file-bg:#24331F;
+  --accent:#FF9A3D; --accent-bg:#3D2A17; --state:#CFCFCC; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#262626; --surface:#323232; --line:#4A4A4A; --fg:#E4E4E2; --muted:#9C9C98;
+  --btn:#4A4A4A; --btn-fg:#F0F0F0; --win:#6FA8FF; --win-bg:#1F2F47; --file:#9BCB94; --file-bg:#24331F;
+  --accent:#FF9A3D; --accent-bg:#3D2A17; --state:#CFCFCC; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px}
+h1{font-size:26px;font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.stand{color:var(--muted);font-size:13px;margin-top:2px}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tools button{font:600 13px var(--sans);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px 12px;cursor:pointer}
+.tools button:hover{border-color:var(--muted)}
+.tools button:focus-visible,summary:focus-visible{outline:2px solid var(--win);outline-offset:2px}
+.legende{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--muted);align-items:center}
+.legende span{display:inline-flex;align-items:center;gap:6px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+@media (max-width:980px){.grid{grid-template-columns:minmax(0,1fr)}}
+.baum{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 14px 18px;min-width:0}
+/* Chips */
+.k{display:inline-block;font-size:13px;line-height:1.3;padding:2px 7px;border-radius:3px;white-space:nowrap}
+.k.btn{background:var(--btn);color:var(--btn-fg);font-weight:600}
+.k.btn.or{color:var(--accent)}
+.k.win{background:var(--win-bg);color:var(--win);border:1px solid color-mix(in srgb,var(--win) 45%,transparent);font-weight:600}
+.k.file{background:var(--file-bg);color:var(--file);font-family:var(--mono);font-size:12px;white-space:normal;word-break:break-word}
+.k.st{background:transparent;color:var(--state);font-weight:700;font-size:14px;padding:0;letter-spacing:.02em;text-transform:uppercase}
+.k.sb{background:var(--accent-bg);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.pfeil{color:var(--muted);margin:0 4px}
+/* Baum */
+ul.t{list-style:none;margin:0;padding:0}
+ul.t ul.t{margin-left:9px;padding-left:16px;border-left:1px solid var(--line)}
+ul.t li{position:relative;margin:4px 0}
+ul.t ul.t>li::before{content:"";position:absolute;left:-16px;top:14px;width:12px;border-top:1px solid var(--line)}
+ul.t ul.t>li:last-child::after{content:"";position:absolute;left:-17px;top:15px;bottom:0;border-left:3px solid var(--surface)}
+details>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:3px 0}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"";width:0;height:0;border-left:5px solid var(--muted);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-right:4px;transition:transform .12s}
+details[open]>summary::before{transform:rotate(90deg)}
+.blatt{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:3px 0 3px 13px}
+.kurz{color:var(--muted);font-size:13.5px;margin-left:4px}
+dl.info{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:3px 12px;margin:2px 0 6px 13px;font-size:14px;max-width:78ch}
+dl.info dt{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+dl.info dd{margin:0;min-width:0}
+dl.info dd .k{margin:1px 2px 1px 0}
+@media (max-width:520px){dl.info{grid-template-columns:minmax(0,1fr)} dl.info dt{padding-top:6px}}
+aside{display:flex;flex-direction:column;gap:16px;min-width:0}
+.kasten{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px}
+.kasten h2{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 10px;font-weight:700}
+.kasten ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;font-size:14px}
+.kasten li{display:flex;flex-direction:column;gap:2px}
+.kasten li small{color:var(--muted);font-size:12.5px}
+@media (prefers-reduced-motion:reduce){details>summary::before{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Illustrator Panels – Funktionsbaum</h1>
+      <div class="stand">Stand Stufe 45 (29.10.2026) · Bundle de.pamnm.illupanels 2.4.0 · Quelle: Code und bereitstellung/README.md</div>
+    </div>
+    <div class="tools">
+      <button id="auf" type="button">Alles aufklappen</button>
+      <button id="zu" type="button">Alles zuklappen</button>
+    </div>
+  </header>
+  <div class="legende">
+    <span><span class="k btn">Button</span> im Objektmanager</span>
+    <span><span class="k win">Fenster</span> Dialog / Fenster</span>
+    <span><span class="k file">Datei</span> Ergebnis / Ablage</span>
+    <span><span class="k sb">Supabase</span> künftige Quelle</span>
+  </div>
+  <div class="grid">
+    <section class="baum" aria-label="Funktionsbaum"><ul class="t" id="baum"></ul></section>
+    <aside>
+      <div class="kasten">
+        <h2>Liest (config/)</h2>
+        <ul>
+          <li><span><span class="k file">preisliste.csv</span> <span class="k sb">künftig Supabase</span></span><small>Serien (EK/VK je m²), Zeiten, Platten, Aufschläge, Komplexität, Stundensätze, Mindestbeträge, Rundung, MwSt, Schild-Parameter. Pfad aus „Einstellungen“, sonst config/</small></li>
+          <li><span class="k file">medien.json</span><small>Rollenbreiten, Randabzug, Druckmedien, Laminate, OPOS-Werte, Modus „eigen“/„plugin“, Schwelle Rollenwahl</small></li>
+          <li><span class="k file">auftragsarten/*.json</span><small>je Art: Ebenen und Rollen, Maßstab, Medien, Attribute, Werkzeuge, Export-Preset</small></li>
+          <li><span class="k file">farbfelder/*.ase · serien.json</span><small>Oracal 651, 751 C, 951, 970 glossy/matt → Serie</small></li>
+          <li><span class="k file">produkte.csv</span><small>Offset-Produkte</small></li>
+          <li><span class="k file">textil.json · textil_stufen.csv · textil_modelle.csv · textil_farben.csv</span><small>Textil: Ränder, Positionen und Maße, Modelle (Datei-/Realmaß), Farben (CMYK)</small></li>
+          <li><span class="k file">mockups/ · vorlagen/</span><small>MockUps je Modell; Offset, Schild, UV-Schild, Etikett, Bögl Nummern Masterdatei</small></li>
+          <li><span class="k file">werkzeuge.json</span><small>Buttons ohne Auftrag, Skript-Buttons, Skripte-Ordner</small></li>
+        </ul>
+      </div>
+      <div class="kasten">
+        <h2>Schreibt</h2>
+        <ul>
+          <li><span class="k file">~/Desktop/&lt;Kunde&gt;/</span><small>Arbeitsdatei, Kundendaten/, alle Exporte, _Kalkulation.json/.pdf, _Grafikzeit.json – nur Schreibtisch, nie Netzlaufwerk</small></li>
+          <li><span class="k file">~/Desktop/KUNDE_JJJJ-MM_PRODUKT/</span><small>Nutzen-Exporte</small></li>
+          <li><span class="k file">~/Desktop/GitterMaster/</span><small>Eingang Gitter und MB-Nr</small></li>
+          <li><span class="k file">XMP der Arbeitsdatei</span><small>Auftragsart, Maßstab, Kunde, Kundenordner, Grafikminuten, Vorauswahl, Farbzuordnung, Schildmaterial/-verfahren, Bohrungen, Textil-ID/-farbe</small></li>
+          <li><span class="k file">Tags IP_* an Objekten</span><small>Herkunft, Original, Komplexität, Tape, Position, Verfahren, Stufen, Farbe …</small></li>
+          <li><span class="k file">~/Library/Application Support/Illustrator Panels/</span><small>einstellungen.json, preisliste_letzte_gueltige.csv</small></li>
+          <li><span class="k file">~/Library/Application Support/WEA_Etiketten/</span><small>typzuordnung.txt (Gitter)</small></li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* Knoten: l = Label, t = Typ (btn|win|st|file), or = orange Schrift, z = Ziel (Fenster/Ergebnis), kurz = Kurztext,
+   ein = stellt ein, tut = passiert, aus = erzeugt, liest = liest, sb = Supabase-Hinweis, k = Kinder, auf = offen */
+const B = (l,o={}) => ({t:"btn",l,...o});
+const W = (l) => ({t:"win",l});
+const F = (l) => ({t:"file",l});
+
+const daten = {t:"st", l:"Objektmanager (Panel)", auf:true, kurz:"Fenster > Erweiterungen > Objektmanager · 320 × 160", k:[
+  B("Zahnrad",{z:W("Einstellungen"), sb:true,
+    ein:["Pfad der Preisliste (CSV), „…“ Datei wählen","Speichern","Preisliste anzeigen"],
+    aus:[F("~/Library/Application Support/Illustrator Panels/einstellungen.json"),F("preisliste_letzte_gueltige.csv")],
+    tut:["Server nicht erreichbar → letzte gültige Kopie gilt; ungültige Liste ersetzt nie die Kopie"]}),
+
+  {t:"st", l:"ohne Auftrag", auf:true, kurz:"kein Dokument, Dokument ohne Auftrag, Druck- oder Nutzen-Bogen · zwei Reihen à fünf", k:[
+    B("Auftrag",{or:true, z:W("Auftrag anlegen"), auf:true,
+      ein:["Auftragsart","Quelle: „geöffnete Datei“ oder „Datei öffnen“","Kundenname","je Art weitere Felder (siehe unten)"],
+      tut:["Kundendatei mit Inhalt wird nach Kundendaten/ kopiert, nie verschoben oder verändert","Arbeitsdatei mit den Ebenen der Art, Maßstab = Standard der Art","Auftragsdaten ins XMP · Grafikzeit beginnt bei 0","Arbeitsdatei als Quelle: gleiche Art ebenenweise, andere Art wie Kundendatei"],
+      aus:[F("~/Desktop/<Kunde>/ (vorhanden: <Kunde> (2))"),F("Arbeitsdatei.ai"),F("Kundendaten/")],
+      liest:[F("auftragsarten/*.json"),F("vorlagen/"),F("produkte.csv"),F("mockups/")],
+      k:[
+        {t:"btn", l:"Fahrzeugbeschriftung", kurz:"kalkuliert · 1:30", ein:["Häkchen „Fahrzeugvorlage“ (CC-Vision-Datei → Ebene Fahrzeugkontur), sonst A4 hoch"], tut:["Ebenen Sandbox, Fahrzeugkontur (gesperrt), Plott, Digitaldruck"]},
+        {t:"btn", l:"Beschriftung", kurz:"kalkuliert · 1:1", tut:["Inhalt auf Sandbox; Ebenen Sandbox, Cut, Print, Foto; leer 1000 × 1000 mm"]},
+        {t:"btn", l:"Schild", kurz:"kalkuliert (Übergangshilfe bis zur App)", ein:["Folie oder UV-Druck","Breite × Höhe"], tut:["Folie: Schild.ait (5 mm) – Sandbox, Plott, Digitaldruck","UV-Druck: UV-Schild.ait (2 mm) – Sandbox, Plott, UV-Vorn, UV-Hinten"]},
+        {t:"btn", l:"Lasergravur", kurz:"nur Zeit", tut:["Kopie der Kundendatei, leer 600 × 300 mm"]},
+        {t:"btn", l:"Offset-Daten", kurz:"nur Zeit", ein:["Produkt aus produkte.csv oder freies Format (Breite × Höhe, 1/2 Zeichenflächen)"], tut:["Offset.ait (3 mm), Inhalt ebenenweise, Ebene „Hilfslinien“ mit Falz und Sicherheitsabstand"]},
+        {t:"btn", l:"Textil", kurz:"nur Zeit", ein:["Marke (B&C, Promodoro, Neutral, Sonstige, Kundenware)","Modell","Farbe"], tut:["MockUp aus config/mockups, Inhalt auf Ebene „Design“, Ebene „Stofffarbe“ umgefärbt"], aus:[F("Korrekturabzug_<ID>.ai")]},
+        {t:"btn", l:"Sonstiges", kurz:"nur Zeit", tut:["Kopie der Kundendatei, leer 600 × 300 mm"]}
+      ]}),
+    B("Nutzen",{z:W("Nutzen-Generator"),
+      tut:["misst die Auswahl (Cutkontur, Schnittmasken, Anschnitt)"],
+      k:[
+        {t:"win", l:"Dialog 1", ein:["Stückzahl (100)","Medienbreite (1370)","A4 / A3","„exakt oder kleiner“ / „ca. ± 25 %“","Abstand Motive (5 mm)","Bögen (20)"]},
+        {t:"win", l:"Vorschau", ein:["Layoutwahl"], tut:["baut den Nutzen-Bogen: Symbole, Ebenen Druck / Cut / Info, Zeichenfläche Nutzen + 2 × 22,1765 mm"], aus:[F("weiter mit Export (Nutzen-Bögen)")]}
+      ]}),
+    B("Gitter",{z:W("WEA-Etiketten"),
+      liest:[F("~/Desktop/GitterMaster (Menge aus Präfix „15x_“)"),F("PDF, XLSX, TXT/CSV"),F("vorlagen/Etikett.ait")],
+      k:[
+        {t:"win", l:"Typbezeichnung – <Datei>", tut:["je Datei; merkt sich die Zuordnung"], aus:[F("WEA_Etiketten/typzuordnung.txt")]},
+        {t:"win", l:"WEA-Etiketten – Variante wählen", tut:["Aufbau je Bogen: Nutzbreite 1300,647 mm, Länge je Druck 2500 mm","Prüfmeldungen am Ende in einem Popup"], aus:[F("weiter mit Export")]}
+      ]}),
+    B("MB-Nr",{z:W("Bögl Nummern"),
+      liest:[F("~/Desktop/GitterMaster/auftrag.txt"),F("vorlagen/Bögl Nummern Masterdatei.ait")],
+      tut:["Stückzahl je Nummer, Blöcke bis 5 je Zeile, Zeichenfläche nach Inhalt + 44,353 mm","Info-Ebene mit Materialbedarf und Überproduktion durch das 5er-Raster"],
+      aus:[F("weiter mit Export")]}),
+    B("Export",{kurz:"nur frei bei Druck- oder Nutzen-Bogen, dann orange", k:[
+      {t:"btn", l:"bei Druckbögen", tut:["Sammelprüfung über alle offenen Bögen (Cutkontur je Objekt, Breite) → ein Fehler-Popup","Symbole umwandeln, Cutkontur auf Ebene Cut","OPOS-Marken (Ebene „Regmark“): XY, ab 1000 mm Länge XY2 mit Druckrichtungsdreieck","speichern und schließen"], aus:[F("<Kunde>_<Medium>-<Laminat>-<Breite>_<NN>_druck.pdf"),F("…_cut.pdf"),F("….ai")], liest:[F("medien.json")]},
+      {t:"btn", l:"bei Nutzen-Bögen", ein:["Kunde","Produkt"], tut:["alle offenen Bögen in einem Lauf"], aus:[F("~/Desktop/KUNDE_JJJJ-MM_PRODUKT/"),F("Nutzen NN_druck.pdf"),F("Nutzen NN_cut.pdf"),F("Arbeitsdaten NN.ai")]}
+    ]}),
+    {t:"btn", l:"Skripte", kurz:"aus dem Skripte-Ordner von Illustrator, per $.evalFile · fehlt die Datei: Button gesperrt", k:[
+      B("Breite",{z:F("01-Druckbreite.jsx")}),
+      B("Masken",{z:F("06-releaseClippingMasks.jsx")}),
+      B("Logo",{z:F("05-Logopaket.jsx")}),
+      B("VK-CC",{z:F("04-Visitenkarten Copyshop.jsx")}),
+      B("Alex",{z:F("04-Alex Brandschutzordnungen.jsx")})
+    ]}
+  ]},
+
+  {t:"st", l:"mit Auftrag", auf:true, kurz:"Zeilen 1–3, darunter die Werkzeugzeile", k:[
+    {t:"btn", l:"Zeile 1 (alle Arten)", ein:["„+m“: Grafikminuten nachtragen, auch negativ (Enter)","„M 1:“ Maßstab (nur Fahrzeugbeschriftung, Beschriftung)"], tut:["zeigt Objektname bzw. „<Kunde> · <Auftragsart>“ und „Grafik N min“"]},
+
+    {t:"st", l:"Fahrzeugbeschriftung · Beschriftung", auf:true, k:[
+      B("add / edit",{or:true, kurz:"orange, solange Zuordnen der nächste Schritt ist", z:W("Objekt"),
+        ein:["Name (eindeutig; mehrere: „<Name> 1“, „<Name> 2“ …)","Art Plott oder Digitaldruck","Plott: Serie und Farbe (Nicht-Oracal-Farbe zuordnen, Liste oder „Farbnummer“)","Digitaldruck: Medium (3162, 3551, 3951, 3676, UltraTack, MonsterTack), Laminat","Komplexität K0–K3, Sicke, Wölbung, Tape (auto/manuell)"],
+        tut:["Objekte wandern positionsgleich auf die Ebene der Rolle","Plott: umgefärbt, Originalfarbe in IP_Original","Vorauswahl und Farbzuordnung ins XMP"],
+        liest:[F("farbfelder/*.ase"),F("medien.json")]}),
+      B("copy",{z:W("Kopie"), ein:["Name (nächste freie Nummer)"], tut:["Duplikat mit allen Tags, Herkunft IP_Herkunft, versetzt um Höhe + 10 mm","Kopien dürfen skaliert, gedreht, gespiegelt werden"]}),
+      B("list",{z:W("Objekte"), tut:["„Zugeordnet (n)“ und „Ohne Zuordnung (n)“ mit Betrag, Folie/Medium, Ebene, Attributen","Klick wählt aus, Doppelklick öffnet „Objekt“"]}),
+      B("calc",{or:true, z:W("Details"), sb:true,
+        tut:["Prüfungen (Warnung oder Abbruch), Nesting MaxRects, Rollenwahl","Zeile 3: „nur Aufkleber“ / „inkl. Montage“ netto + brutto, „Mindestbetrag Produkt/Montage“","Hinweise gesammelt in einem Popup","„Details“: Folien, Objekte, Summen, Mindest-VK, Grafik nur zur Dokumentation"],
+        aus:[F("<Kunde>_Kalkulation.json")],
+        liest:[F("preisliste.csv"),F("medien.json"),F("auftragsarten/*.json")]}),
+      B("pdf",{sb:true, tut:["rechnet neu"], aus:[F("<Kunde>_Kalkulation.pdf (ohne EK, mit Mindest-VK, Grafik zur Doku)")], liest:[F("preisliste.csv")]}),
+      B("Summa",{tut:["Schneidedaten Plott je Farbschlüssel und Bogen, PDF/X-4, 1:1, Zeichenfläche Umriss + 10 mm","speichert danach die Arbeitsdatei"], aus:[F("<Kunde>_<Serie>-<Farbe>_cut_NN.pdf")]}),
+      B("Druck",{tut:["je Bogen ein Dokument mit Ebenen Druck / Cut / Info, Objekte mit Herkunft als Symbole","Zeichenfläche Außenkante + 44,353 mm, max. 2500 mm (Einzelobjekt 5700 mm)","danach von Hand: Beschnitt und Cutkontur im Bogen bzw. im Symbol"], aus:[F("Druckbögen → Export (bei Druckbögen)")]}),
+      B("Export",{tut:["speichert die Arbeitsdatei"]}),
+      B("Auftrag",{or:true, z:W("Auftrag anlegen")})
+    ]},
+
+    {t:"st", l:"Schild", k:[
+      B("add / edit",{z:W("Objekt"), ein:["wie oben, Art zusätzlich UV-Vorn, UV-Hinten"]}),
+      B("copy",{z:W("Kopie")}),
+      B("list",{kurz:"gesperrt"}),
+      {t:"btn", l:"Materialliste", kurz:"unter den drei Zeilen, je Zeichenfläche", ein:["Material: Dibond 3, Forex 3/5/10, Acryl 3/5/8/10","Bohrungen (leer = 0)"], aus:[F("XMP Schildmaterial, Schildbohrungen")]},
+      B("calc",{z:W("Details"), sb:true, tut:["eine Zeile „Preis“, ggf. „Mindestbetrag Produkt greift“","Verfahren aus den Ebenen, Preisfläche A5–A2 bzw. m²"], aus:[F("<Kunde>_Kalkulation.json")], liest:[F("preisliste.csv (Zeilen gilt_fuer schild)")]}),
+      B("pdf",{sb:true, aus:[F("<Kunde>_Kalkulation.pdf")]}),
+      B("Summa",{kurz:"Druck ausgeblendet", aus:[F("<Kunde>_<Serie>-<Farbe>_cut_NN.pdf")]}),
+      B("Export",{tut:["je Zeichenfläche und Technik"], aus:[F("<Kunde>_druck_NN_<Kürzel>-<Stärke>.pdf"),F("…_uv-vorn_…"),F("…_uv-hinten_…")]}),
+      B("Auftrag",{or:true, z:W("Auftrag anlegen")})
+    ]},
+
+    {t:"st", l:"Textil", k:[
+      B("add / edit",{z:W("Motiv"),
+        ein:["Position (Pillen auf Vorn/Hinten, „Ohne Position“: Sponsor, Namen; ohne Anker ausgegraut)","Verfahren DTF / Flex / Stick (Flex: Farbe)","Druckgrößen: zeigen, Maß mm, Bezug, Menge, Textilgrößen, blockout (DTF) bzw. Motive je Streifen (Flex)"],
+        tut:["Name automatisch „<Position> <n>“","skaliert und am Anker ausgerichtet, Höhenhinweis als Popup","Tags IP_Position, IP_Verfahren, IP_Stufen, IP_Farbe"],
+        liest:[F("textil_stufen.csv"),F("textil_modelle.csv"),F("textil.json")]}),
+      B("copy",{z:W("Motiv"), tut:["alle Werte des Originals ohne Position; Duplikat erst bei OK, am Anker der gewählten Position"]}),
+      B("list",{z:W("Motive"), tut:["nach Position: Name, Verfahren, je Druckgröße Maß · Menge · Textilgrößen","Klick wählt aus, Doppelklick öffnet „Motiv“"]}),
+      B("Textilfarbe",{z:W("Textilfarbe"), ein:["Farbe aus dem Farbraster (ohne Liste Freitext)"], tut:["färbt Ebene „Stofffarbe“ um"], liest:[F("textil_farben.csv")]}),
+      B("mockUp",{z:W("Modell hinzufügen"), ein:["Marke","Modell","Farbe"], aus:[F("weiteres Korrekturabzug_<ID>.ai bzw. _02 im Kundenordner")]}),
+      B("Summa",{tut:["Flex-Streifen (Daten bis 470 mm)"], aus:[F("<Streifen>x_<Kunde>_<Position>_<Maß>_<Farbe>[_<ID>]_cut.pdf")]}),
+      B("Export",{tut:["Prüfung aller Motive → ein Fehler-Popup","Ebene „Infos“ füllen"], aus:[F("<Menge>x_<Kunde>_<Position>_<Maß>[_blockout].pdf"),F("Namen-Bögen"),F("<Kunde>_Korrekturabzug[_<ID>].pdf")]}),
+      B("Auftrag",{or:true, z:W("Auftrag anlegen")})
+    ]},
+
+    {t:"st", l:"Offset-Daten · Lasergravur · Sonstiges", kurz:"nur Zeile 1 und Export · Auftrag", k:[
+      B("Export",{tut:["überschreibt nie (Name.pdf, dann Name_02.pdf …)"], k:[
+        {t:"btn", l:"Offset-Daten", kurz:"Preset „wmd“", aus:[F("<Kunde>_<Produkt>_druck.pdf")]},
+        {t:"btn", l:"Lasergravur", kurz:"Preset „pam x4“", aus:[F("<Kunde>_laser.pdf")]},
+        {t:"btn", l:"Sonstiges", kurz:"Preset „pam x4“", aus:[F("<Kunde>_druck.pdf")]}
+      ]}),
+      B("Auftrag",{or:true, z:W("Auftrag anlegen")})
+    ]}
+  ]},
+
+  {t:"st", l:"Hintergrund (unsichtbar)", kurz:"Grafikzeit", k:[
+    {t:"win", l:"Grafikzeit-Messung", tut:["zählt, wenn Illustrator vorn, letzte Eingabe unter 30 s, aktives Dokument ein gespeicherter Auftrag","ohne Abfragen an Illustrator: Pfad aus Dokument-Ereignissen, Auftragsdaten aus dem XMP"], aus:[F("<Kunde>_Grafikzeit.json")]}
+  ]}
+]};
+
+function chip(n){
+  const s=document.createElement("span");
+  s.className="k "+n.t+(n.or?" or":""); s.textContent=n.l; return s;
+}
+function zeile(dl,titel,werte){
+  if(!werte||!werte.length) return;
+  const dt=document.createElement("dt"); dt.textContent=titel; dl.appendChild(dt);
+  const dd=document.createElement("dd");
+  if(werte.every(w=>typeof w==="string")){
+    dd.innerHTML=werte.map(w=>w.replace(/&/g,"&amp;").replace(/</g,"&lt;")).join(" · ");
+  } else werte.forEach(w=>dd.appendChild(typeof w==="string"?document.createTextNode(w+" "):chip(w)));
+  dl.appendChild(dd);
+}
+function kopf(n){
+  const f=document.createDocumentFragment();
+  f.appendChild(chip(n));
+  if(n.z){const p=document.createElement("span");p.className="pfeil";p.textContent="→";f.appendChild(p);f.appendChild(chip(n.z));}
+  if(n.sb){const s=document.createElement("span");s.className="k sb";s.textContent="Supabase";s.title="Preise und Stundensätze künftig aus Supabase";f.appendChild(s);}
+  if(n.kurz){const s=document.createElement("span");s.className="kurz";s.textContent=n.kurz;f.appendChild(s);}
+  return f;
+}
+function knoten(n){
+  const li=document.createElement("li");
+  const hatInhalt=(n.ein||n.tut||n.aus||n.liest||n.k);
+  if(!hatInhalt){const d=document.createElement("div");d.className="blatt";d.appendChild(kopf(n));li.appendChild(d);return li;}
+  const det=document.createElement("details"); if(n.auf) det.open=true;
+  const sum=document.createElement("summary"); sum.appendChild(kopf(n)); det.appendChild(sum);
+  const dl=document.createElement("dl"); dl.className="info";
+  zeile(dl,"stellt ein",n.ein); zeile(dl,"passiert",n.tut); zeile(dl,"erzeugt",n.aus); zeile(dl,"liest",n.liest);
+  if(dl.children.length) det.appendChild(dl);
+  if(n.k){const ul=document.createElement("ul");ul.className="t";n.k.forEach(c=>ul.appendChild(knoten(c)));det.appendChild(ul);}
+  li.appendChild(det); return li;
+}
+document.getElementById("baum").appendChild(knoten(daten));
+document.getElementById("auf").onclick=()=>document.querySelectorAll("#baum details").forEach(d=>d.open=true);
+document.getElementById("zu").onclick=()=>document.querySelectorAll("#baum details").forEach((d,i)=>d.open=i===0);
+</script>

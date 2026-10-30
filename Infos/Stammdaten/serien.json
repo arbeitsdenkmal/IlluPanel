@@ -1,0 +1,10 @@
+{
+  "_hinweis": "Zuordnung Oracal-Bibliothek -> Farbschlüssel und Preisserie. Farbfeldnamen in den Bibliotheken: \"NNN (<namenszusatz>)\". Farbschlüssel = <schluessel>-NNN.",
+  "serien": [
+    { "bibliothek": "ORACAL 651",        "datei": "ORACAL 651.ase",        "namenszusatz": "651",        "schluessel": "651",  "preisserie": "651" },
+    { "bibliothek": "ORACAL 751 C",      "datei": "ORACAL 751 C.ase",      "namenszusatz": "751 C",      "schluessel": "751C", "preisserie": "751C" },
+    { "bibliothek": "ORACAL 951",        "datei": "ORACAL 951.ase",        "namenszusatz": "951",        "schluessel": "951",  "preisserie": "951" },
+    { "bibliothek": "ORACAL 970 glossy", "datei": "ORACAL 970 glossy.ase", "namenszusatz": "970 glossy", "schluessel": "970G", "preisserie": "970" },
+    { "bibliothek": "ORACAL 970 matt",   "datei": "ORACAL 970 matt.ase",   "namenszusatz": "970 matt",   "schluessel": "970M", "preisserie": "970" }
+  ]
+}

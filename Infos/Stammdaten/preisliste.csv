@@ -1,0 +1,76 @@
+typ;schluessel;gilt_fuer;bezeichnung;verfahren;ek_m2;vk_m2;tape_vk_m2;minuten;prozent;wert
+parameter;stundensatz.vk;alle;Stundensatz VK Produktion und Montage;;;;;;;155
+parameter;stundensatz.produktion;alle;Stundensatz Produktion und Montage (Mindest-VK);;;;;;;84
+parameter;stundensatz.grafik;alle;Stundensatz Grafik;;;;;;;96
+parameter;mindest.produkt;alle;Mindestbetrag Produkt (ohne Montage, ohne Grafik);;;;;;;35
+parameter;mindest.montage;alle;Mindestbetrag Montage;;;;;;;30
+parameter;rundung;alle;Rundung (immer aufrunden);;;;;;;5
+parameter;preise_freigegeben;alle;Preise freigegeben;;;;;;;0
+parameter;mwst;alle;Mehrwertsteuer (%);;;;;;;19
+parameter;tape.min_schnittdichte;alle;Tape-Vorschlag ab Schnittdichte Cutkontur (m/m²);;;;;;;40
+parameter;tape.min_teiledichte;alle;Tape-Vorschlag ab Teiledichte Cutkontur (Teile/m²);;;;;;;50
+serie;651;alle;651;plott;6,08;11,55;;;;
+serie;751C;alle;751C;plott;7,61;14,46;;;;
+serie;951;alle;951;plott;16,55;31,45;;;;
+serie;970;alle;970;plott;22,33;42,43;;;;
+serie;3162;alle;3162;druck;5,66;10,75;3,79;;;
+serie;3551;alle;3551;druck;8,25;15,68;3,79;;;
+serie;3951;alle;3951;druck;21,03;39,96;6,25;;;
+serie;3676;alle;3676;druck;18,46;35,07;3,79;;;
+serie;UltraTack;alle;UltraTack;druck;11,01;20,92;3,79;;;
+serie;MonsterTack;alle;MonsterTack;druck;16,65;31,64;3,79;;;
+zeit;ruesten;alle;Rüsten je Folie;plott;;;;3,00;;
+zeit;ruesten;alle;Rüsten je Folie;druck;;;;2,00;;
+zeit;datei_cut;alle;Datei Cut je Folie;plott;;;;3,00;;
+zeit;datei_cut;alle;Datei Cut je Folie;druck;;;;3,00;;
+zeit;datei_rip;alle;Datei RIP je Auftrag;druck;;;;5,00;;
+zeit;tape_m2;alle;Application Tape je m² (mind. 1 m² je Folie);plott;;;;2,00;;
+zeit;tape_m2;alle;Application Tape je m² (mind. 1 m² je Folie);druck;;;;2,00;;
+zeit;produktion_m2;alle;Produktion je m² Stückfläche;plott;;;;0,00;;
+zeit;produktion_m2;alle;Produktion je m² Stückfläche;druck;;;;6,00;;
+zeit;teil;alle;Entgittern je Einzelteil;plott;;;;0,03;;
+zeit;teil;alle;Entgittern je Einzelteil;druck;;;;0,10;;
+zeit;schnitt_m;alle;Entgittern je Meter Schnitt;plott;;;;0,12;;
+zeit;schnitt_m;alle;Entgittern je Meter Schnitt;druck;;;;0,00;;
+zeit;trennen;alle;Trennen je Stück;plott;;;;0,17;;
+zeit;trennen;alle;Trennen je Stück;druck;;;;0,50;;
+zeit;auftrag_montage;alle;Montage je Auftrag;alle;;;;2,00;;
+zeit;stueck;alle;Montage je Stück (Einmessen, Ansetzen);plott;;;;5,00;;
+zeit;stueck;alle;Montage je Stück (Einmessen, Ansetzen);druck;;;;5,00;;
+zeit;montage_m2;alle;Verkleben je m² Stückfläche;plott;;;;0,80;;
+zeit;montage_m2;alle;Verkleben je m² Stückfläche;druck;;;;0,80;;
+zeit;reinigen_m2;alle;Reinigen je m² Stückfläche (mind. 1 m² je Auftrag);plott;;;;1,65;;
+zeit;reinigen_m2;alle;Reinigen je m² Stückfläche (mind. 1 m² je Auftrag);druck;;;;1,65;;
+zeit;reinigen_m2;alle;Reinigen je m² Stückfläche (mind. 1 m² je Auftrag);alle;;;;1,65;;
+zeit;montage_teil;alle;Verkleben je Einzelteil;plott;;;;0,08;;
+zeit;montage_teil;alle;Verkleben je Einzelteil;druck;;;;0,08;;
+aufschlag;sicke;alle;Sicke (auf Montage des Stücks);;;;;;50;
+aufschlag;woelbung;alle;Wölbung (Montage je m² Stückfläche);;;;;36,00;;
+komplexitaet;stufe0;alle;normal;;;;;;0;
+komplexitaet;stufe1;alle;erschwert;;;;;;25;
+komplexitaet;stufe2;alle;stark erschwert;;;;;;50;
+komplexitaet;stufe3;alle;extrem;;;;;;100;
+platte;Dib-3;schild;Dib 3;;27,79;;;;15;
+platte;PVC-3;schild;PVC 3;;12,37;;;;15;
+platte;PVC-5;schild;PVC 5;;19,81;;;;15;
+platte;PVC-10;schild;PVC 10;;37,37;;;;15;
+platte;PMMA-3;schild;PMMA 3;;38,86;;;;30;
+platte;PMMA-5;schild;PMMA 5;;64,75;;;;30;
+platte;PMMA-8;schild;PMMA 8;;103,61;;;;30;
+platte;PMMA-10;schild;PMMA 10;;129,51;;;;30;
+parameter;schild.aufschlag;schild;Aufschlag auf Selbstkosten Schild;;;;;;;1,2
+parameter;schild.mindest;schild;Mindestbetrag Schild je Auftrag;;;;;;;30
+parameter;schild.rundung;schild;Rundung Schild (immer aufrunden);;;;;;;0,5
+parameter;schild.uv_vk_m2;schild;UV-Druck VK je m² ohne Weiß;;;;;;;85
+parameter;schild.uv_vk_m2_weiss;schild;UV-Druck VK je m² mit Weiß;;;;;;;140
+parameter;schild.tinte_uv_m2;schild;Tinte UJF je m² ohne Weiß (EK);;;;;;;2,59
+parameter;schild.tinte_uv_m2_weiss;schild;Tinte UJF je m² mit Weiß (EK);;;;;;;6,91
+parameter;schild.folie_verschnitt;schild;Folienverschnitt kaschierte Schilder;;;;;;;1,3
+parameter;schild.faktor_beidseitig;schild;Faktor UV beidseitig;;;;;;;1,5
+zeit;auftrag;schild;Schild UV je Auftrag;uv;;;;7;;
+zeit;stueck;schild;Schild UV je Stück;uv;;;;1;;
+zeit;auftrag;schild;Schild Digitaldruck kaschiert je Auftrag;druck;;;;18;;
+zeit;m2;schild;Schild Digitaldruck kaschiert je m²;druck;;;;12;;
+zeit;laser_auftrag;schild;Acryl Laser Rüsten + Datei je Auftrag;alle;;;;10;;
+zeit;kante_m;schild;Acryl Kantennacharbeit je Laufmeter (Säge);alle;;;;5;;
+zeit;bohrung;schild;Bohrung je Loch;alle;;;;2;;

@@ -1,0 +1,20 @@
+{
+  "_hinweis": "Rollenbreiten und Randabzüge (PREISLOGIK.md 8.1). standardbreite: Standardrolle je Serie (mm); breiten: weitere vorrätige Rollenbreiten (Druck); laminate: erlaubte Laminate (ohne Eintrag: alle der Auftragsart). randabzug.plott: Rollenbreite minus Rand = Nutzbreite (Plott). druck: OPOS-Marken vergrößern die Grafik um opos_zugabe_mm gesamt, dazu opos_marken_rand_mm je Seite bis zum Zeichenflächenrand; kantenhalter_mm je Seite nicht bedruckbar (HP Latex) – Zeichenfläche quer höchstens Rollenbreite − 2 × kantenhalter_mm, Grafik quer höchstens zusätzlich − (opos_zugabe_mm + 2 × opos_marken_rand_mm). opos_marken (Stufe 23): \"eigen\" = Marken selbst zeichnen (panel/lib/opos.js), \"plugin\" = Marken von Hand mit dem Summa-Plugin, Export zeichnet keine und verlangt die Ebene „Regmark“ (Stufe 24, OPOS.app wird nicht mehr gestartet) – bleibt bis zum Schneidtest. reserve_kontur_mm: Druckobjekt ohne Cutkontur – Nesting und Zeichenfläche nach Außenkante + reserve_kontur_mm (Abstand Motiv–Cutkontur) + beschnitt_mm der Auftragsart je Seite. schwelle_prozent: eine andere Breite wird nur gewählt, wenn die Objekte in der Standardbreite nicht passen oder sie mindestens so viel Verbrauch in m² spart. alias: alte Tags beim Lesen umschreiben.",
+  "randabzug": { "plott": 40 },
+  "druck": { "opos_zugabe_mm": 24.353, "opos_marken_rand_mm": 10, "kantenhalter_mm": 15, "opos_marken": "eigen",
+  "reserve_kontur_mm": 10 },
+  "schwelle_prozent": 10,
+  "medien": {
+    "651": { "standardbreite": 1260 },
+    "751C": { "standardbreite": 1260 },
+    "951": { "standardbreite": 1260 },
+    "970": { "standardbreite": 1520 },
+    "3162": { "standardbreite": 1370 },
+    "3551": { "standardbreite": 1370, "breiten": [1000, 1520] },
+    "3951": { "standardbreite": 1520 },
+    "3676": { "standardbreite": 1370, "laminate": ["glaenzend"] },
+    "UltraTack": { "standardbreite": 1370 },
+    "MonsterTack": { "standardbreite": 1220 }
+  },
+  "alias": { "windowfilm": "3676" }
+}

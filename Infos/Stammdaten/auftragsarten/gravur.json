@@ -1,0 +1,25 @@
+{
+  "dateien": {
+    "arbeitsdatei": "Arbeitsdatei.ai"
+  },
+  "massstab": {
+    "standard": 1
+  },
+  "_hinweis": "Lasergravur (Stufe 14): wie Sonstiges, Export <Kunde>_laser.pdf. Keine Kalkulation, nur Zeiterfassung.",
+  "id": "gravur",
+  "name": "Lasergravur",
+  "aktiv": true,
+  "reihenfolge": 4,
+  "typ": "unveraendert",
+  "ebenen": [],
+  "arten": [],
+  "werkzeuge": [],
+  "neu": {
+    "breite_mm": 600,
+    "hoehe_mm": 300
+  },
+  "export": {
+    "preset": "pam x4",
+    "name": "laser"
+  }
+}

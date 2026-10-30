@@ -1,0 +1,23 @@
+{
+  "xmp": {
+    "namespace": "http://ns.pam-nm.de/illupanels/2.0/",
+    "praefix": "ip:",
+    "eigenschaft": "Dokument",
+    "schema": 1
+  },
+  "rollen": ["arbeitsdatei", "druckbogen", "nutzenbogen", "hilfsdokument"],
+  "tags": {
+    "id": "IP_Id",
+    "folie": "IP_Folie",
+    "laminat": "IP_Laminat",
+    "anzahl": "IP_Anzahl",
+    "komplexitaet": "IP_Komplexitaet",
+    "attribute": "IP_Attribute",
+    "herkunft": "IP_Herkunft",
+    "original": "IP_Original",
+    "position": "IP_Position",
+    "verfahren": "IP_Verfahren",
+    "stufen": "IP_Stufen",
+    "farbe": "IP_Farbe"
+  }
+}

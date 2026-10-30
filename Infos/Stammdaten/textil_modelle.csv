@@ -1,0 +1,33 @@
+id;modell;dateimass_mm;realmass_mm;bezeichnung
+E190m;B&C_E190_Men;47,5;560;E190
+BCPolo;B&C_Polo;51,1;590;Polo
+KingHS;B&C_King Hooded Sweat;48;590;Hoodie
+KingZip;B&C_King Zipped Hooded;46,6;590;Zip Hoodie
+E190w;B&C_E190_Women;49,9;500;E190 Women
+BCSWEAT;B&C_Sweatshirt;49,45;590;Sweatshirt
+PPremTm;Promodoro_Mens Premium T;47,5;560;T-Shirt
+PPolom;Promodoro_Mens Polo;51,1;590;Polo
+PPolomS;Promodoro_Mens Polo Superior;51,1;590;Superior Polo
+PPolow;Promodoro_Women Polo;46;490;Women Polo
+PHood;Promodoro_Hoodie;48;590;Hoodie
+PZipHo;Promodoro_Zipped Hooded;46,6;590;Zip Hoodie
+PZip;Promodoro_Zip Jacket;49,7;590;Zip Jacke
+PSweatm;Promodoro_Mens Sweatshirt;49,45;590;Sweatshirt
+NEUT;Neutral_Unisex T;47,5;560;T-Shirt Unisex
+NRUSm;Neutral_Mens Roll Up Sleeve;52,2;540;Men Roll Up T
+NEMENF;Neutral_MenFit;47,5;560;Men Fit T
+NERUSW;Neutral_Ladies Roll Up Sleeve;43,65;500;Ladies Roll Up T
+NRNw;Neutral_Ladies Roundneck;44;500;Ladies Roundneck T
+NELV;Neutral_Ladies VNeck;48,5;500;Ladies V-Neck T
+NEKids;Neutral_Kids;47,5;;Kids T-Shirt
+NECP;Neutral_Classic Polo;51,1;590;Polo
+NEZipHo;Neutral_Mens Zip Hood;46,6;590;Zip Hoodie
+KT;Kundenware_T-Shirt;47,5;560;T-Shirt
+KP;Kundenware_Polo;51,1;590;Polo
+KH;Kundenware_Hoodie;48;590;Hoodie
+KZH;Kundenware_Zip Hood;46,6;590;Zip Hoodie
+KZ;Kundenware_Zip Jacket;49,7;590;Zip Jacke
+KS;Kundenware_Sweatshirt;49,45;590;Sweatshirt
+CN100;Sonstige_CN100;47,5;560;Rainbow Tech-T
+CN130;Sonstige_CN130;49,9;500;Rainbow Tech-T Ladies
+SW;Sonstige_SafetyVest;71,3;560;Warnweste

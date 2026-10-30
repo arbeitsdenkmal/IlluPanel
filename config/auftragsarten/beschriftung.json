@@ -1,0 +1,101 @@
+{
+  "id": "beschriftung",
+  "name": "Beschriftung",
+  "reihenfolge": 2,
+  "kalkulation": true,
+  "ebenen": [
+    {
+      "name": "Sandbox",
+      "rolle": "sandbox",
+      "gesperrt": false
+    },
+    {
+      "name": "Cut",
+      "rolle": "plott",
+      "gesperrt": false
+    },
+    {
+      "name": "Print",
+      "rolle": "digitaldruck",
+      "gesperrt": false
+    },
+    {
+      "name": "Foto",
+      "rolle": "vorlage",
+      "gesperrt": false
+    }
+  ],
+  "massstab": {
+    "standard": 1
+  },
+  "zeichenflaeche": {
+    "art": "neu",
+    "breite_mm": 1000,
+    "hoehe_mm": 1000
+  },
+  "quelle": {
+    "sandbox": "Sandbox"
+  },
+  "export": {
+    "profil": "produktion",
+    "preset": "[PDF/X-4:2008]",
+    "dateiname": null
+  },
+  "komplexitaet": {
+    "plott": "immer",
+    "digitaldruck": "mit_cutkontur"
+  },
+  "vorlage": {
+    "leer": true,
+    "umbenennenIn": "Foto"
+  },
+  "druck": {
+    "abstand_mm": 20,
+    "beschnitt_mm": 3,
+    "max_laenge_mm": 2500,
+    "max_laenge_sonder_mm": 5700,
+    "cut_farbfeld": "Cutkontur",
+    "cut_cmyk": [
+      0,
+      100,
+      0,
+      0
+    ]
+  },
+  "nesting": {
+    "abstand_mm": 20,
+    "rand_mm": 10,
+    "max_breite_mm": 5700
+  },
+  "laminate": [
+    {
+      "schluessel": "matt",
+      "bezeichnung": "matt"
+    },
+    {
+      "schluessel": "glaenzend",
+      "bezeichnung": "glänzend"
+    }
+  ],
+  "werkzeuge": [
+    "summa",
+    "druck"
+  ],
+  "arten": [
+    {
+      "schluessel": "plott",
+      "bezeichnung": "Plott",
+      "ebene": "Cut"
+    },
+    {
+      "schluessel": "digitaldruck",
+      "bezeichnung": "Digitaldruck",
+      "ebene": "Print"
+    }
+  ],
+  "aktiveEbene": "Foto",
+  "dateien": {
+    "arbeitsdatei": "Arbeitsdatei.ai"
+  },
+  "preis": "beschriftung"
+}

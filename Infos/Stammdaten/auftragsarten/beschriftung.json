@@ -1,0 +1,85 @@
+{
+  "id": "beschriftung",
+  "name": "Beschriftung",
+  "aktiv": true,
+  "vorlage": {
+    "leer": true,
+    "umbenennenIn": "Foto"
+  },
+  "ebenen": [
+    {
+      "name": "Sandbox",
+      "rolle": "sandbox"
+    },
+    {
+      "name": "Cut",
+      "rolle": "plott"
+    },
+    {
+      "name": "Print",
+      "rolle": "digitaldruck"
+    },
+    {
+      "name": "Foto",
+      "rolle": "vorlage"
+    }
+  ],
+  "massstab": {
+    "standard": 1
+  },
+  "arten": [
+    {
+      "schluessel": "plott",
+      "bezeichnung": "Plott",
+      "ebene": "Cut"
+    },
+    {
+      "schluessel": "digitaldruck",
+      "bezeichnung": "Digitaldruck",
+      "ebene": "Print"
+    }
+  ],
+  "laminate": [
+    {
+      "schluessel": "matt",
+      "bezeichnung": "matt"
+    },
+    {
+      "schluessel": "glaenzend",
+      "bezeichnung": "glänzend"
+    }
+  ],
+  "nesting": {
+    "abstand_mm": 20,
+    "rand_mm": 10,
+    "max_breite_mm": 5700
+  },
+  "dateien": {
+    "arbeitsdatei": "Arbeitsdatei.ai"
+  },
+  "neu": {
+    "breite_mm": 1000,
+    "hoehe_mm": 1000
+  },
+  "reihenfolge": 2,
+  "druck": {
+    "abstand_mm": 20,
+    "beschnitt_mm": 3,
+    "max_laenge_mm": 2500,
+    "max_laenge_sonder_mm": 5700,
+    "cut_farbfeld": "Cutkontur",
+    "cut_cmyk": [
+      0,
+      100,
+      0,
+      0
+    ]
+  },
+  "preis": "beschriftung",
+  "aktiveEbene": "Foto",
+  "_hinweis": "Beschriftung: Ausgangspunkt ist ein leeres Dokument (keins offen: neues Dokument in mm). Ebenen von oben nach unten wie unten aufgeführt, keine gesperrt.",
+  "werkzeuge": [
+    "summa",
+    "druck"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "_hinweis": "Textil (Stufe 15): Korrekturabzug auf MockUp (config/textil.json), Bestelldaten DTF/Stick/Namen, Flex-Streifen über Summa. Keine Kalkulation, nur Zeiterfassung.",
+  "id": "textil",
+  "name": "Textil",
+  "aktiv": true,
+  "reihenfolge": 6,
+  "typ": "textil",
+  "ebenen": [
+    {
+      "name": "Design",
+      "rolle": "textil"
+    }
+  ],
+  "arten": [
+    {
+      "schluessel": "textil",
+      "bezeichnung": "Textil",
+      "ebene": "Design"
+    }
+  ],
+  "werkzeuge": [
+    "summa"
+  ],
+  "massstab": {
+    "standard": 1
+  },
+  "dateien": {
+    "arbeitsdatei": "Korrekturabzug.ai"
+  },
+  "export": {
+    "preset": "pam x4"
+  },
+  "summa": {
+    "preset": "[PDF/X-4:2008]"
+  }
+}

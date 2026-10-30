@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionList>
+  <Extension Id="de.pamnm.illupanels.panel">
+    <HostList><Host Name="ILST" Port="8088"/></HostList>
+  </Extension>
+  <Extension Id="de.pamnm.illupanels.anlegen">
+    <HostList><Host Name="ILST" Port="8089"/></HostList>
+  </Extension>
+</ExtensionList>

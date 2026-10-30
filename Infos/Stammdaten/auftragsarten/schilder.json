@@ -1,0 +1,176 @@
+{
+  "dateien": {
+    "arbeitsdatei": "Arbeitsdatei.ai"
+  },
+  "massstab": {
+    "standard": 1
+  },
+  "_hinweis": "Schild (Stufe 14): je Schild eine Zeichenfläche, Material je Zeichenfläche (XMP). Neues Dokument aus config/vorlagen/Schild.ait (Anschnitt 5 mm im Dokument). Ebenen von oben wie unten. Keine Kalkulation, nur Zeiterfassung; Summa wie Fahrzeugbeschriftung, Druck und OPOS gesperrt. Export mit dem Preset „pam x4“ (Anschnitt vom Dokument); UV über ein Hilfsdokument aus config/vorlagen/UV-Schild.ait (2 mm). Stufe 28: im Dialog Wahl „Folie“ / „UV-Druck“ (verfahren, Kennung Schildverfahren im XMP): Folie aus Schild.ait mit Sandbox, Plott, Digitaldruck; UV-Druck aus UV-Schild.ait mit Sandbox, Plott, UV-Vorn, UV-Hinten, UV-Export direkt mit dem Anschnitt des Dokuments. Dokumente ohne Kennung wie bisher (fünf Ebenen, UV über das Hilfsdokument).",
+  "id": "schilder",
+  "name": "Schild",
+  "aktiv": true,
+  "reihenfolge": 3,
+  "typ": "schild",
+  "ebenen": [
+    {
+      "name": "Sandbox",
+      "rolle": "sandbox"
+    },
+    {
+      "name": "Plott",
+      "rolle": "plott"
+    },
+    {
+      "name": "Digitaldruck",
+      "rolle": "digitaldruck"
+    },
+    {
+      "name": "UV-Vorn",
+      "rolle": "uv-vorn"
+    },
+    {
+      "name": "UV-Hinten",
+      "rolle": "uv-hinten"
+    }
+  ],
+  "arten": [
+    {
+      "schluessel": "plott",
+      "bezeichnung": "Plott",
+      "ebene": "Plott"
+    },
+    {
+      "schluessel": "digitaldruck",
+      "bezeichnung": "Digitaldruck",
+      "ebene": "Digitaldruck"
+    },
+    {
+      "schluessel": "uv-vorn",
+      "bezeichnung": "UV-Vorn",
+      "ebene": "UV-Vorn"
+    },
+    {
+      "schluessel": "uv-hinten",
+      "bezeichnung": "UV-Hinten",
+      "ebene": "UV-Hinten"
+    }
+  ],
+  "laminate": [
+    {
+      "schluessel": "matt",
+      "bezeichnung": "matt"
+    },
+    {
+      "schluessel": "glaenzend",
+      "bezeichnung": "glänzend"
+    }
+  ],
+  "nesting": {
+    "abstand_mm": 20,
+    "rand_mm": 10,
+    "max_breite_mm": 5700
+  },
+  "werkzeuge": [
+    "summa"
+  ],
+  "vorlage": {
+    "datei": "config/vorlagen/Schild.ait"
+  },
+  "verfahren": {
+    "folie": {
+      "bezeichnung": "Folie",
+      "vorlage": "config/vorlagen/Schild.ait",
+      "ebenen": ["Sandbox", "Plott", "Digitaldruck"]
+    },
+    "uv": {
+      "bezeichnung": "UV-Druck",
+      "vorlage": "config/vorlagen/UV-Schild.ait",
+      "ebenen": ["Sandbox", "Plott", "UV-Vorn", "UV-Hinten"]
+    }
+  },
+  "zeichenflaechen_abstand_mm": 10,
+  "materialien": [
+    {
+      "schluessel": "dibond-3",
+      "bezeichnung": "Dibond 3 mm",
+      "kuerzel": "Dib",
+      "staerke": 3,
+      "acryl": false
+    },
+    {
+      "schluessel": "forex-3",
+      "bezeichnung": "Forex 3 mm",
+      "kuerzel": "PVC",
+      "staerke": 3,
+      "acryl": false
+    },
+    {
+      "schluessel": "forex-5",
+      "bezeichnung": "Forex 5 mm",
+      "kuerzel": "PVC",
+      "staerke": 5,
+      "acryl": false
+    },
+    {
+      "schluessel": "forex-10",
+      "bezeichnung": "Forex 10 mm",
+      "kuerzel": "PVC",
+      "staerke": 10,
+      "acryl": false
+    },
+    {
+      "schluessel": "acryl-3",
+      "bezeichnung": "Acryl 3 mm",
+      "kuerzel": "PMMA",
+      "staerke": 3,
+      "acryl": true
+    },
+    {
+      "schluessel": "acryl-5",
+      "bezeichnung": "Acryl 5 mm",
+      "kuerzel": "PMMA",
+      "staerke": 5,
+      "acryl": true
+    },
+    {
+      "schluessel": "acryl-8",
+      "bezeichnung": "Acryl 8 mm",
+      "kuerzel": "PMMA",
+      "staerke": 8,
+      "acryl": true
+    },
+    {
+      "schluessel": "acryl-10",
+      "bezeichnung": "Acryl 10 mm",
+      "kuerzel": "PMMA",
+      "staerke": 10,
+      "acryl": true
+    }
+  ],
+  "uv_max_mm": [
+    420,
+    594
+  ],
+  "export": {
+    "preset": "pam x4",
+    "techniken": [
+      {
+        "rolle": "digitaldruck",
+        "name": "druck",
+        "anschnitt": "dokument"
+      },
+      {
+        "rolle": "uv-vorn",
+        "name": "uv-vorn",
+        "anschnitt": "vorlage",
+        "vorlage": "config/vorlagen/UV-Schild.ait"
+      },
+      {
+        "rolle": "uv-hinten",
+        "name": "uv-hinten",
+        "anschnitt": "vorlage",
+        "vorlage": "config/vorlagen/UV-Schild.ait"
+      }
+    ]
+  }
+}

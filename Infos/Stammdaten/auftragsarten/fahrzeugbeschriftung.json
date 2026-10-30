@@ -1,0 +1,85 @@
+{
+  "id": "fahrzeugbeschriftung",
+  "name": "Fahrzeugbeschriftung",
+  "aktiv": true,
+  "vorlage": {
+    "ebenenAnzahl": 1,
+    "umbenennenIn": "Fahrzeugkontur"
+  },
+  "ebenen": [
+    {
+      "name": "Sandbox",
+      "rolle": "sandbox"
+    },
+    {
+      "name": "Fahrzeugkontur",
+      "rolle": "vorlage",
+      "gesperrt": true
+    },
+    {
+      "name": "Plott",
+      "rolle": "plott"
+    },
+    {
+      "name": "Digitaldruck",
+      "rolle": "digitaldruck"
+    }
+  ],
+  "massstab": {
+    "standard": 30
+  },
+  "arten": [
+    {
+      "schluessel": "plott",
+      "bezeichnung": "Plott",
+      "ebene": "Plott"
+    },
+    {
+      "schluessel": "digitaldruck",
+      "bezeichnung": "Digitaldruck",
+      "ebene": "Digitaldruck"
+    }
+  ],
+  "laminate": [
+    {
+      "schluessel": "matt",
+      "bezeichnung": "matt"
+    },
+    {
+      "schluessel": "glaenzend",
+      "bezeichnung": "glänzend"
+    }
+  ],
+  "nesting": {
+    "abstand_mm": 20,
+    "rand_mm": 10,
+    "max_breite_mm": 5700
+  },
+  "dateien": {
+    "arbeitsdatei": "Arbeitsdatei.ai"
+  },
+  "neu": {
+    "breite_mm": 210,
+    "hoehe_mm": 297
+  },
+  "reihenfolge": 1,
+  "druck": {
+    "abstand_mm": 20,
+    "beschnitt_mm": 3,
+    "max_laenge_mm": 2500,
+    "max_laenge_sonder_mm": 5700,
+    "cut_farbfeld": "Cutkontur",
+    "cut_cmyk": [
+      0,
+      100,
+      0,
+      0
+    ]
+  },
+  "preis": "fahrzeug",
+  "aktiveEbene": "Sandbox",
+  "werkzeuge": [
+    "summa",
+    "druck"
+  ]
+}

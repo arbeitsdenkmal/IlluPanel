@@ -1,0 +1,29 @@
+{
+  "id": "sonstiges",
+  "name": "Sonstiges",
+  "reihenfolge": 8,
+  "kalkulation": false,
+  "ebenen": [],
+  "massstab": {
+    "standard": 1
+  },
+  "zeichenflaeche": {
+    "art": "abfrage",
+    "breite_mm": 600,
+    "hoehe_mm": 300
+  },
+  "quelle": {
+    "sandbox": null
+  },
+  "export": {
+    "profil": "flach",
+    "preset": "pam x4",
+    "dateiname": "druck"
+  },
+  "zeichenflaechen_abstand_mm": 10,
+  "werkzeuge": [],
+  "arten": [],
+  "dateien": {
+    "arbeitsdatei": "Arbeitsdatei.ai"
+  }
+}

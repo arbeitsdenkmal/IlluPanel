@@ -1,0 +1,28 @@
+{
+  "id": "lasergravur",
+  "name": "Lasergravur",
+  "reihenfolge": 5,
+  "kalkulation": false,
+  "ebenen": [],
+  "massstab": {
+    "standard": 1
+  },
+  "zeichenflaeche": {
+    "art": "fest",
+    "breite_mm": 600,
+    "hoehe_mm": 300
+  },
+  "quelle": {
+    "sandbox": null
+  },
+  "export": {
+    "profil": "flach",
+    "preset": "pam x4",
+    "dateiname": "laser"
+  },
+  "werkzeuge": [],
+  "arten": [],
+  "dateien": {
+    "arbeitsdatei": "Arbeitsdatei.ai"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "banner_rollup",
+  "name": "Banner/Roll-up",
+  "reihenfolge": 4,
+  "kalkulation": false,
+  "ebenen": [],
+  "massstab": {
+    "standard": 1
+  },
+  "zeichenflaeche": {
+    "art": "abfrage",
+    "mit_auftrag": {
+      "art": "app"
+    }
+  },
+  "quelle": {
+    "sandbox": null
+  },
+  "export": {
+    "profil": "flach",
+    "preset": "pam x4",
+    "dateiname": "druck"
+  },
+  "dateien": {
+    "arbeitsdatei": "Arbeitsdatei.ai"
+  },
+  "zeichenflaechen_abstand_mm": 10
+}

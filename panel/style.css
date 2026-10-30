@@ -1,0 +1,16 @@
+/* PAM-Werkzeuge: kompakt wie die Illustrator-Panels. Farben aus dem Illustrator-Theme (gemeinsam.js), Orange nur für „Export“. */
+:root { --bg: #323232; --fg: #e6e6e6; --muted: #9a9a9a; --line: #4a4a4a; --feld: #3c3c3c; --feldrand: #555; --accent: #f29c14; --accent-fg: #1a1a1a; }
+:root.hell { --fg: #1d1d1d; --muted: #6b6b6b; --line: #cfcfcf; --feld: #ffffff; --feldrand: #bdbdbd; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; padding: 1px 5px; background: var(--bg); color: var(--fg); font: 11px/1.3 -apple-system, "Helvetica Neue", sans-serif; }
+button { font: inherit; color: var(--fg); background: var(--feld); border: 1px solid var(--feldrand); border-radius: 2px; cursor: pointer; white-space: nowrap; }
+button:hover:not(:disabled) { filter: brightness(1.15); }
+button:disabled { opacity: .5; cursor: default; }
+button.akzent { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.besch { cursor: wait; }
+
+#inhalt { padding: 3px 0; display: flex; flex-direction: column; gap: 6px; }
+#kopf { min-height: 18px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#knoepfe { display: flex; gap: 4px; }
+#knoepfe button { flex: 1 1 0; min-width: 0; height: 22px; font-size: 12px; padding: 0 2px; overflow: hidden; text-overflow: ellipsis; }

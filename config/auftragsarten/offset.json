@@ -1,0 +1,35 @@
+{
+  "id": "offset",
+  "name": "Offset-Daten",
+  "reihenfolge": 6,
+  "kalkulation": false,
+  "ebenen": [],
+  "massstab": {
+    "standard": 1
+  },
+  "zeichenflaeche": {
+    "art": "produktvorlage"
+  },
+  "quelle": {
+    "sandbox": null
+  },
+  "export": {
+    "profil": "offset",
+    "preset": "wmd",
+    "dateiname": "druck",
+    "anschnitt": "dokument"
+  },
+  "vorlage": {
+    "datei": "config/vorlagen/Offset.ait"
+  },
+  "werkzeuge": [],
+  "arten": [],
+  "dateien": {
+    "arbeitsdatei": "Arbeitsdatei.ai"
+  },
+  "zeichenflaechen_abstand_mm": 10,
+  "hilfslinien": {
+    "ebene": "Hilfslinien",
+    "kontur_pt": 0.25
+  }
+}

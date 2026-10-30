@@ -1,0 +1,47 @@
+{
+  "id": "textil",
+  "name": "Textil",
+  "reihenfolge": 7,
+  "kalkulation": false,
+  "ebenen": [
+    {
+      "name": "Design",
+      "rolle": "textil",
+      "gesperrt": false
+    }
+  ],
+  "massstab": {
+    "standard": 1
+  },
+  "zeichenflaeche": {
+    "art": "mockup"
+  },
+  "quelle": {
+    "sandbox": "Design"
+  },
+  "export": {
+    "profil": "textil",
+    "preset": "pam x4",
+    "dateiname": null
+  },
+  "komplexitaet": {
+    "flex": "immer",
+    "flock": "immer"
+  },
+  "werkzeuge": [
+    "summa"
+  ],
+  "arten": [
+    {
+      "schluessel": "textil",
+      "bezeichnung": "Textil",
+      "ebene": "Design"
+    }
+  ],
+  "dateien": {
+    "arbeitsdatei": "Korrekturabzug.ai"
+  },
+  "summa": {
+    "preset": "[PDF/X-4:2008]"
+  }
+}

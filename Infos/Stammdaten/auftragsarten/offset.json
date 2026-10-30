@@ -1,0 +1,30 @@
+{
+  "dateien": {
+    "arbeitsdatei": "Arbeitsdatei.ai"
+  },
+  "massstab": {
+    "standard": 1
+  },
+  "_hinweis": "Offset-Daten (Stufe 14): neues Dokument aus der Vorlage config/vorlagen/Offset.ait (Anschnitt 3 mm im Dokument), Zeichenflächen nach Produkt (config/produkte.csv) oder freiem Format der Kundendatei, Inhalt ebenenweise, Zeichenfläche n → n zentriert. Keine Kalkulation, nur Zeiterfassung.",
+  "id": "offset",
+  "name": "Offset-Daten",
+  "aktiv": true,
+  "reihenfolge": 5,
+  "typ": "offset",
+  "ebenen": [],
+  "arten": [],
+  "werkzeuge": [],
+  "vorlage": {
+    "datei": "config/vorlagen/Offset.ait"
+  },
+  "zeichenflaechen_abstand_mm": 10,
+  "hilfslinien": {
+    "ebene": "Hilfslinien",
+    "kontur_pt": 0.25
+  },
+  "export": {
+    "preset": "wmd",
+    "anschnitt": "dokument",
+    "name": "druck"
+  }
+}

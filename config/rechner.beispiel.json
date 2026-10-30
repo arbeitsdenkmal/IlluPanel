@@ -1,0 +1,11 @@
+{
+  "rechner": "MacBook",
+  "server": {
+    "kunden": "/Volumes/Server A-Z/_03_Kunden A-Z",
+    "dtf_bestellen": "/Volumes/Server A-Z/_02_Produktion/= DTF bestellen ="
+  },
+  "lokal": {
+    "arbeitsdateien": "~/Desktop",
+    "ausgang": "~/Desktop"
+  }
+}

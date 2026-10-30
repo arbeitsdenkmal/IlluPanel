@@ -1,0 +1,17 @@
+{
+  "LFP": {
+    "VEHICLE_LETTERING": "fahrzeugbeschriftung",
+    "STICKER": "beschriftung",
+    "FOIL_PLOTTER": "beschriftung",
+    "SIGN_UV": "schild",
+    "SIGN_FOIL": "schild",
+    "BANNER": "banner_rollup",
+    "ROLLUP": "banner_rollup",
+    "OTHER_LFP": "sonstiges"
+  },
+  "LASER_ENGRAVING": { "*": "lasergravur" },
+  "STAMP": { "*": "lasergravur" },
+  "TEXTILE": { "*": "textil" },
+  "COPYSHOP": { "*": "offset" },
+  "OTHER": { "*": "sonstiges" }
+}

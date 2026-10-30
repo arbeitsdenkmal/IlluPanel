@@ -1,0 +1,9 @@
+schluessel;bezeichnung;breite_mm;hoehe_mm;zeichenflaechen;falz_mm;anschnitt_mm;sicherheit_mm;preset;ausrichtung
+falzflyer-din-lang;Falzflyer DIN lang;297;210;2;97|100|100;3;3;wmd;hoch
+einbruchfalz-a4;Einbruchfalz DIN A4;420;297;2;210|210;3;3;wmd;hoch/quer
+einbruchfalz-a5;Einbruchfalz DIN A5;297;210;2;148,5|148,5;3;3;wmd;hoch/quer
+einbruchfalz-a6;Einbruchfalz DIN A6;210;148;2;105|105;3;3;wmd;hoch/quer
+a4;A4;210;297;1/2;;3;3;wmd;hoch/quer
+a5;A5;148;210;1/2;;3;3;wmd;hoch/quer
+a6;A6;105;148;1/2;;3;3;wmd;hoch/quer
+a7;A7;74;105;1/2;;3;3;wmd;hoch/quer
