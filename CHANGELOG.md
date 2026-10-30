@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.1.0-2a – Stufe 2a „Kalkulationskern“ (30.10.2026)
+
+- Konfiguration: `medien.json` (Randabzug Plott 25, ohne `opos_marken`), `serien.json`, fünf Oracal-ASE; Startprüfung inkl. Preisliste (Serie mit Standardbreite).
+- Preisquellen-Schnittstelle `preisquelle.js` mit Entwicklungsquelle `Infos/Stammdaten/preisliste.csv` (`preisquelle_csv.js`).
+- JSX: `IP.objekteLesen` (Objekte, Blätter, Cutkontur, Text in Pfade, Motivumriss im Hilfsdokument), `IP.objektTagsSchreiben`.
+- `teile.js` (Messung, Prüfungen, Varianten-Erkennung, Hinweise), `nesting.js` mit Anzahl-Exemplaren, `rollen.js`, `kalkulation.js` (PREISLOGIK v6 mit Anzahl, Brutto auf Cent, Datensatz §8.4), `auftrag.berechnen()` ohne Oberfläche.
+- XMP: Felder `vorauswahl`, `farbzuordnung`, `kalkulation`, `aufbau` mit Standardwerten; `schema.json` dokumentiert `bogen` der Rolle druckbogen.
+
 ## 3.0.1 – Nachtrag Stufe 1 (30.10.2026)
 
 - „Auftrag“ mit oranger Schrift (wie im alten Panel; „Export“ bleibt orangefarbener Button).

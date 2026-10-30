@@ -1,4 +1,4 @@
-// PAM-Werkzeuge – JSX-Kern (nur Dokumentzugriff: XMP, Tags, Ebenen, Zeichenflächen, Speichern)
+// PAM-Werkzeuge – JSX-Kern (nur Dokumentzugriff: XMP, Tags, Ebenen, Zeichenflächen, Objekte lesen und messen, Speichern)
 // Rechnen, Konfiguration, Dateisystem und Ablauf liegen im Panel (Node, panel/lib).
 // Alle öffentlichen Funktionen geben einen JSON-String zurück: {ok:true,...} oder {ok:false,error:"..."}.
 // Vor allem anderen ruft das Panel IP.init(<config/schema.json als Text>) – Namespace und Tag-Namen kommen nur von dort.
@@ -380,6 +380,278 @@ var IP = {};
             if (d && d !== src) { try { d.close(SaveOptions.DONOTSAVECHANGES); } catch (x2) { } } // Node entfernt eine Dateikopie
             throw e;
         } finally { zustandZurueck(zs); app.userInteractionLevel = ui; }
+    });
+
+    // ---------- Stufe 2: Objekte lesen und messen (SPEZ_02 §5) – aus dem alten Kern übernommen ----------
+    // Am Dokument ändert sich nichts; gemessen wird in einem Hilfsdokument, das danach ohne Speichern geschlossen wird.
+    function r0(v) { return Math.round(v); }
+    function map(a, f) { var o = []; for (var i = 0; i < a.length; i++) o.push(f(a[i])); return o; }
+    // Farbschlüssel einer Füllung: key (exakt, für farbzuordnung), label, spot (Farbfeldname bei Vollton 100 %)
+    function colorKey(c) {
+        if (!c) return null;
+        switch (c.typename) {
+            case "SpotColor":
+                var full = c.tint >= 99.5;
+                return { key: "spot:" + c.spot.name + (full ? "" : "@" + r0(c.tint)), label: c.spot.name + (full ? "" : " " + r0(c.tint) + " %"), spot: full ? c.spot.name : null };
+            case "CMYKColor": var a = [c.cyan, c.magenta, c.yellow, c.black]; return { key: "cmyk:" + map(a, r0).join(","), label: "CMYK " + map(a, r0).join("/") };
+            case "RGBColor": var b = [c.red, c.green, c.blue]; return { key: "rgb:" + map(b, r0).join(","), label: "RGB " + map(b, r0).join("/") };
+            case "GrayColor": return { key: "gray:" + r0(c.gray), label: "Grau " + r0(c.gray) + " %" };
+            case "LabColor": return { key: "lab:" + map([c.l, c.a, c.b], r0).join(","), label: "Lab" };
+            case "GradientColor": return { key: "gradient", label: "Verlauf", gradient: true };
+            case "PatternColor": return { key: "pattern", label: "Muster", gradient: true };
+            case "NoColor": return null;
+        }
+        return { key: "other:" + c.typename, label: c.typename };
+    }
+    function isHidden(it) { try { return it.hidden === true; } catch (e) { return false; } }
+    function isClipPath(it) {
+        if (it.typename === "PathItem") return it.clipping;
+        if (it.typename === "CompoundPathItem") return it.pathItems.length > 0 && it.pathItems[0].clipping;
+        return false;
+    }
+    function clipPathOf(group) {
+        for (var i = 0; i < group.pageItems.length; i++) if (isClipPath(group.pageItems[i])) return { item: group.pageItems[i], index: i };
+        return null;
+    }
+    function inter(a, b) {
+        if (!a) return b; if (!b) return a;
+        var r = [Math.max(a[0], b[0]), Math.min(a[1], b[1]), Math.min(a[2], b[2]), Math.max(a[3], b[3])];
+        return (r[0] < r[2] && r[3] < r[1]) ? r : null;
+    }
+    // Text: Füllfarben je Zeichen (Beschriftungen sind kurz)
+    function textColors(tf) {
+        var seen = {}, out = [], n = Math.min(tf.characters.length, 2000);
+        for (var i = 0; i < n; i++) {
+            var k = colorKey(tf.characters[i].characterAttributes.fillColor);
+            if (k && !seen[k.key]) { seen[k.key] = 1; out.push(k); }
+        }
+        return out;
+    }
+    // Läuft rekursiv durch ein oberstes Objekt; path = Indexkette ab dem obersten Objekt
+    function collectLeaves(item, path, clip, clips, out) {
+        if (isHidden(item)) return;
+        var t = item.typename;
+        if (t === "GroupItem") {
+            var c = clip, cl = clips;
+            if (item.clipped) {
+                var cp = clipPathOf(item);
+                if (cp) { c = inter(clip, cp.item.geometricBounds); cl = clips.concat([path.concat([cp.index])]); if (!c) return; }
+            }
+            for (var i = 0, n = item.pageItems.length; i < n; i++) collectLeaves(item.pageItems[i], path.concat([i]), c, cl, out);
+            return;
+        }
+        if (isClipPath(item) || (t === "PathItem" && item.guides)) return;
+        out.push({ item: item, path: path, clip: clip, clips: clips });
+    }
+    // Cutkontur [R 3.1]: Vollton C0 M100 Y0 K0 (Toleranz 0,5), Name egal, in Kontur oder Füllung; CompoundPathItem -> erster Pfad
+    function near(a, b) { return Math.abs(a - b) < 0.5; }
+    function istCutSpot(sp) {
+        try {
+            if (sp.colorType !== ColorModel.SPOT) return false;
+            var k = sp.color;
+            return k.typename === "CMYKColor" && near(k.cyan, 0) && near(k.magenta, 100) && near(k.yellow, 0) && near(k.black, 0);
+        } catch (e) { return false; }
+    }
+    function isCutColor(c) {
+        if (!c || c.typename !== "SpotColor") return false;
+        try { return istCutSpot(c.spot); } catch (e) { return false; }
+    }
+    function isCutPath(p) {
+        try { if (p.stroked && isCutColor(p.strokeColor)) return true; } catch (e) { }
+        try { if (p.filled && isCutColor(p.fillColor)) return true; } catch (e) { }
+        return false;
+    }
+    function isCutItem(it) {
+        if (it.typename === "CompoundPathItem") { try { return it.pathItems.length > 0 && isCutPath(it.pathItems[0]); } catch (e) { return false; } }
+        if (it.typename === "PathItem") return isCutPath(it);
+        return false;
+    }
+    // Schnittlänge (pt, alle Teilpfade inkl. Punzen) und Einzelteile (geschlossener bzw. zusammengesetzter Pfad = 1; Punzen zählen nicht)
+    function schnitt(it) {
+        var t = it.typename, r = { laenge: 0, teile: 0 };
+        if (t === "GroupItem") { for (var i = 0; i < it.pageItems.length; i++) { var x = schnitt(it.pageItems[i]); r.laenge += x.laenge; r.teile += x.teile; } return r; }
+        if (t === "CompoundPathItem") { for (var j = 0; j < it.pathItems.length; j++) r.laenge += it.pathItems[j].length; r.teile = it.pathItems.length ? 1 : 0; return r; }
+        if (t === "PathItem") { r.laenge = it.length; r.teile = it.closed ? 1 : 0; return r; }
+        return r;
+    }
+    // Hilfsdokument (Rolle „hilfsdokument“ nur im Speicher, nie gespeichert): Text in Pfade, Motivumriss
+    function hilfsdokument(temp) {
+        if (!temp.doc) {
+            var cur = app.activeDocument;
+            temp.doc = app.documents.add(DocumentColorSpace.CMYK, 1000, 1000);
+            cur.activate();
+        }
+        return temp.doc;
+    }
+    function closeTemp(temp) {
+        if (!temp.doc) return;
+        var cur = app.activeDocument;
+        temp.doc.close(SaveOptions.DONOTSAVECHANGES);
+        temp.doc = null;
+        try { cur.activate(); } catch (e) { }
+    }
+    // Tatsächliche Umrisse von Text: Kopie ins Hilfsdokument, dort in Pfade umwandeln
+    function textOutlineBounds(tf, temp) {
+        hilfsdokument(temp);
+        var dup = tf.duplicate(temp.doc.layers[0], ElementPlacement.PLACEATEND);
+        var a = tf.geometricBounds, b = dup.geometricBounds, dx = a[0] - b[0], dy = a[1] - b[1];
+        var o = dup.createOutline(), g = o.geometricBounds, sm = schnitt(o);
+        o.remove();
+        return { bounds: [g[0] + dx, g[1] + dy, g[2] + dx, g[3] + dy], laenge: sm.laenge, teile: sm.teile };
+    }
+    // Blatt: Begrenzung geometrisch (gb) und sichtbar (vb), Länge und Teile (nur mit temp), Farbfelder der Füllung, Flags
+    function leafInfo(lf, temp) {
+        var it = lf.item, t = it.typename, info = { path: lf.path, typ: t, clips: lf.clips };
+        var src = it;
+        if (t === "CompoundPathItem") src = it.pathItems.length ? it.pathItems[0] : null;
+        if (t === "TextFrame") {
+            info.farben = textColors(it);
+            info.text = true;
+            var tm = temp ? textOutlineBounds(it, temp) : null;
+            info.gb = inter(tm ? tm.bounds : it.geometricBounds, lf.clip);
+            if (tm) { info.laenge_pt = tm.laenge; info.teile = tm.teile; }
+            info.vb = info.gb;
+            return info;
+        }
+        info.gb = inter(it.geometricBounds, lf.clip);
+        info.vb = inter(it.visibleBounds, lf.clip);
+        if (temp) { var sm = schnitt(it); info.laenge_pt = sm.laenge; info.teile = sm.teile; }
+        if (isCutItem(it)) { info.cut = true; info.farben = []; return info; } // Cutkontur: weder Motiv noch Plottfarbe
+        if (t === "RasterItem" || t === "PlacedItem") { info.bild = true; info.farben = []; return info; }
+        if (t === "MeshItem") { info.verlauf = true; info.farben = []; return info; }
+        if (!src || src.typename !== "PathItem") { info.sonstiges = true; info.farben = []; return info; }
+        info.farben = [];
+        if (src.filled) { var k = colorKey(src.fillColor); if (k) { if (k.gradient) info.verlauf = true; else info.farben.push(k); } }
+        info.kontur = src.stroked && src.strokeColor.typename !== "NoColor";
+        return info;
+    }
+    function visualBounds(item) {
+        var lv = [], b = null; collectLeaves(item, [], null, [], lv);
+        for (var i = 0; i < lv.length; i++) {
+            var it = lv[i].item, v = inter(it.typename === "TextFrame" ? it.geometricBounds : it.visibleBounds, lv[i].clip);
+            if (v) b = b ? [Math.min(b[0], v[0]), Math.max(b[1], v[1]), Math.max(b[2], v[2]), Math.min(b[3], v[3])] : v;
+        }
+        return b;
+    }
+    // Motivumriss [R 3.8]: Druckobjekt ohne Cutkontur. Kopie im Hilfsdokument, Text in Pfade, Konturen in Flächen, Vereinigen; nur Außenringe
+    // (in keinem anderen Ring enthalten) zählen. Mit Pixelbild oder Schnittmaske: sichtbare Begrenzung (Rechteck).
+    function bildOderMaske(item) {
+        var t = item.typename;
+        if (t === "RasterItem" || t === "PlacedItem") return true;
+        if (t === "GroupItem") {
+            if (item.clipped) return true;
+            for (var i = 0; i < item.pageItems.length; i++) if (bildOderMaske(item.pageItems[i])) return true;
+        }
+        return false;
+    }
+    function alleVom(item, typ, out) {
+        if (item.typename === typ) { out.push(item); return out; }
+        if (item.typename === "GroupItem") for (var i = 0; i < item.pageItems.length; i++) alleVom(item.pageItems[i], typ, out);
+        return out;
+    }
+    function einzelpfade(item, out) {
+        if (item.typename === "PathItem") out.push(item);
+        else if (item.typename === "CompoundPathItem") for (var j = 0; j < item.pathItems.length; j++) out.push(item.pathItems[j]);
+        else if (item.typename === "GroupItem") for (var i = 0; i < item.pageItems.length; i++) einzelpfade(item.pageItems[i], out);
+        return out;
+    }
+    function punktInRing(x, y, pk) {
+        var innen = false;
+        for (var i = 0, j = pk.length - 1; i < pk.length; j = i++) {
+            var xi = pk[i][0], yi = pk[i][1], xj = pk[j][0], yj = pk[j][1];
+            if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) innen = !innen;
+        }
+        return innen;
+    }
+    function motivUmriss(top, temp) {
+        if (bildOderMaske(top)) {
+            var vb = visualBounds(top);
+            return { gb: vb, laenge_pt: 2 * ((vb[2] - vb[0]) + (vb[1] - vb[3])), rechteck: true };
+        }
+        var hd = hilfsdokument(temp), cur = app.activeDocument, erg = null, ui = app.userInteractionLevel;
+        app.userInteractionLevel = UserInteractionLevel.DONTDISPLAYALERTS; // Menübefehle ohne Rückfrage
+        hd.activate();
+        try {
+            var dup = top.duplicate(hd.layers[0], ElementPlacement.PLACEATEND);
+            var a = top.geometricBounds, b = dup.geometricBounds, dx = a[0] - b[0], dy = a[1] - b[1];
+            if (dup.typename === "TextFrame") dup = dup.createOutline();
+            var tf = alleVom(dup, "TextFrame", []);
+            for (var i = 0; i < tf.length; i++) tf[i].createOutline();
+            hd.selection = null;
+            var pf = einzelpfade(dup, []), st = 0;
+            for (var k = 0; k < pf.length; k++) { try { if (pf[k].stroked && pf[k].strokeColor.typename !== "NoColor" && pf[k].strokeWidth > 0) { pf[k].selected = true; st++; } } catch (e) { } }
+            if (st) app.executeMenuCommand("OffsetPath v22"); // Konturen in Flächen („Kontur in Fläche umwandeln“; v23 öffnet einen Dialog)
+            hd.selection = null;
+            for (var q = 0; q < hd.layers[0].pageItems.length; q++) hd.layers[0].pageItems[q].selected = true;
+            app.executeMenuCommand("group");
+            app.executeMenuCommand("Live Pathfinder Add");
+            app.executeMenuCommand("expandStyle");
+            var ringe = [], alle = [];
+            for (var r = 0; r < hd.layers[0].pageItems.length; r++) einzelpfade(hd.layers[0].pageItems[r], alle);
+            for (var m = 0; m < alle.length; m++) { var pp = alle[m].pathPoints, pk = []; for (var n = 0; n < pp.length; n++) pk.push(pp[n].anchor); if (pk.length) ringe.push({ p: alle[m], pk: pk }); }
+            var laenge = 0, gb = null, aussen = 0;
+            for (var u = 0; u < ringe.length; u++) {
+                var drin = false;
+                for (var v = 0; v < ringe.length && !drin; v++) if (v !== u && punktInRing(ringe[u].pk[0][0], ringe[u].pk[0][1], ringe[v].pk)) drin = true;
+                if (drin) continue;
+                aussen++; laenge += ringe[u].p.length;
+                var g = ringe[u].p.geometricBounds;
+                gb = gb ? [Math.min(gb[0], g[0]), Math.max(gb[1], g[1]), Math.max(gb[2], g[2]), Math.min(gb[3], g[3])] : [g[0], g[1], g[2], g[3]];
+            }
+            if (gb) erg = { gb: [gb[0] + dx, gb[1] + dy, gb[2] + dx, gb[3] + dy], laenge_pt: laenge, ringe: aussen };
+        } finally {
+            hd.selection = null;
+            while (hd.layers[0].pageItems.length) hd.layers[0].pageItems[0].remove();
+            try { cur.activate(); } catch (e) { }
+            app.userInteractionLevel = ui;
+        }
+        return erg;
+    }
+    // Oberstes Objekt: Id, Tags, Name, Ebene, Begrenzung (gb geometrisch, vb sichtbar), Blätter, Cutkontur; gemessen wird nur mit temp
+    // (Länge und Teile, exakte Textumrisse) und nur bei Druck ohne Cutkontur der Motivumriss.
+    function objektInfo(top, L, index, rolle, temp) {
+        var o = { ref: { ebene: L.name, index: index }, ebene: L.name, rolle: rolle, name: top.name || "", typ: top.typename, tags: tagsLesen(top),
+            gb: top.geometricBounds, vb: null, cut: false, blaetter: [] };
+        o.id = o.tags.id;
+        if (rolle === "sandbox") return o; // Sandbox: nur gezählt, nicht gemessen
+        var leaves = [];
+        collectLeaves(top, [], null, [], leaves);
+        for (var i = 0; i < leaves.length; i++) { var li = leafInfo(leaves[i], temp); if (li.cut) o.cut = true; o.blaetter.push(li); }
+        o.vb = visualBounds(top);
+        if (temp && !o.cut && rolle === "digitaldruck") o.umriss = motivUmriss(top, temp);
+        return o;
+    }
+    // spec {rollen: {Ebenenname: Rolle}, messen: true|false}: oberste Objekte (ohne ausgeblendete) der Ebenen mit Rolle plott, digitaldruck, sandbox
+    // in Ebenenreihenfolge. Gemessen (messen) werden nur zugeordnete Objekte (Tag folie) auf plott/digitaldruck.
+    IP.objekteLesen = wrap(function (spec) {
+        var d = doc(), temp = {}, objs = [], ebenen = [], R = spec.rollen || {}, folie = schema().tags.folie;
+        try {
+            for (var li = 0; li < d.layers.length; li++) {
+                var L = d.layers[li], rolle = R.hasOwnProperty(L.name) ? R[L.name] : null;
+                ebenen.push({ name: L.name, rolle: rolle, sichtbar: L.visible, gesperrt: L.locked, unterebenen: L.layers.length });
+                if (rolle !== "plott" && rolle !== "digitaldruck" && rolle !== "sandbox") continue;
+                for (var i = 0, n = L.pageItems.length; i < n; i++) {
+                    var it = L.pageItems[i];
+                    if (it.parent !== L || isHidden(it)) continue;
+                    objs.push(objektInfo(it, L, i, rolle, spec.messen && rolle !== "sandbox" && getTag(it, folie) ? temp : null));
+                }
+            }
+        } finally { closeTemp(temp); }
+        return ok({ dokument: d.name, pfad: docPath(d), ebenen: ebenen, objekte: objs });
+    });
+    // liste [{ref: {ebene, index}, id (bisherige IP_Id zur Kontrolle, null = ohne), tags: {schluessel: wert|null}}]: nur Tags schreiben;
+    // gesperrte Ebenen und Objekte werden dafür kurz entsperrt
+    IP.objektTagsSchreiben = wrap(function (liste) {
+        var d = doc(), n = 0, idTag = schema().tags.id;
+        for (var i = 0; i < liste.length; i++) {
+            var z = liste[i], L = null, it = null;
+            try { L = d.layers.getByName(z.ref.ebene); it = L.pageItems[z.ref.index]; } catch (e) { it = null; }
+            if (!it || (z.id !== undefined && getTag(it, idTag) !== z.id)) throw "Objekt nicht gefunden: " + z.ref.ebene + " / " + z.ref.index;
+            var lg = L.locked, ig = it.locked;
+            try { L.locked = false; it.locked = false; tagsSchreiben(it, z.tags); n++; }
+            finally { try { it.locked = ig; } catch (e1) { } L.locked = lg; }
+        }
+        return ok({ geschrieben: n });
     });
 
     // ---------- Speichern ----------

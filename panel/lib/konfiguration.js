@@ -1,10 +1,14 @@
-/* Konfiguration laden und prüfen (SPEZ_01 §4, §5.2, §6): rechner.json je Rechner, config/schema.json, config/auftragsarten/*.json,
- * config/mapping.json. Fehler kommen als Liste { datei, grund } zurück – das Panel zeigt je Fehler ein Popup und sperrt die Buttons.
+/* Konfiguration laden und prüfen (SPEZ_01 §4, §5.2, §6; SPEZ_02 §4): rechner.json je Rechner, config/schema.json, config/auftragsarten/*.json,
+ * config/mapping.json, config/medien.json, config/serien.json mit den fünf ASE-Dateien in config/farbfelder; dazu die Startprüfung der Preisliste
+ * (jede Serie mit Standardbreite). Fehler kommen als Liste { datei, grund } zurück – das Panel zeigt je Fehler ein Popup und sperrt die Buttons.
  * Die Plattform wird nur hier für Pfadauflösung und Ort der rechner.json benutzt. */
 "use strict";
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const F = require("./farben");
+const PC = require("./preisquelle_csv");
+const { pruefen: preislistePruefen } = require("./preisquelle");
 
 const ARTEN = ["fahrzeugbeschriftung", "beschriftung", "schild", "banner_rollup", "lasergravur", "offset", "textil", "sonstiges"];
 const PROFILE = ["flach", "offset", "produktion", "schild", "textil"];
@@ -177,9 +181,41 @@ function artZuProdukt(mapping, department, type) {
   return t[type] || t["*"] || null;
 }
 
+/** config/medien.json: Rollenbreiten, Randabzüge, Druckwerte (SPEZ_02 §4) */
+function medienLaden(configOrdner) {
+  const datei = path.join(configOrdner, "medien.json"), fehler = [];
+  const m = jsonLesen(datei, fehler);
+  if (fehler.length) throw new KonfigFehler(fehler);
+  if (!istObjekt(m)) throw new KonfigFehler([{ datei, grund: "kein JSON-Objekt" }]);
+  if (!istObjekt(m.randabzug) || typeof m.randabzug.plott !== "number") fehler.push({ datei, grund: "Feld randabzug.plott fehlt" });
+  if (!istObjekt(m.druck)) fehler.push({ datei, grund: "Bereich druck fehlt" });
+  else for (const f of ["opos_zugabe_mm", "opos_marken_rand_mm", "kantenhalter_mm", "reserve_kontur_mm"]) if (typeof m.druck[f] !== "number") fehler.push({ datei, grund: `Feld druck.${f} fehlt` });
+  if (typeof m.schwelle_prozent !== "number") fehler.push({ datei, grund: "Feld schwelle_prozent fehlt" });
+  if (!istObjekt(m.medien) || !Object.keys(m.medien).length) fehler.push({ datei, grund: "Bereich medien fehlt oder ist leer" });
+  if (fehler.length) throw new KonfigFehler(fehler);
+  return m;
+}
+
+/** config/serien.json und config/farbfelder/*.ase: jede Datei vorhanden und lesbar; Rückgabe Farbverzeichnis (farben.js) */
+function farbenLaden(configOrdner) {
+  const r = F.serienLaden(configOrdner);
+  if (r.fehler.length) throw new KonfigFehler(r.fehler);
+  return F.verzeichnis(r.serien);
+}
+
+/** Startprüfung der Preisliste (Infos/Stammdaten/preisliste.csv): allgemeine Prüfungen, jede Serie mit Standardbreite in medien.json */
+function preislisteStartpruefung(ext, medien, datei) {
+  const a = PC.adapter(ext, datei);
+  let zeilen;
+  try { zeilen = PC.zeilenAusText(fs.readFileSync(a.pfad, "utf8")); }
+  catch (e) { throw new KonfigFehler([{ datei: a.pfad, grund: e.code === "ENOENT" ? "Datei fehlt" : e.code ? `nicht lesbar (${e.code})` : e.message }]); }
+  const f = preislistePruefen(zeilen, null, medien).fehler;
+  if (f.length) throw new KonfigFehler(f.map(grund => ({ datei: a.pfad, grund })));
+}
+
 /**
- * Alles beim Panelstart: { rechner, schema, arten, mapping } oder KonfigFehler mit allen Fehlern.
- * opts: { config (Ordner, Standard <ext>/config), rechner: Optionen für rechnerLaden }
+ * Alles beim Panelstart: { ext, rechner, schema, arten, mapping, medien, farben } oder KonfigFehler mit allen Fehlern.
+ * opts: { config (Ordner, Standard <ext>/config), rechner: Optionen für rechnerLaden, preisliste (Datei, nur Tests) }
  */
 function allesLaden(ext, opts) {
   const o = opts || {}, config = o.config || path.join(ext, "config"), fehler = [];
@@ -188,12 +224,15 @@ function allesLaden(ext, opts) {
   const schema = sammle(() => schemaLaden(config));
   const arten = sammle(() => auftragsartenLaden(config));
   const mapping = arten ? sammle(() => mappingLaden(config, arten)) : undefined;
+  const medien = sammle(() => medienLaden(config));
+  const farben = sammle(() => farbenLaden(config));
+  if (medien) sammle(() => preislisteStartpruefung(ext, medien, o.preisliste));
   if (fehler.length) throw new KonfigFehler(fehler);
-  return { rechner, schema, arten, mapping };
+  return { ext, rechner, schema, arten, mapping, medien, farben };
 }
 
 /** Auftragsarten in Dialog-Reihenfolge */
 const artenSortiert = arten => Object.values(arten).sort((a, b) => a.reihenfolge - b.reihenfolge);
 
 module.exports = { ARTEN, PROFILE, ZEICHENFLAECHEN, KonfigFehler, pfadAufloesen, rechnerOrt, rechnerAusDaten, rechnerLaden, schemaLaden,
-  artPruefen, auftragsartenLaden, mappingLaden, artZuProdukt, allesLaden, artenSortiert };
+  artPruefen, auftragsartenLaden, mappingLaden, artZuProdukt, medienLaden, farbenLaden, preislisteStartpruefung, allesLaden, artenSortiert };

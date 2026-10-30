@@ -1,5 +1,6 @@
-/* Dokumentschema Version 1 (SPEZ_01 §5.1): JSON-Block in ip:Dokument. Nur der JSX-Kern berührt XMP; hier entsteht, prüft und
- * ändert sich das Objekt. Unbekannte Felder (spätere Stufen, Art-Bereiche wie schild/textil) bleiben beim Ändern und Schreiben erhalten. */
+/* Dokumentschema Version 1 (SPEZ_01 §5.1, SPEZ_02 §3.2): JSON-Block in ip:Dokument. Nur der JSX-Kern berührt XMP; hier entsteht, prüft und
+ * ändert sich das Objekt. Unbekannte Felder (spätere Stufen, Art-Bereiche wie schild/textil) bleiben beim Ändern und Schreiben erhalten.
+ * Bekannte Felder ab Stufe 2 mit Standardwert (STANDARD): fehlen sie in einem älteren Dokument, ergänzt parsen() sie. */
 "use strict";
 const fs = require("fs");
 const path = require("path");
@@ -8,8 +9,11 @@ const path = require("path");
 const SCHEMA_JSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "config", "schema.json"), "utf8"));
 const SCHEMA = SCHEMA_JSON.xmp.schema;
 const ROLLEN = SCHEMA_JSON.rollen;
-const PANEL_VERSION = "3.0.0"; // = ExtensionBundleVersion in CSXS/manifest.xml
+const PANEL_VERSION = "3.1.0-2a"; // = ExtensionBundleVersion in CSXS/manifest.xml
 const QUELLEN = ["geoeffnet", "datei", "leer"];
+// SPEZ_02 §3.2: vorauswahl, farbzuordnung je Auftrag; kalkulation = letzter Kalkulationsdatensatz (§8.4); aufbau = letzter Druckbogen-Aufbau.
+// Druckbogen-Dokumente (rolle „druckbogen“) tragen zusätzlich bogen { aufbau, medium, laminat, breite_mm, nr, arbeitsdatei } (config/schema.json „rollenfelder“).
+const STANDARD = { vorauswahl: () => ({}), farbzuordnung: () => ({}), kalkulation: () => null, aufbau: () => null };
 
 /** neues Dokumentobjekt; d: { auftragsart, massstab, kunde, kundenordner, auftragsordner, quelle: { art, pfad }, rolle, jetzt } */
 function neu(d) {
@@ -25,9 +29,17 @@ function neu(d) {
     ablage: { kundenordner: d.kundenordner || null, auftragsordner: d.auftragsordner },
     quelle: { art: d.quelle ? d.quelle.art : "leer", pfad: d.quelle && d.quelle.pfad ? d.quelle.pfad : null },
     grafikzeit: { eintraege: [] },
+    vorauswahl: {},
+    farbzuordnung: {},
     kalkulation: null,
+    aufbau: null,
     exporte: []
   };
+}
+/** fehlende bekannte Felder mit Standardwert ergänzen (in place) */
+function standardErgaenzen(o) {
+  for (const [k, f] of Object.entries(STANDARD)) if (!(k in o)) o[k] = f();
+  return o;
 }
 
 /** Text aus ip:Dokument -> Objekt; leer/null -> null (kein Panel-Dokument); ungültig -> Fehler */
@@ -37,7 +49,7 @@ function parsen(text) {
   try { o = JSON.parse(text); } catch (e) { throw new Error(`XMP ip:Dokument: kein gültiges JSON (${e.message})`); }
   if (o === null || typeof o !== "object" || Array.isArray(o)) throw new Error("XMP ip:Dokument: kein JSON-Objekt");
   if (o.schema !== SCHEMA) throw new Error(`XMP ip:Dokument: Schema ${o.schema} unbekannt (erwartet ${SCHEMA})`);
-  return o;
+  return standardErgaenzen(o);
 }
 const serialisieren = o => JSON.stringify(o);
 
@@ -76,6 +88,9 @@ function exportAnhaengen(o, eintrag) {
   return r;
 }
 
+/** Kalkulationsdatensatz (SPEZ_02 §8.4) ins Feld kalkulation; ersetzt den vorigen */
+const kalkulationSetzen = (o, datensatz) => aendern(o, { kalkulation: datensatz });
+
 /** Node-Seite des XMP-Zugriffs über den JSX-Kern (host = evalScript-Brücke): xmpLesen() -> Objekt|null, xmpSchreiben(obj) */
 function xmpZugriff(host) {
   return {
@@ -84,4 +99,5 @@ function xmpZugriff(host) {
   };
 }
 
-module.exports = { SCHEMA, PANEL_VERSION, ROLLEN, QUELLEN, neu, parsen, serialisieren, pruefen, aendern, exportAnhaengen, xmpZugriff };
+module.exports = { SCHEMA, PANEL_VERSION, ROLLEN, QUELLEN, STANDARD, neu, parsen, serialisieren, pruefen, aendern, exportAnhaengen, kalkulationSetzen,
+  standardErgaenzen, xmpZugriff };
