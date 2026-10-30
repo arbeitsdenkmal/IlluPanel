@@ -1,6 +1,7 @@
 /* Panel „PAM-Werkzeuge“ (Extension de.pamnm.illupanels.panel), SPEZ_01 §3.
  * Start: Konfiguration laden und prüfen – jeder Fehler ein Popup mit Datei und Grund, Buttons bleiben gesperrt.
- * Aktualisierung nur bei Maus ins Panel, Fokus oder Aktion, keine Dauerabfragen. */
+ * Aktualisierung nur bei Maus ins Panel und nach eigener Aktion, keine Dauerabfragen und kein Abruf bei Fenster-Fokus
+ * (Befund Stufe 43: der Fokus-Abruf lief während des PDF-Imports, der Inhalt landete im falschen Dokument). */
 (function () {
   "use strict";
   const G = window.PAM;
@@ -36,7 +37,6 @@
     try { await aktualisieren(); } catch (e) { /* still */ } finally { abrufLaeuft = false; }
   }
   document.documentElement.addEventListener("mouseenter", aufAbruf);
-  window.addEventListener("focus", aufAbruf);
 
   async function aktion(knopf, fn) {
     beschaeftigt++; document.body.classList.add("besch"); if (knopf) knopf.disabled = true;

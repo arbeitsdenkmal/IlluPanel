@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.1 – Nachtrag Stufe 1 (30.10.2026)
+
+- „Auftrag“ mit oranger Schrift (wie im alten Panel; „Export“ bleibt orangefarbener Button).
+- Kein Abruf mehr bei Fenster-Fokus; Aktualisierung nur bei Maus ins Panel und nach eigener Aktion (Befund Stufe 43).
+- README: Windows-`rechner.json` mit `"rechner": "MK-PC"`.
+
 ## 3.0.0 – Stufe 1 „Fundament“ (30.10.2026)
 
 - Neues Repo, Manifest `de.pamnm.illupanels` 3.0.0 „PAM-Werkzeuge“ mit `.panel` und `.anlegen`, `.debug`.

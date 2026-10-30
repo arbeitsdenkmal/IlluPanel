@@ -1,4 +1,4 @@
-/* PAM-Werkzeuge: kompakt wie die Illustrator-Panels. Farben aus dem Illustrator-Theme (gemeinsam.js), Orange nur für „Export“. */
+/* PAM-Werkzeuge: kompakt wie die Illustrator-Panels. Farben aus dem Illustrator-Theme (gemeinsam.js); Orange nur für „Export“ (Button) und „Auftrag“ (Schrift). */
 :root { --bg: #323232; --fg: #e6e6e6; --muted: #9a9a9a; --line: #4a4a4a; --feld: #3c3c3c; --feldrand: #555; --accent: #f29c14; --accent-fg: #1a1a1a; }
 :root.hell { --fg: #1d1d1d; --muted: #6b6b6b; --line: #cfcfcf; --feld: #ffffff; --feldrand: #bdbdbd; }
 * { box-sizing: border-box; }
@@ -8,6 +8,7 @@ button { font: inherit; color: var(--fg); background: var(--feld); border: 1px s
 button:hover:not(:disabled) { filter: brightness(1.15); }
 button:disabled { opacity: .5; cursor: default; }
 button.akzent { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+button.akzent-schrift { color: var(--accent); } /* „Auftrag“: Hintergrund wie alle Buttons, Schrift orange */
 .besch { cursor: wait; }
 
 #inhalt { padding: 3px 0; display: flex; flex-direction: column; gap: 6px; }

@@ -37,8 +37,8 @@ Plattformunterschiede stehen nur in `rechner.json`; `process.platform` wird nur 
 
 - Start: lädt `rechner.json`, `schema.json`, die acht Auftragsarten und das Mapping und prüft sie. Jeder Fehler → ein Popup mit Datei und Grund, die Buttons bleiben gesperrt. Danach JSX-Kern laden und `IP.init(schema)` (Tag-Namen und Namespace kommen nur aus `schema.json`).
 - Kopfzeile: **Kunde** · Auftragsart · „M 1:n“ aus dem XMP des vorderen Dokuments; ohne Panel-Dokument leer.
-- „Auftrag“ öffnet den Dialog `.anlegen`. „Export“ (orange) ist nur aktiv, wenn das vordere Dokument ein Panel-Dokument mit Export-Profil „flach“ ist (Lasergravur, Sonstiges, Banner/Roll-up).
-- Aktualisierung nur bei Maus ins Panel, Fenster-Fokus oder nach einer Aktion; keine Dauerabfragen. Hell/Dunkel über `ThemeColorChanged`.
+- „Auftrag“ (Schrift orange) öffnet den Dialog `.anlegen`. „Export“ (Button orange) ist nur aktiv, wenn das vordere Dokument ein Panel-Dokument mit Export-Profil „flach“ ist (Lasergravur, Sonstiges, Banner/Roll-up).
+- Aktualisierung nur bei Maus ins Panel und nach eigener Aktion; keine Dauerabfragen, kein Abruf bei Fenster-Fokus, weil ein Fokus-Abruf während des PDF-Imports den Inhalt im falschen Dokument landen ließ (Befund Stufe 43). Hell/Dunkel über `ThemeColorChanged`.
 - Fehler als Popup, keine Erfolgsmeldungen.
 
 ## Konfiguration je Rechner (`rechner.json`)
@@ -65,7 +65,7 @@ Windows (MKs PC):
 
 ```json
 {
-  "rechner": "…",
+  "rechner": "MK-PC",
   "server": {
     "kunden": "Y:\\_03_Kunden A-Z",
     "dtf_bestellen": "Y:\\_02_Produktion\\= DTF bestellen ="
@@ -76,9 +76,6 @@ Windows (MKs PC):
   }
 }
 ```
-
-(`"rechner"` ist nur eine Kennung; der Wert für MKs PC ist nicht festgelegt.)
-
 - `server.kunden`: Wurzel des A–Z-Baums; Kundenordner stehen im XMP relativ dazu (`M/Mustermann`).
 - `lokal.arbeitsdateien`: Pfad = lokaler Ort der Arbeitsdateien (`<Pfad>/<Kunde>/<Auftragsordner>/Arbeitsdatei.ai`); `"server"` = direkt im Server-Auftragsordner.
 - `lokal.ausgang`: dort schreibt der Export zuerst. Mac: Schreibtisch = Parkplatz bei Fehlschlag. Windows: technischer Zwischenordner; bei Fehlschlag Popup, die Datei bleibt dort.

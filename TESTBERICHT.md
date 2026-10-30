@@ -1,5 +1,9 @@
 # Testbericht
 
+## Nachtrag Stufe 1 (30.10.2026)
+
+- `node --test tests/*.test.js`: 9 Tests, 9 bestanden, 0 fehlgeschlagen.
+
 ## Stufe 1 „Fundament“ (30.10.2026)
 
 - `node --test tests/*.test.js` (Node 25.9.0): 9 Tests, 9 bestanden, 0 fehlgeschlagen.
