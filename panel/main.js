@@ -22,6 +22,7 @@
   let xmp = null;    // Dokumentobjekt (ip:Dokument) oder null
   let aa = null;     // Auftragsart des vorderen Dokuments
   let auswahl = [];  // ausgewählte oberste Objekte (nur kalkulierte Arbeitsdatei)
+  let unterebene = false; // Auswahl enthält Objekte in Unterebenen
   let beschaeftigt = 0, abrufLaeuft = false;
 
   const kalkuliert = () => !!(xmp && xmp.rolle === "arbeitsdatei" && aa && aa.kalkulation && aa.preis);
@@ -37,7 +38,9 @@
     if (info.hatDokument) { try { xmp = D.parsen(info.xmp); } catch (e) { xmp = null; } }
     aa = xmp ? konf.arten[xmp.auftragsart] : null;
     if (!aa) xmp = null;
-    auswahl = kalkuliert() ? (await G.host("auswahlLesen", { rollen: rollenVon(aa), blaetter: false })).objekte : [];
+    const a = kalkuliert() ? await G.host("auswahlLesen", { rollen: rollenVon(aa), blaetter: false }) : { objekte: [], unterebene: false };
+    unterebene = !!a.unterebene;
+    auswahl = unterebene ? [] : a.objekte;
     zeichnen();
   }
 
@@ -51,11 +54,13 @@
     $("grafik").hidden = !eintraege;
     $("grafikMin").textContent = eintraege ? `Grafik ${Math.round(eintraege.reduce((s, e) => s + (Number(e.minuten) || 0), 0))} min` : "";
 
-    // Zeile 2: Name der Auswahl, Folie mit Chip und „×n“ (nur wenn alle zugeordnet und gleich); „Keine Auswahl“ gedimmt; mehrere: „n Objekte“
+    // Zeile 2: Name der Auswahl, Folie mit Chip und „×n“ (nur wenn alle zugeordnet und gleich); „Keine Auswahl“ bzw. „Objekt in einer Unterebene“
+    // gedimmt (die Auswahl gilt dann als leer); mehrere: „n Objekte“
     const k = kalkuliert(), zugeordnet = auswahl.length > 0 && auswahl.every(o => !!o.tags.folie);
     let name = "", folie = null, anzahl = null;
     if (k) {
-      if (!auswahl.length) name = "Keine Auswahl";
+      if (unterebene) name = "Objekt in einer Unterebene";
+      else if (!auswahl.length) name = "Keine Auswahl";
       else if (auswahl.length > 1) name = `${auswahl.length} Objekte`;
       else {
         const d = xmp.kalkulation && Array.isArray(xmp.kalkulation.objekte) ? xmp.kalkulation.objekte.find(x => x.id && x.id === auswahl[0].tags.id) : null;
@@ -74,12 +79,14 @@
     $("objAnzahl").hidden = anzahl === null;
     $("objAnzahl").textContent = anzahl === null ? "" : `×${anzahl}`;
 
-    // Zeile 3: add (nicht oder nicht vollständig zugeordnet) bzw. edit · berechnen; orange: add, solange Zuordnen der nächste Schritt ist, sonst berechnen
+    // Zeile 3: add (nicht oder nicht vollständig zugeordnet) bzw. edit · berechnen; add ohne Auswahl gesperrt und nicht orange;
+    // orange: add, sobald eine Auswahl nicht oder nicht vollständig zugeordnet ist, sonst berechnen
     $("btnZuordnen").textContent = zugeordnet ? "edit" : "add";
     $("btnZuordnen").disabled = !k || !auswahl.length;
     $("btnBerechnen").disabled = !k;
-    $("btnZuordnen").classList.toggle("akzent", k && !zugeordnet);
-    $("btnBerechnen").classList.toggle("akzent", k && zugeordnet);
+    const zuordnenNaechst = auswahl.length > 0 && !zugeordnet;
+    $("btnZuordnen").classList.toggle("akzent", k && zuordnenNaechst);
+    $("btnBerechnen").classList.toggle("akzent", k && !zuordnenNaechst);
 
     // Zeile 4: Summa und Druck folgen in 2c; Export bei Profil „flach“ und bei Druckbogen vorn (Profil produktion folgt in 2c); Auftrag immer
     $("btnSumma").disabled = true;

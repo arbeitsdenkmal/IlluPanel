@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.0-2b – Korrektur 2b (30.10.2026)
+
+- Panel: add ohne Auswahl gesperrt und nicht orange, „Objekt in einer Unterebene“; Tape mit drei Zuständen (`kein_tape` in `IP_Attribute`); FESTLEGUNGEN 2b bestätigt.
+
 ## 3.1.0-2b – Stufe 2b „Oberfläche“ (30.10.2026)
 
 - Panel nach A5/A7 (320 × 142): Objektzeile, add/edit · berechnen, Werkzeugzeile (Summa/Druck gesperrt bis 2c), Preiszeile aus dem Datensatz; Zustände ohne Panel-Dokument, ohne Kalkulation, Druckbogen vorn.

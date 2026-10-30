@@ -677,14 +677,15 @@ var IP = {};
         for (var i = 0, n = pis.length; i < n; i++) if (pis[i] === item) return i;
         return -1;
     }
-    // ausgewählte oberste Objekte bzw. Gruppen der obersten Ebenen (jedes einmal, in Ebenenreihenfolge); Objekte in Unterebenen zählen nicht
+    // ausgewählte oberste Objekte bzw. Gruppen der obersten Ebenen (jedes einmal, in Ebenenreihenfolge); Objekte in Unterebenen zählen nicht,
+    // r.unterebene meldet, dass die Auswahl solche enthält
     function auswahlOben(d) {
-        var sel = [], out = [];
+        var sel = [], out = [], unterebene = false;
         try { if (d.selection && d.selection.length !== undefined && d.selection.typename === undefined) sel = d.selection; } catch (e) { sel = []; } // Textbearbeitung: TextRange
         for (var i = 0; i < sel.length; i++) {
             var t = sel[i];
             try { while (t.parent && t.parent.typename !== "Layer") t = t.parent; } catch (e2) { continue; }
-            if (!t.parent || t.parent.parent.typename !== "Document") continue;
+            if (!t.parent || t.parent.parent.typename !== "Document") { unterebene = true; continue; }
             var da = false;
             for (var j = 0; j < out.length; j++) if (out[j] === t) da = true;
             if (!da) out.push(t);
@@ -696,17 +697,19 @@ var IP = {};
             je.sort(function (a, b) { return a.i - b.i; });
             for (var q = 0; q < je.length; q++) r.push(je[q]);
         }
+        r.unterebene = unterebene;
         return r;
     }
-    // spec {rollen: {Ebenenname: Rolle}, blaetter: true|false}: Objektinfo der Auswahl ohne Messung (Panel: blaetter false, nur Name und Tags)
+    // spec {rollen: {Ebenenname: Rolle}, blaetter: true|false}: Objektinfo der Auswahl ohne Messung (Panel: blaetter false, nur Name und Tags);
+    // unterebene: die Auswahl enthält Objekte in Unterebenen
     IP.auswahlLesen = wrap(function (spec) {
-        if (app.documents.length === 0) return ok({ objekte: [] });
+        if (app.documents.length === 0) return ok({ objekte: [], unterebene: false });
         var d = app.activeDocument, R = (spec && spec.rollen) || {}, a = auswahlOben(d), objs = [];
         for (var i = 0; i < a.length; i++) {
             var rolle = R.hasOwnProperty(a[i].L.name) ? R[a[i].L.name] : null;
             objs.push(objektInfo(a[i].it, a[i].L, a[i].i, rolle, null, spec && spec.blaetter ? true : false));
         }
-        return ok({ objekte: objs });
+        return ok({ objekte: objs, unterebene: a.unterebene });
     });
     // Objekt über IP_Id (oberste Objekte aller obersten Ebenen) bzw. über ref {ebene, index}
     function objektFinden(d, z) {

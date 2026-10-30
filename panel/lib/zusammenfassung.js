@@ -30,7 +30,8 @@ function zeilen(objekte, ds, kx) {
       const k = Z.komplexitaetVon(o);
       if (k > 0 && Z.komplexitaetGilt(o, art)) a.push(`K${k}`);
       Z.attributeVon(o.tags.attribute).forEach(x => { if (ATTR[x]) a.push(ATTR[x]); });
-      if (verfahren === "druck" && (Z.attributeVon(o.tags.attribute).includes("tape") || (d && d.tape))) a.push("Tape");
+      const tz = Z.tapeZustand(o);
+      if (verfahren === "druck" && (tz === "tape" || (tz === "auto" && d && d.tape))) a.push("Tape");
     }
     return { o, d, name: o.name || (d && d.name) || `Objekt ${nr}`, variante: !!o.tags.original, eingerueckt: false, verfahren,
       anzahl: anzahl === null ? String(o.tags.anzahl) : anzahl, folie, attribute: a.join(", "),

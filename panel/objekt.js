@@ -1,6 +1,6 @@
 /* Fenster „Objekt“ (Extension de.pamnm.illupanels.objekt, ModalDialog, SPEZ_02 §6, MockUp B3/B4): Zuordnen eines oder mehrerer oberster Objekte.
  * Art Digitaldruck | Plott, Anzahl; Digitaldruck: Medium (Preisliste), Laminat; Plott: Farben im Objekt (markierte Zeile bekommt die nächste Wahl), Serie,
- * Farb-Nr. als Filter, Kachelraster aus den ASE; Komplexität (Plott, Druck mit Cutkontur), Aufschläge, bei Druck „Tape auto“.
+ * Farb-Nr. als Filter, Kachelraster aus den ASE; Komplexität (Plott, Druck mit Cutkontur), Aufschläge, bei Druck Tape (auto → Tape → kein Tape).
  * Vorauswahl und Farbzuordnung aus dem XMP; Mehrfachauswahl: gleiche Werte für alle, unterschiedliche gestrichelt bzw. leer, ändern nur bei neuer Wahl.
  * Übergabe vom Panel über die Datei G.uebergabe (Tape-Vorschläge je IP_Id), Rückmeldung per CSEvent EVENT_OBJEKT_FERTIG.
  * OK: Varianten-Erkennung, IP_Id vergeben, Tags schreiben, Umfärben (Originalfarben in IP_Originalfarbe) bzw. Zurückfärben, Objekte positionsgleich auf
@@ -120,8 +120,9 @@
   });
 
   // ----- Komplexität, Aufschläge, Tape -----
-  const tapeManuell = o => Z.attributeVon(o.tags.attribute).includes("tape");
-  const tapeVorschlag = o => !!(ueb.tape && o.tags.id && ueb.tape[o.tags.id]);
+  // Vorschlag aus dem letzten Berechnen (Übergabe), null = nicht bekannt
+  const tapeVorschlag = o => (ueb.tape && o.tags.id && o.tags.id in ueb.tape ? !!ueb.tape[o.tags.id] : null);
+  const TAPE_TEXT = { auto: "Tape auto", tape: "Tape", kein_tape: "kein Tape" }, TAPE_WEITER = { auto: "tape", tape: "kein_tape", kein_tape: "auto" };
   function zusatzZeichnen() {
     const a = art(), gilt = objs.filter(o => Z.komplexitaetGilt(o, a));
     const stufen = pq.komplexitaet();
@@ -137,13 +138,13 @@
       return knopf(kurz(x.bezeichnung), g, titel, () => { w.attribute[x.schluessel] = g !== true; zeichnen(); });
     });
     if (a === "digitaldruck") {
-      // Tape: „tape“ in IP_Attribute = manuell an, sonst gilt der Vorschlag aus dem letzten Berechnen; Klick wechselt zwischen auto und manuell
-      const manuell = w.tape !== null ? w.tape : objs.some(tapeManuell);
-      const an = w.tape === true ? true : w.tape === false ? Z.gemeinsam(objs.map(tapeVorschlag)) : Z.gemeinsam(objs.map(o => tapeManuell(o) || tapeVorschlag(o)));
-      const erg = objs.some(o => o.tags.id && ueb.tape && o.tags.id in ueb.tape);
-      attr.push(knopf(`Tape ${manuell ? "manuell" : "auto"}`, an,
-        `Tape (VK je m² Objektfläche): ${manuell ? "manuell" : "Vorschlag aus der Messung der Cutkontur, sonst des Motivumrisses"}${erg ? "" : " – Vorschlag erst nach „Berechnen“"}`,
-        () => { w.tape = !(Z.gemeinsam(objs.map(o => (w.tape !== null ? w.tape : tapeManuell(o)))) === true); zeichnen(); }));
+      // Tape [§6]: drei Zustände, Klick schaltet weiter „Tape auto“ (Vorschlag gilt) → „Tape“ (tape) → „kein Tape“ (kein_tape); unterschiedlich: gestrichelt,
+      // Klick beginnt bei „Tape auto“. Gedrückt = Tape wirkt (manuell an oder auto mit Vorschlag Tape). Tooltip nennt den Vorschlag.
+      const z = w.tape || Z.gemeinsam(objs.map(Z.tapeZustand)), vs = objs.map(tapeVorschlag), vg = Z.gemeinsam(vs);
+      const vText = vs.every(v => v === null) ? "erst nach „berechnen“" : vg === U || vg === null ? "unterschiedlich" : vg ? "Tape" : "kein Tape";
+      attr.push(knopf(z === U ? TAPE_TEXT.auto : TAPE_TEXT[z], z === U ? U : z === "tape" || (z === "auto" && vg === true),
+        `Tape (VK je m² Objektfläche) – Vorschlag aus der Messung der Cutkontur, sonst des Motivumrisses: ${vText}`,
+        () => { w.tape = z === U ? "auto" : TAPE_WEITER[z]; zeichnen(); }));
     }
     $("attr").replaceChildren(...attr);
     $("attrL").hidden = $("attr").hidden = !attr.length;

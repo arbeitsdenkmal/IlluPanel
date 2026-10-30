@@ -20,7 +20,7 @@ Status: bestätigt 30.10. (SPEZ_02 §17)
 
 ## 2b
 
-Status: 1–3 mit Markus geklärt 30.10.; 4–40 offen (zur Bestätigung).
+Status: 1–40 bestätigt 30.10. (SPEZ_02 §17.1), Punkt 8, 13 und 26 geändert (Korrektur 2b); 41–44 aus der Korrektur 2b offen (zur Bestätigung).
 
 1. Originalfarben beim Umfärben liegen im neuen Tag `IP_Originalfarbe` (Schlüssel `originalfarbe` in `config/schema.json`), weil `IP_Original` ab SPEZ_02 die Id des Originals einer Variante trägt.
 2. Das Fenster „Objekt“ hat eine feste Größe 480 × 470 für den Plott-Zustand (ORACAL 951 mit 145 Kacheln); bei Digitaldruck bleibt unten Leerraum, bei vielen Farben scrollt der Inhalt.
@@ -29,12 +29,12 @@ Status: 1–3 mit Markus geklärt 30.10.; 4–40 offen (zur Bestätigung).
 5. Ohne Panel-Dokument und bei einer Arbeitsdatei ohne Kalkulation bleiben alle fünf Panel-Zeilen stehen; nicht zutreffende Buttons sind gesperrt, „Auftrag“ ist aktiv.
 6. Ein ausgewähltes Objekt ohne Illustrator-Namen heißt in der Objektzeile wie im Datensatz, sonst „Objekt“.
 7. Folie und „×n“ stehen in der Objektzeile nur, wenn alle ausgewählten Objekte zugeordnet sind und Folie bzw. Anzahl gleich sind; Digitaldruck zeigt „<Medium> <Laminat>“ ohne Chip (wie in C3).
-8. „add“ ist ohne Auswahl gesperrt; orange ist „add“, solange die Auswahl leer oder nicht vollständig zugeordnet ist, sonst „berechnen“.
+8. ~~„add“ ist ohne Auswahl gesperrt; orange ist „add“, solange die Auswahl leer oder nicht vollständig zugeordnet ist, sonst „berechnen“.~~ — geändert (Korrektur 2b): „add“ ist ohne Auswahl gesperrt und nicht orange; orange ist „add“, sobald eine Auswahl nicht oder nicht vollständig zugeordnet ist, sonst „berechnen“.
 9. „Export“ ist bei Druckbogen vorn aktiv, tut in 2b aber noch nichts (Profil produktion in 2c).
 10. „berechnen“ öffnet bzw. aktualisiert „Zusammenfassung“ nur, wenn ein Datensatz entstanden ist; Fehler und Hinweise stehen in einem Popup, Fehler zuerst.
 11. Ereignisse: `de.pamnm.illupanels.objektFertig` (OK in „Objekt“), `de.pamnm.illupanels.objektOeffnen` (Doppelklick in „Zusammenfassung“, das Panel öffnet „Objekt“), `de.pamnm.illupanels.berechnet` (nach berechnen bzw. PDF, Absender in `data.von`); Übergabedatei `de.pamnm.illupanels.objekt.json` im temporären Ordner.
 12. Die Übergabedatei enthält die Tape-Vorschläge je `IP_Id` aus dem letzten Datensatz; bei manuell gesetztem Tape ist der Vorschlag dort nicht ablesbar.
-13. „Tape“ wechselt per Klick zwischen „auto“ (kein `tape` in `IP_Attribute`) und „manuell“ (`tape` gesetzt); „manuell aus“ gibt es mit dem Datenmodell aus 2a nicht, Beschriftung und Tooltip sind wie bisher.
+13. ~~„Tape“ wechselt per Klick zwischen „auto“ und „manuell“; „manuell aus“ gibt es nicht.~~ — geändert (Korrektur 2b): Tape hat drei Zustände, ein Klick schaltet weiter „Tape auto“ (kein Wert in `IP_Attribute`, Vorschlag gilt) → „Tape“ (`tape`) → „kein Tape“ (`kein_tape`); `kein_tape` schlägt den Vorschlag, `tape` setzt ihn, der Tooltip nennt den Vorschlag.
 14. `IP_Folie` eines Plott-Objekts ist der Schlüssel seiner ersten Füllfarbe; weitere Farben ergeben sich beim Lesen aus den Füllungen.
 15. K0 wird als fehlender Tag geschrieben; die Komplexität wird nur bei Objekten geschrieben, bei denen sie wirkt, und bei Digitaldruck angezeigt, sobald mindestens ein ausgewähltes Objekt eine Cutkontur hat.
 16. Bei gemischter Art ohne neue Wahl bleiben Folie, Medium und Laminat je Objekt, nur Anzahl, Komplexität und Aufschläge ändern sich; sind nicht zugeordnete Objekte dabei, sperrt „Art wählen“ den OK-Button.
@@ -47,7 +47,7 @@ Status: 1–3 mit Markus geklärt 30.10.; 4–40 offen (zur Bestätigung).
 23. Umgefärbt werden neu gewählte Farben und Farben mit bekannter `farbzuordnung`; in `farbzuordnung` kommen nur neu gewählte Nicht-Oracal-Farben, in `vorauswahl` Medium und Laminat (bei gemeinsamem Wert im Digitaldruck) und die Serie der zuletzt gewählten Kachel.
 24. Die Varianten-Erkennung beim Zuordnen läuft über alle Objekte der Rollen-Ebenen plus ausgewählte Objekte anderer Ebenen (hinten angehängt).
 25. Zuordnen bricht wie bisher ab, wenn die Ziel- oder Quellebene gesperrt ist („Zielebene „…“ ist gesperrt“, „Objekt liegt auf gesperrter Ebene „…““); gesperrte Objekte werden kurz entsperrt.
-26. Zur Auswahl zählen nur oberste Objekte auf obersten Ebenen; Objekte in Unterebenen werden ignoriert.
+26. ~~Zur Auswahl zählen nur oberste Objekte auf obersten Ebenen; Objekte in Unterebenen werden ignoriert.~~ — geändert (Korrektur 2b): Besteht die Auswahl nicht aus obersten Objekten (Objekte in Unterebenen), zeigt die Objektzeile gedimmt „Objekt in einer Unterebene“.
 27. „Zusammenfassung“: Anzahl, Folie und Attribute kommen aus den aktuellen Tags, Teile (je Exemplar wie im Datensatz), m², Betrag (`produkt_vk`) und inkl. M. (`produkt_vk` + `montage_vk`) aus dem Datensatz.
 28. Bei mehrfarbigen Plott-Objekten zeigt „Zusammenfassung“ alle Folien aus dem Datensatz kommagetrennt mit dem Chip der ersten.
 29. Unbenannte Objekte heißen in „Zusammenfassung“ „Objekt n“ (Zugeordnete in Ebenenreihenfolge, „Ohne Zuordnung“ zählt weiter); ein Name aus dem Datensatz hat Vorrang.
@@ -62,3 +62,7 @@ Status: 1–3 mit Markus geklärt 30.10.; 4–40 offen (zur Bestätigung).
 38. „Zusammenfassung“ hat die Mindestgröße 480 × 240.
 39. Datensätze aus 2a mit `mindestbetrag_greift` ohne Preisart werden als VK gelesen.
 40. `preise_freigegeben` wird, falls vorhanden, weiter auf 0/1 geprüft.
+41. Enthält die Auswahl ein Objekt in einer Unterebene, gilt sie im Panel als leer: „add“ ist gesperrt und nicht orange (wie ohne Auswahl).
+42. Tape-Tooltip: „Tape (VK je m² Objektfläche) – Vorschlag aus der Messung der Cutkontur, sonst des Motivumrisses: <Tape | kein Tape | unterschiedlich | erst nach „berechnen“>“.
+43. Tape bei Mehrfachauswahl mit unterschiedlichen Zuständen: gestrichelt mit der Beschriftung „Tape auto“, der erste Klick setzt alle auf „Tape auto“; gedrückt ist der Button, wenn Tape wirkt („Tape“ oder „Tape auto“ mit Vorschlag Tape).
+44. Stehen `tape` und `kein_tape` beide in `IP_Attribute`, gilt `kein_tape`; „Zusammenfassung“ zeigt „Tape“ bei `tape` und bei „auto“ mit Tape im Datensatz.

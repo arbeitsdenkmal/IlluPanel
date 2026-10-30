@@ -27,6 +27,11 @@ function vorauswahlMerken(xmp, neu) {
 
 // ---------- Tags lesen ----------
 const attributeVon = v => String(v || "").split(",").map(x => x.trim()).filter(Boolean);
+/** Tape (Druck) aus IP_Attribute [§3.1]: „tape“ = manuell an, „kein_tape“ = manuell aus (schlägt „tape“), sonst „auto“ (Vorschlag gilt) */
+function tapeZustand(o) {
+  const a = attributeVon(o.tags && o.tags.attribute);
+  return a.includes("kein_tape") ? "kein_tape" : a.includes("tape") ? "tape" : "auto";
+}
 /** IP_Anzahl: fehlt -> 1; ganze Zahl ≥ 1, sonst null */
 function anzahlVon(v) {
   if (v === null || v === undefined || String(v).trim() === "") return 1;
@@ -103,7 +108,7 @@ const laminatName = (aa, k) => { const l = (aa.laminate || []).find(x => x.schlu
 /**
  * Tags eines Objekts nach der Wahl im Dialog. w: { art (null = je Objekt), folie (Plott: Schlüssel der ersten Farbe des Objekts, je Objekt über plottFolie),
  * medium, laminat (null = unverändert), anzahl (null = unverändert), komplexitaet (null = unverändert), attribute: {schluessel: true|false},
- * tape (null = unverändert, true = manuell an, false = auto) }, kx { farben, medien, vorauswahl, plottFolie(o) }.
+ * tape (null = unverändert, sonst „auto“ | „tape“ | „kein_tape“) }, kx { farben, medien, vorauswahl, plottFolie(o) }.
  * Rückgabe { art, tags } (art des Objekts nach dem OK, tags nur geänderte Schlüssel; null entfernt).
  */
 function tagsFuer(o, w, kx) {
@@ -122,7 +127,7 @@ function tagsFuer(o, w, kx) {
   const attr = attributeVon(o.tags.attribute);
   const setzen = (k, an) => { const i = attr.indexOf(k); if (an && i < 0) attr.push(k); if (!an && i >= 0) attr.splice(i, 1); };
   Object.keys(w.attribute || {}).forEach(k => setzen(k, w.attribute[k]));
-  if (art === "digitaldruck" && w.tape !== null && w.tape !== undefined) setzen("tape", w.tape);
+  if (art === "digitaldruck" && w.tape) { setzen("tape", w.tape === "tape"); setzen("kein_tape", w.tape === "kein_tape"); }
   if (attr.join(",") !== attributeVon(o.tags.attribute).join(",")) t.attribute = attr.length ? attr.join(",") : null;
   return { art, tags: t };
 }
@@ -142,5 +147,5 @@ function folieAnzeige(o, kx) {
   return { text: "", rgb: null };
 }
 
-module.exports = { UNTERSCHIEDLICH, gemeinsam, PRESET, vorauswahl, vorauswahlMerken, attributeVon, anzahlVon, artNachTag, artVorauswahl, medium, komplexitaetVon,
+module.exports = { UNTERSCHIEDLICH, gemeinsam, PRESET, vorauswahl, vorauswahlMerken, attributeVon, tapeZustand, anzahlVon, artNachTag, artVorauswahl, medium, komplexitaetVon,
   komplexitaetGilt, farbenDerAuswahl, farbeErkannt, plottSperren, oracalImDruck, medienListe, laminateFuer, laminatName, tagsFuer, zahl, folieAnzeige };

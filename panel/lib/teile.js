@@ -196,7 +196,7 @@ function aufbauen(daten, kx) {
       if (!serie(medium, "druck")) { fehler.push(`Medium „${medium}“ hat keinen Preis (serie, verfahren druck) für „${A}“ und keinen für „alle“ (verwendet von ${wo})`); continue; }
     }
     const attr = attributeVon(tags.attribute);
-    const unbekannt = attr.filter(x => !aufschlaege[x] && x !== "tape");
+    const unbekannt = attr.filter(x => !aufschlaege[x] && x !== "tape" && x !== "kein_tape");
     if (unbekannt.length) warn(`${wo}: unbekannte Attribute ${unbekannt.join(", ")} – ignoriert`, "attribut", kurz);
     const obj = {
       nr: objekte.length, id: tags.id || null, original: tags.original || null, ref: o.ref, illustratorName: o.name || "", ebene: o.ebene, verfahren, anzahl,
@@ -278,9 +278,10 @@ function aufbauen(daten, kx) {
       obj.folien = [medium];
       obj.flaeche_je_folie[medium] = obj.messung.flaeche_m2;
       obj.teile_je_folie[medium] = cm.teile;
-      // Tape-Vorschlag [R 1.9]: Dichten bezogen auf die Begrenzung der Messung; „tape“ in IP_Attribute = an, sonst gilt der Vorschlag
+      // Tape-Vorschlag [R 1.9]: Dichten bezogen auf die Begrenzung der Messung; in IP_Attribute „kein_tape“ = aus (schlägt den Vorschlag),
+      // „tape“ = an, sonst gilt der Vorschlag [§3.1]
       const vorschlag = cm.schnittdichte >= pq.parameter("tape.min_schnittdichte") || cm.teiledichte >= pq.parameter("tape.min_teiledichte");
-      obj.tape = { vorschlag, gesetzt: attr.includes("tape") || vorschlag };
+      obj.tape = { vorschlag, gesetzt: attr.includes("kein_tape") ? false : attr.includes("tape") || vorschlag };
       if (obj.tape.gesetzt && serie(medium, "druck").tape_vk_m2 === null) fehler.push(`${wo}: Tape gesetzt, aber Serie „${medium}“ hat keinen tape_vk_m2`);
       // ein Teil je Objekt (Nesting-Maß), keine Teilung; b_mm = längs (vertikal im Dokument), h_mm = quer (horizontal)
       const g = gruppe(`druck|${medium}|${tags.laminat}`, { verfahren, schluessel: medium, serie: medium, laminat: tags.laminat });

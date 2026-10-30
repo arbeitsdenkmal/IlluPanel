@@ -5,7 +5,7 @@
  * je Exemplar, × Anzahl summiert [A-5]: material = Σ fläche_m2(o, f) × vk_m2; flaechenzeit = Σ fläche_m2(o, f) × z(produktion_m2);
  *   entgittern = teile × z(teil) + schnitt_m × z(schnitt_m); trennen = z(trennen);
  *   montage = (z(stueck) + fläche × (z(montage_m2) + z(reinigen_m2)) + teile × z(montage_teil)) × (1 + Σ prozent/100) + fläche × Σ minuten;
- *   tape = fläche × tape_vk_m2 (nur Druck mit Tape);
+ *   tape = fläche × tape_vk_m2 (nur Druck mit Tape: „tape“ oder Vorschlag, nicht bei „kein_tape“, teile.js);
  * je Stück: produktion = (ruesten_anteil + tape_anteil + flaechenzeit + entgittern + trennen) × (1 + komplexität/100);
  *   produkt = material + produktion × S + tape; montage_betrag = montage × S;
  * je Auftrag: produkt_summe = Σ produkt + z(datei_rip) × S (bei Druck) ≥ mindest.produkt;

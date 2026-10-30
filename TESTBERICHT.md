@@ -1,5 +1,9 @@
 # Testbericht
 
+## Korrektur 2b (30.10.2026)
+
+- `node --test tests/*.test.js`: 14 Tests, 14 bestanden, 0 fehlgeschlagen; kein Lauf in Illustrator.
+
 ## Stufe 2b „Oberfläche“ (30.10.2026)
 
 - `node --test tests/*.test.js`: 14 Tests, 14 bestanden, 0 fehlgeschlagen.
