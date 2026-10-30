@@ -386,16 +386,30 @@ var IP = {};
     // Am Dokument ändert sich nichts; gemessen wird in einem Hilfsdokument, das danach ohne Speichern geschlossen wird.
     function r0(v) { return Math.round(v); }
     function map(a, f) { var o = []; for (var i = 0; i < a.length; i++) o.push(f(a[i])); return o; }
-    // Farbschlüssel einer Füllung: key (exakt, für farbzuordnung), label, spot (Farbfeldname bei Vollton 100 %)
+    // Vorschau-RGB einer Farbe (nur für den Farbchip im Fenster „Objekt“, grob ohne Farbmanagement); null = unbekannt
+    function vorschau(c) {
+        try {
+            switch (c.typename) {
+                case "CMYKColor": return [r0(2.55 * (100 - c.cyan) * (100 - c.black) / 100), r0(2.55 * (100 - c.magenta) * (100 - c.black) / 100), r0(2.55 * (100 - c.yellow) * (100 - c.black) / 100)];
+                case "RGBColor": return [r0(c.red), r0(c.green), r0(c.blue)];
+                case "GrayColor": return [r0(2.55 * (100 - c.gray)), r0(2.55 * (100 - c.gray)), r0(2.55 * (100 - c.gray))];
+                case "SpotColor":
+                    var v = vorschau(c.spot.color), t = c.tint / 100;
+                    return v ? [r0(255 - (255 - v[0]) * t), r0(255 - (255 - v[1]) * t), r0(255 - (255 - v[2]) * t)] : null;
+            }
+        } catch (e) { }
+        return null;
+    }
+    // Farbschlüssel einer Füllung: key (exakt, für farbzuordnung), label, spot (Farbfeldname bei Vollton 100 %), rgb (Vorschau)
     function colorKey(c) {
         if (!c) return null;
         switch (c.typename) {
             case "SpotColor":
                 var full = c.tint >= 99.5;
-                return { key: "spot:" + c.spot.name + (full ? "" : "@" + r0(c.tint)), label: c.spot.name + (full ? "" : " " + r0(c.tint) + " %"), spot: full ? c.spot.name : null };
-            case "CMYKColor": var a = [c.cyan, c.magenta, c.yellow, c.black]; return { key: "cmyk:" + map(a, r0).join(","), label: "CMYK " + map(a, r0).join("/") };
-            case "RGBColor": var b = [c.red, c.green, c.blue]; return { key: "rgb:" + map(b, r0).join(","), label: "RGB " + map(b, r0).join("/") };
-            case "GrayColor": return { key: "gray:" + r0(c.gray), label: "Grau " + r0(c.gray) + " %" };
+                return { key: "spot:" + c.spot.name + (full ? "" : "@" + r0(c.tint)), label: c.spot.name + (full ? "" : " " + r0(c.tint) + " %"), spot: full ? c.spot.name : null, rgb: vorschau(c) };
+            case "CMYKColor": var a = [c.cyan, c.magenta, c.yellow, c.black]; return { key: "cmyk:" + map(a, r0).join(","), label: "CMYK " + map(a, r0).join("/"), rgb: vorschau(c) };
+            case "RGBColor": var b = [c.red, c.green, c.blue]; return { key: "rgb:" + map(b, r0).join(","), label: "RGB " + map(b, r0).join("/"), rgb: vorschau(c) };
+            case "GrayColor": return { key: "gray:" + r0(c.gray), label: "Grau " + r0(c.gray) + " %", rgb: vorschau(c) };
             case "LabColor": return { key: "lab:" + map([c.l, c.a, c.b], r0).join(","), label: "Lab" };
             case "GradientColor": return { key: "gradient", label: "Verlauf", gradient: true };
             case "PatternColor": return { key: "pattern", label: "Muster", gradient: true };
@@ -502,6 +516,7 @@ var IP = {};
     // Blatt: Begrenzung geometrisch (gb) und sichtbar (vb), Länge und Teile (nur mit temp), Farbfelder der Füllung, Flags
     function leafInfo(lf, temp) {
         var it = lf.item, t = it.typename, info = { path: lf.path, typ: t, clips: lf.clips };
+        if (getTag(it, schema().tags.originalfarbe)) info.originalfarbe = true; // beim Zuordnen als Plott umgefärbt, Originalfarbe gesichert
         var src = it;
         if (t === "CompoundPathItem") src = it.pathItems.length ? it.pathItems[0] : null;
         if (t === "TextFrame") {
@@ -608,12 +623,14 @@ var IP = {};
         return erg;
     }
     // Oberstes Objekt: Id, Tags, Name, Ebene, Begrenzung (gb geometrisch, vb sichtbar), Blätter, Cutkontur; gemessen wird nur mit temp
-    // (Länge und Teile, exakte Textumrisse) und nur bei Druck ohne Cutkontur der Motivumriss.
-    function objektInfo(top, L, index, rolle, temp) {
+    // (Länge und Teile, exakte Textumrisse) und nur bei Druck ohne Cutkontur der Motivumriss. blaetter false: nur Tags, Name, Ebene (ohne Blätter);
+    // blaetter true: Blätter auch auf der Sandbox (Fenster „Objekt“).
+    function objektInfo(top, L, index, rolle, temp, blaetter) {
         var o = { ref: { ebene: L.name, index: index }, ebene: L.name, rolle: rolle, name: top.name || "", typ: top.typename, tags: tagsLesen(top),
             gb: top.geometricBounds, vb: null, cut: false, blaetter: [] };
         o.id = o.tags.id;
-        if (rolle === "sandbox") return o; // Sandbox: nur gezählt, nicht gemessen
+        if (blaetter === false) return o;
+        if (rolle === "sandbox" && blaetter !== true) return o; // Sandbox: nur gezählt, nicht gemessen
         var leaves = [];
         collectLeaves(top, [], null, [], leaves);
         for (var i = 0; i < leaves.length; i++) { var li = leafInfo(leaves[i], temp); if (li.cut) o.cut = true; o.blaetter.push(li); }
@@ -621,8 +638,8 @@ var IP = {};
         if (temp && !o.cut && rolle === "digitaldruck") o.umriss = motivUmriss(top, temp);
         return o;
     }
-    // spec {rollen: {Ebenenname: Rolle}, messen: true|false}: oberste Objekte (ohne ausgeblendete) der Ebenen mit Rolle plott, digitaldruck, sandbox
-    // in Ebenenreihenfolge. Gemessen (messen) werden nur zugeordnete Objekte (Tag folie) auf plott/digitaldruck.
+    // spec {rollen: {Ebenenname: Rolle}, messen: true|false, blaetter: false (nur Tags, Name, Ebene)}: oberste Objekte (ohne ausgeblendete) der Ebenen
+    // mit Rolle plott, digitaldruck, sandbox in Ebenenreihenfolge. Gemessen (messen) werden nur zugeordnete Objekte (Tag folie) auf plott/digitaldruck.
     IP.objekteLesen = wrap(function (spec) {
         var d = doc(), temp = {}, objs = [], ebenen = [], R = spec.rollen || {}, folie = schema().tags.folie;
         try {
@@ -633,7 +650,7 @@ var IP = {};
                 for (var i = 0, n = L.pageItems.length; i < n; i++) {
                     var it = L.pageItems[i];
                     if (it.parent !== L || isHidden(it)) continue;
-                    objs.push(objektInfo(it, L, i, rolle, spec.messen && rolle !== "sandbox" && getTag(it, folie) ? temp : null));
+                    objs.push(objektInfo(it, L, i, rolle, spec.messen && rolle !== "sandbox" && getTag(it, folie) ? temp : null, spec.blaetter === false ? false : undefined));
                 }
             }
         } finally { closeTemp(temp); }
@@ -652,6 +669,185 @@ var IP = {};
             finally { try { it.locked = ig; } catch (e1) { } L.locked = lg; }
         }
         return ok({ geschrieben: n });
+    });
+
+    // ---------- Stufe 2b: Auswahl, Zuordnen (Fenster „Objekt“), Auswählen (Fenster „Zusammenfassung“) ----------
+    function indexInLayer(item) {
+        var pis = item.parent.pageItems;
+        for (var i = 0, n = pis.length; i < n; i++) if (pis[i] === item) return i;
+        return -1;
+    }
+    // ausgewählte oberste Objekte bzw. Gruppen der obersten Ebenen (jedes einmal, in Ebenenreihenfolge); Objekte in Unterebenen zählen nicht
+    function auswahlOben(d) {
+        var sel = [], out = [];
+        try { if (d.selection && d.selection.length !== undefined && d.selection.typename === undefined) sel = d.selection; } catch (e) { sel = []; } // Textbearbeitung: TextRange
+        for (var i = 0; i < sel.length; i++) {
+            var t = sel[i];
+            try { while (t.parent && t.parent.typename !== "Layer") t = t.parent; } catch (e2) { continue; }
+            if (!t.parent || t.parent.parent.typename !== "Document") continue;
+            var da = false;
+            for (var j = 0; j < out.length; j++) if (out[j] === t) da = true;
+            if (!da) out.push(t);
+        }
+        var r = [];
+        for (var li = 0; li < d.layers.length; li++) {
+            var je = [];
+            for (var k = 0; k < out.length; k++) if (out[k].parent === d.layers[li]) je.push({ it: out[k], L: d.layers[li], i: indexInLayer(out[k]) });
+            je.sort(function (a, b) { return a.i - b.i; });
+            for (var q = 0; q < je.length; q++) r.push(je[q]);
+        }
+        return r;
+    }
+    // spec {rollen: {Ebenenname: Rolle}, blaetter: true|false}: Objektinfo der Auswahl ohne Messung (Panel: blaetter false, nur Name und Tags)
+    IP.auswahlLesen = wrap(function (spec) {
+        if (app.documents.length === 0) return ok({ objekte: [] });
+        var d = app.activeDocument, R = (spec && spec.rollen) || {}, a = auswahlOben(d), objs = [];
+        for (var i = 0; i < a.length; i++) {
+            var rolle = R.hasOwnProperty(a[i].L.name) ? R[a[i].L.name] : null;
+            objs.push(objektInfo(a[i].it, a[i].L, a[i].i, rolle, null, spec && spec.blaetter ? true : false));
+        }
+        return ok({ objekte: objs });
+    });
+    // Objekt über IP_Id (oberste Objekte aller obersten Ebenen) bzw. über ref {ebene, index}
+    function objektFinden(d, z) {
+        var idTag = schema().tags.id;
+        if (z.id) {
+            for (var li = 0; li < d.layers.length; li++) {
+                var pis = d.layers[li].pageItems;
+                for (var i = 0, n = pis.length; i < n; i++) if (pis[i].parent === d.layers[li] && getTag(pis[i], idTag) === z.id) return pis[i];
+            }
+            return null;
+        }
+        try { return d.layers.getByName(z.ref.ebene).pageItems[z.ref.index]; } catch (e) { return null; }
+    }
+    // liste [{ref, id}] -> genau diese Objekte auswählen (Klick in „Zusammenfassung“)
+    IP.objekteAuswaehlen = wrap(function (liste) {
+        var d = doc(), n = 0;
+        d.selection = null;
+        for (var i = 0; i < liste.length; i++) { var it = objektFinden(d, liste[i]); if (it) { try { it.selected = true; n++; } catch (e) { } } }
+        return ok({ ausgewaehlt: n });
+    });
+
+    // Oracal-Farbfelder (global, Prozessfarbe), aus dem alten Kern: Illustrator erlaubt per Skript keine LAB-Werte für Farbfelder. Daher vorhandenes
+    // Feld mit exakt diesem Namen wiederverwenden, sonst globales Feld anlegen und LAB über Illustrators Farbmanagement in den Dokumentfarbraum umrechnen.
+    function farbfeldSicher(d, name, lab) {
+        try { return d.spots.getByName(name); } catch (e) { }
+        var sp = d.spots.add();
+        sp.name = name;
+        var rgbDoc = d.documentColorSpace === DocumentColorSpace.RGB;
+        var v = app.convertSampleColor(ImageColorSpace.LAB, lab, rgbDoc ? ImageColorSpace.RGB : ImageColorSpace.CMYK, ColorConvertPurpose.defaultpurpose);
+        var c;
+        if (rgbDoc) { c = new RGBColor(); c.red = v[0]; c.green = v[1]; c.blue = v[2]; }
+        else { c = new CMYKColor(); c.cyan = v[0]; c.magenta = v[1]; c.yellow = v[2]; c.black = v[3]; }
+        sp.color = c;
+        sp.colorType = ColorModel.PROCESS; // global
+        return sp;
+    }
+    function volltonFarbe(d, name) { var c = new SpotColor(); c.spot = d.spots.getByName(name); c.tint = 100; return c; }
+    // Originalfarben beim Umfärben sichern (Tag IP_Originalfarbe am Pfad bzw. Textrahmen, bei Text je Zeichen; eine schon gesicherte bleibt)
+    // und bei Zuordnung als Digitaldruck zurückholen – wie bisher (dort Tag IP_Original)
+    function farbeSichern(c) {
+        if (!c) return null;
+        switch (c.typename) {
+            case "CMYKColor": return { t: "cmyk", v: [c.cyan, c.magenta, c.yellow, c.black] };
+            case "RGBColor": return { t: "rgb", v: [c.red, c.green, c.blue] };
+            case "GrayColor": return { t: "gray", v: [c.gray] };
+            case "LabColor": return { t: "lab", v: [c.l, c.a, c.b] };
+            case "SpotColor": return { t: "spot", n: c.spot.name, v: [c.tint] };
+        }
+        return null;
+    }
+    function farbeAus(d, s) {
+        var c = null;
+        if (s.t === "cmyk") { c = new CMYKColor(); c.cyan = s.v[0]; c.magenta = s.v[1]; c.yellow = s.v[2]; c.black = s.v[3]; }
+        else if (s.t === "rgb") { c = new RGBColor(); c.red = s.v[0]; c.green = s.v[1]; c.blue = s.v[2]; }
+        else if (s.t === "gray") { c = new GrayColor(); c.gray = s.v[0]; }
+        else if (s.t === "lab") { c = new LabColor(); c.l = s.v[0]; c.a = s.v[1]; c.b = s.v[2]; }
+        else if (s.t === "spot") { c = new SpotColor(); c.spot = d.spots.getByName(s.n); c.tint = s.v[0]; }
+        return c;
+    }
+    function originalLesen(item) { var v = getTag(item, schema().tags.originalfarbe); if (!v) return null; try { return parse(v); } catch (e) { return null; } }
+    function umfaerben(item, m, d, count) {
+        if (isHidden(item)) return;
+        var t = item.typename, tag = schema().tags.originalfarbe;
+        if (t === "GroupItem") { for (var i = 0; i < item.pageItems.length; i++) umfaerben(item.pageItems[i], m, d, count); return; }
+        if (isClipPath(item) || isCutItem(item)) return;
+        if (t === "TextFrame") {
+            var o = originalLesen(item) || { z: {} }, neu = false;
+            if (!o.z) o.z = {};
+            for (var c = 0; c < item.characters.length; c++) {
+                var ca = item.characters[c].characterAttributes, k = colorKey(ca.fillColor);
+                if (k && m.hasOwnProperty(k.key)) {
+                    if (!o.z.hasOwnProperty(String(c))) { var fs = farbeSichern(ca.fillColor); if (fs) { o.z[String(c)] = fs; neu = true; } }
+                    ca.fillColor = volltonFarbe(d, m[k.key]); count.n++;
+                }
+            }
+            if (neu) setTag(item, tag, stringify(o));
+            return;
+        }
+        var src = t === "CompoundPathItem" ? item.pathItems[0] : (t === "PathItem" ? item : null);
+        if (!src || !src.filled) return;
+        var key = colorKey(src.fillColor);
+        if (!key || !m.hasOwnProperty(key.key)) return;
+        if (!originalLesen(item)) { var f0 = farbeSichern(src.fillColor); if (f0) setTag(item, tag, stringify({ f: f0 })); }
+        if (t === "CompoundPathItem") { for (var j = 0; j < item.pathItems.length; j++) item.pathItems[j].fillColor = volltonFarbe(d, m[key.key]); }
+        else item.fillColor = volltonFarbe(d, m[key.key]);
+        count.n++;
+    }
+    function wiederherstellen(item, d, count) {
+        var t = item.typename;
+        if (t === "GroupItem") { for (var i = 0; i < item.pageItems.length; i++) wiederherstellen(item.pageItems[i], d, count); return; }
+        var o = originalLesen(item);
+        if (!o) return;
+        if (t === "TextFrame" && o.z) {
+            for (var k in o.z) if (o.z.hasOwnProperty(k)) {
+                var ci = Number(k);
+                if (ci < item.characters.length) { try { item.characters[ci].characterAttributes.fillColor = farbeAus(d, o.z[k]); count.n++; } catch (e) { } }
+            }
+        } else if (o.f && (t === "PathItem" || t === "CompoundPathItem")) {
+            try {
+                if (t === "CompoundPathItem") { for (var j = 0; j < item.pathItems.length; j++) item.pathItems[j].fillColor = farbeAus(d, o.f); }
+                else item.fillColor = farbeAus(d, o.f);
+                count.n++;
+            } catch (e2) { }
+        }
+        setTag(item, schema().tags.originalfarbe, null);
+    }
+    // spec {ziele: [{ref, id (IP_Id zur Kontrolle, null = ohne), tags: {schluessel: wert|null}}], art: "plott" | "digitaldruck" | null (unverändert),
+    //       farben: {colorKey: {name, lab}} (Plott: umfärben), zielEbene: Name | null}
+    // Plott färbt um (Originalfarben gesichert), Digitaldruck holt sie zurück; Tags schreiben; danach positionsgleich auf die Zielebene (Stapelfolge bleibt)
+    // und ausgewählt. Gesperrte Objekte werden dafür kurz entsperrt; gesperrte Ebenen brechen ab (wie bisher).
+    IP.objekteZuordnen = wrap(function (spec) {
+        var d = doc(), items = [], idTag = schema().tags.id;
+        for (var a = 0; a < spec.ziele.length; a++) {
+            var z = spec.ziele[a], it = null;
+            try { it = d.layers.getByName(z.ref.ebene).pageItems[z.ref.index]; } catch (e) { it = null; }
+            if (!it || getTag(it, idTag) !== (z.id || null)) throw "Objekt nicht gefunden: " + z.ref.ebene + " / " + z.ref.index;
+            items.push(it);
+        }
+        var target = spec.zielEbene ? d.layers.getByName(spec.zielEbene) : null;
+        if (target && target.locked) throw "Zielebene „" + spec.zielEbene + "“ ist gesperrt";
+        for (var b = 0; b < items.length; b++) if (items[b].layer.locked) throw "Objekt liegt auf gesperrter Ebene „" + items[b].layer.name + "“";
+        var map = {}, count = { n: 0 }, zurueck = { n: 0 };
+        for (var fk in spec.farben || {}) if (spec.farben.hasOwnProperty(fk)) { farbfeldSicher(d, spec.farben[fk].name, spec.farben[fk].lab); map[fk] = spec.farben[fk].name; }
+        for (var i = 0; i < items.length; i++) {
+            var x = items[i], gesperrt = x.locked;
+            try {
+                x.locked = false;
+                if (spec.art === "plott") umfaerben(x, map, d, count);
+                else if (spec.art === "digitaldruck") wiederherstellen(x, d, zurueck);
+                tagsSchreiben(x, spec.ziele[i].tags);
+            } finally { try { x.locked = gesperrt; } catch (e3) { } }
+        }
+        if (target) {
+            var folge = [];
+            for (var m0 = 0; m0 < items.length; m0++) { var L0 = items[m0].layer, li0 = 0; for (var y = 0; y < d.layers.length; y++) if (d.layers[y] === L0) li0 = y; folge.push({ it: items[m0], k: li0 * 1e6 + indexInLayer(items[m0]) }); }
+            folge.sort(function (p1, p2) { return p2.k - p1.k; });
+            for (var m1 = 0; m1 < folge.length; m1++) if (folge[m1].it.layer !== target) folge[m1].it.move(target, ElementPlacement.PLACEATBEGINNING); // move() hält die Position
+        }
+        d.selection = null;
+        for (var e = 0; e < items.length; e++) { try { items[e].selected = true; } catch (e4) { } }
+        return ok({ umgefaerbt: count.n, wiederhergestellt: zurueck.n });
     });
 
     // ---------- Speichern ----------

@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.0-2b – Stufe 2b „Oberfläche“ (30.10.2026)
+
+- Panel nach A5/A7 (320 × 142): Objektzeile, add/edit · berechnen, Werkzeugzeile (Summa/Druck gesperrt bis 2c), Preiszeile aus dem Datensatz; Zustände ohne Panel-Dokument, ohne Kalkulation, Druckbogen vorn.
+- Fenster „Objekt“ (`.objekt`, ModalDialog 480 × 470): Zuordnen Plott/Digitaldruck mit Farbliste, Serie, Farb-Nr., Kachelraster, Mehrfachauswahl; Umfärben mit `IP_Originalfarbe`; Varianten-Erkennung auch beim Zuordnen.
+- Fenster „Zusammenfassung“ (`.zusammenfassung`, Modeless 620 × 520): Objekttabelle, Folien, Summen, Grafik; berechnen, PDF.
+- `<Kunde>_Zusammenfassung.pdf` (jsPDF) über den Exportkern.
+- JSX: `IP.auswahlLesen`, `IP.objekteZuordnen`, `IP.objekteAuswaehlen`; Farb-Vorschau, `objekteLesen` mit `blaetter: false`.
+- `preise_freigegeben` kein Pflichtparameter; `mindestbetrag_greift` je Preisart.
+- `FESTLEGUNGEN.md`; CLAUDE.md um die Pflege ergänzt.
+
 ## 3.1.0-2a – Stufe 2a „Kalkulationskern“ (30.10.2026)
 
 - Konfiguration: `medien.json` (Randabzug Plott 25, ohne `opos_marken`), `serien.json`, fünf Oracal-ASE; Startprüfung inkl. Preisliste (Serie mit Standardbreite).

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Objekt</title>
+<link rel="stylesheet" href="fenster.css">
+</head>
+<body>
+  <!-- SPEZ_02 §6, MockUp B3 (Plott) / B4 (Digitaldruck): Art, Anzahl; Digitaldruck Medium, Laminat; Plott Farben im Objekt, Serie, Farb-Nr., Kachelraster;
+       Komplexität (Plott, Druck mit Cutkontur), Aufschläge. Feste Größe 480 × 470 aus dem Manifest, Inhalt oben ausgerichtet. -->
+  <main>
+    <div class="feldz">
+      <span class="lbl">Art</span><div id="arten" class="seg" role="group" aria-label="Art"></div>
+      <span class="lbl">Anzahl</span><div><input id="anzahl" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" style="width:56px;text-align:right"></div>
+      <span id="mediumL" class="lbl">Medium</span><div id="medium" class="seg eng" role="group" aria-label="Medium"></div>
+      <span id="laminatL" class="lbl">Laminat</span><div id="laminat" class="seg eng" role="group" aria-label="Laminat"></div>
+    </div>
+    <div id="plott" class="block">
+      <div class="lbl" style="margin-bottom:5px">Farben im Objekt</div>
+      <div id="farben" class="farben"></div>
+    </div>
+    <div id="serieZ" class="feldz" style="margin-top:2px">
+      <span class="lbl">Serie</span><div class="seg eng serie" style="flex-wrap:nowrap"><span id="serien" class="seg eng serie" style="flex-wrap:nowrap"></span><span style="display:inline-flex;align-items:center;gap:6px;margin-left:6px;white-space:nowrap"><span class="lbl">Farb-Nr.</span><input id="farbNr" type="text" autocomplete="off" spellcheck="false" style="width:44px;padding:0 5px"></span></div>
+    </div>
+    <div id="raster" class="raster"></div>
+    <div id="zusatz" class="block feldz">
+      <span id="komplexL" class="lbl">Komplexität</span><div id="komplex" class="seg eng" role="group" aria-label="Komplexität"></div>
+      <span id="attrL" class="lbl">Aufschläge</span><div id="attr" class="seg eng" role="group" aria-label="Aufschläge"></div>
+    </div>
+  </main>
+  <footer class="fuss"><span id="hinweis" class="hinweis"></span><button id="abbrechen">Abbrechen</button><button id="ok" class="primaer" disabled>OK</button></footer>
+  <script src="gemeinsam.js"></script>
+  <script src="fenster.js"></script>
+  <script src="objekt.js"></script>
+</body>
+</html>

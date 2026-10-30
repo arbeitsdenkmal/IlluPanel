@@ -1,6 +1,6 @@
 # Spezifikation Stufe 2 „Zuordnen, Kalkulation, Schneidedaten, Druckbögen“ — PAM-Werkzeuge
 
-Stand: 30.10.2026, Fassung 2 (Ableitungen 1–9 im Chat geklärt, Abschnitt 15). Grundlage: `claude/REGISTER_NEUAUFBAU.md` (Register), `claude/PREISLOGIK.md` v6 mit den Änderungen im Register, `claude/SPEZ_01_Fundament.md` (gebaut, 3.0.1), Antworten Markus vom 30.10. (Fragen 1–12 plus Nachfragen), `Infos/PRODUKTIONSREGELN.md`, `Infos/OPOS_ANALYSE.md`. Nur für Fahrzeugbeschriftung und Beschriftung. SDK-unabhängig: alles, was später aus Supabase kommt oder dorthin geht, läuft in Stufe 2 über die Preisquellen-Schnittstelle (lesen) und das XMP der Arbeitsdatei (schreiben).
+Stand: 30.10.2026, Fassung 3 (Ableitungen geklärt, MockUps freigegeben, Festlegungen CC aus 2a bestätigt — Abschnitte 15–17). Grundlage: `claude/REGISTER_NEUAUFBAU.md` (Register), `claude/PREISLOGIK.md` v6 mit den Änderungen im Register, `claude/SPEZ_01_Fundament.md` (gebaut, 3.0.1), Antworten Markus vom 30.10. (Fragen 1–12 plus Nachfragen), `Infos/PRODUKTIONSREGELN.md`, `Infos/OPOS_ANALYSE.md`. Nur für Fahrzeugbeschriftung und Beschriftung. SDK-unabhängig: alles, was später aus Supabase kommt oder dorthin geht, läuft in Stufe 2 über die Preisquellen-Schnittstelle (lesen) und das XMP der Arbeitsdatei (schreiben).
 
 Kennzeichnung: **[R x.y]** Registerpunkt · **[P §n]** PREISLOGIK · **[M]** Antwort Markus 30.10. · **[A-n]** Ableitung Claude, geklärt mit Markus 30.10., Abschnitt 15.
 
@@ -13,20 +13,18 @@ Enthalten:
 4. Zuordnen-Dialog (Fenster „Objekt“) für Plott und Digitaldruck
 5. Nesting und Rollenwahl (gemeinsam für Kalkulation, Schneidedaten, Druckbögen)
 6. Kalkulation nach PREISLOGIK v6 mit Anzahl-Multiplikator, Kalkulationsdatensatz ins XMP
-7. Fenster „Objekte“ und „Details“ (nicht modal) [R 4.5]
-8. Produktionsdatenblatt `<Kunde>_Info.pdf` (Stückliste, ohne Preise) [M]
+7. Fenster „Zusammenfassung“ (nicht modal; ersetzt „Objekte“ und „Details“ [M]) [R 4.5]
+8. Produktionsdatenblatt `<Kunde>_Zusammenfassung.pdf` (Inhalt des Fensters ohne Preise) [M]
 9. Plott-Schneidedaten (Summa) über den Exportkern
 10. Druckbögen aufbauen (Druck) und exportieren (Export mit eigenen OPOS-Marken) über den Exportkern
 11. Grafikzeit: Hintergrund-Extension, Feld „+ min“, Einträge ins XMP [M 1, R 2.12, R 4.8]
 12. Panel-Erweiterung: Objektzeile, Buttons, Preiszeilen
 
-Nicht enthalten [M 12]: Supabase/SDK (Produktliste, Login, Rückmeldung, Preisliste aus Supabase), Breite/Masken [R 4.3], Nutzen/Gitter/MB-Nr [R 3.9], Schild (Zuordnen, Schneidedaten), Textil Flex/Flock [R 2.2], Skript-Buttons, Bereitstellung nach `/Applications/interne Tools`. Entfallen gegenüber dem alten Panel: Fenster „Kopie“ [M 4], Messprotokoll-JSON und Grafikzeit-JSON [R 5.8], Kalkulations-PDF mit Preisen [M 2], Preis bestätigen/senken [R 1.3], Maßstabsfeld im Panel [M 6], Einstellungen-Fenster (Preislistenpfad; Quelle ist fest, Abschnitt 4).
+Nicht enthalten [M 12]: Supabase/SDK (Produktliste, Login, Rückmeldung, Preisliste aus Supabase), Breite/Masken [R 4.3], Nutzen/Gitter/MB-Nr [R 3.9], Schild (Zuordnen, Schneidedaten), Textil Flex/Flock [R 2.2], Skript-Buttons, Bereitstellung nach `/Applications/interne Tools`. Entfallen gegenüber dem alten Panel: Fenster „Kopie“ [M 4], getrennte Fenster „Objekte“/„Details“ und Button „list“ [M], Messprotokoll-JSON und Grafikzeit-JSON [R 5.8], Kalkulations-PDF mit Preisen [M 2], Preis bestätigen/senken [R 1.3], Maßstabsfeld im Panel [M 6], Einstellungen-Fenster (Preislistenpfad; Quelle ist fest, Abschnitt 4).
 
 ## 2. UI-Teile und MockUps
 
-Vor dem Bau der UI-Teile legt Claude (nicht CC) MockUps mit den echten Inhalten aus Code und Konfiguration vor [M 11, R 7.10]: Panel (Objektzeile, Buttons, Preiszeilen, Zustände mit/ohne Auftrag, mit/ohne Auswahl), Fenster „Objekt“ (Zuordnen), „Objekte“, „Details“. Die Kritik am bisherigen Zuordnen-Dialog klärt Markus in dieser Phase [R 4.6]. Button-Texte werden im MockUp aus den vorhandenen Texten gewählt (bisher: „Auftrag“, „Export“, „Summa“, „Druck“, „add/edit“, „list“, „calc“, „pdf“); nichts Neues ohne Markus.
-
-Diese Spezifikation legt Funktion und Daten fest; Anordnung, Größen und Texte der vier UI-Teile folgen aus den MockUps und werden als Nachtrag ergänzt.
+MockUps `Infos/mockups/MOCKUP_STUFE2.html` (3. Fassung), von Markus am 30.10. freigegeben: Panel A5, Zustände A7, Zuordnen B3/B4, Fenster „Zusammenfassung“ C3. Die MockUps sind für Aufbau, Reihenfolge und Texte verbindlich; Maße in CSS-px wie dort. Button-Texte: „add“/„edit“, „berechnen“, „Summa“, „Druck“, „Export“, „Auftrag“, „PDF“, „Schließen“, „Abbrechen“, „OK“. Änderung A5 gegenüber dem MockUp [M]: Preiszeile mit „Material …“ linksbündig und „inkl. Mont. …“ rechtsbündig.
 
 ## 3. Datenschicht (Erweiterung von SPEZ_01 §5)
 
@@ -42,6 +40,7 @@ Diese Spezifikation legt Funktion und Daten fest; Anordnung, Größen und Texte 
 | `IP_Attribute` | kommagetrennt aus `sicke`, `woelbung`, `tape` |
 | `IP_Original` | `IP_Id` des Originals bei Varianten |
 | `IP_Herkunft` | nur auf Druckbögen: `IP_Id` des Objekts, dessen Symbolinstanz das ist |
+| `IP_Originalfarbe` | gesicherte Originalfarbe am Pfad/Textrahmen beim Plott-Umfärben (Schlüssel `originalfarbe` in `schema.json`); ersetzt die frühere Doppelnutzung von `IP_Original` |
 
 **Objektname** [M 3]: frei, keine Pflicht, keine Eindeutigkeit. Anzeige in „Objekte“/„Details“/Info.pdf: Illustrator-Name des Objekts; ohne Namen „Objekt“ + laufende Nummer in Ebenenreihenfolge (nur Anzeige, nicht gespeichert). [A-1]
 
@@ -65,7 +64,7 @@ Diese Spezifikation legt Funktion und Daten fest; Anordnung, Größen und Texte 
 - `kalkulation`: letzter Kalkulationsdatensatz, ersetzt bei jedem Berechnen.
 - `aufbau`: letzter Druckbogen-Aufbau (Export verarbeitet nur Bögen dieses Aufbaus).
 
-**Druckbogen-Dokumente** (`rolle: "druckbogen"`): eigenes XMP mit `kunde`, `auftragsart`, `massstab: 1`, `auftrag`, `ablage` (Kopie aus der Arbeitsdatei) sowie `bogen: { aufbau, medium, laminat, breite_mm, nr, arbeitsdatei: "<Pfad>" }`. Der Pfad dient nur der Zuordnung beim Export.
+**Druckbogen-Dokumente** (`rolle: "druckbogen"`): eigenes XMP mit `kunde`, `auftragsart`, `massstab: 1`, `auftrag`, `ablage` (Kopie aus der Arbeitsdatei) sowie `bogen: { aufbau, medium, laminat, breite_mm, nr, gesamt, arbeitsdatei: "<Pfad>" }`. `gesamt` = Zahl der Bögen dieses Aufbaus (für „n/m“ im Panel, gesetzt beim Aufbau in 2c; 2b zeigt ohne das Feld nur „n“). Der Pfad dient nur der Zuordnung beim Export.
 
 ## 4. Konfiguration und Preisquelle
 
@@ -100,16 +99,17 @@ Gilt für Berechnen, Summa, Druck; der JSX-Kern liefert die Rohdaten, Node misst
 - **Anzahl**: Messwerte je Stück gelten für ein Exemplar; Nesting und Kalkulation multiplizieren mit `IP_Anzahl`.
 - **Prüfungen** (vor Berechnen, Summa, Druck; gleichartige zusammengefasst in einem Popup): Warnungen — Objekte auf der Sandbox, oberste Objekte auf Plott/Druck-Ebenen ohne Zuordnung (nicht gerechnet), Konflikt Zuordnung ↔ Ebene/Farbe (nicht gerechnet), Konturen auf Plott-Objekten, an Lücken geteilte Teile. Abbruch — Teil länger als 5680 mm, Teil passt in keiner Lage in die Nutzbreite, Farbe ohne Serie, Serie/Medium ohne Preis, Preisquelle fehlerhaft. [Produktionsregeln §4]
 
-## 6. Zuordnen (Fenster „Objekt“, ModalDialog)
+## 6. Zuordnen (Fenster „Objekt“, ModalDialog, MockUp B3/B4)
 
-Funktion wie bisher, Gestaltung nach MockUp. Öffnet über den Panel-Button und per Doppelklick in „Objekte“; ein oder mehrere oberste Objekte ausgewählt.
+Öffnet über add/edit im Panel und per Doppelklick in „Zusammenfassung“; ein oder mehrere oberste Objekte ausgewählt. Breite 480, Höhe nach Inhalt (ModalDialog: feste Höhe je Zustand im Manifest, Inhalt oben ausgerichtet).
 
-- **Felder**: Art (Plott / Digitaldruck); bei Plott Serie + Farbraster, Feld „Farbnummer“ + Enter; bei Digitaldruck Medium (Kürzel) und Laminat (3676 nur glänzend); **Anzahl** (neu, Standard 1, ganze Zahl ≥ 1); Komplexität K0–K3 nur bei Plott (bei Druck nur, wenn das Objekt eine Cutkontur hat [R 1.8]); Sicke, Wölbung (aus `aufschlaege()`); Tape nur Druck („auto“ = Vorschlag aus dem letzten Berechnen, Klick setzt manuell). Kein Namensfeld [M 3].
-- **Vorauswahl**: Art nach Tag, sonst Sandbox → Digitaldruck, sonst nach Ebene; Medium/Laminat/Serie aus `vorauswahl`; Nicht-Oracal-Farben aus `farbzuordnung`.
-- **Plott-Umfärben**: Nicht-Oracal-Füllungen auf das gewählte Farbfeld umfärben (Farbfeld anlegen/wiederverwenden), Originalfarben als Tag am Pfad sichern und bei späterer Druck-Zuordnung zurückholen (wie bisher). Konturen, Bilder, Verläufe sperren Plott.
-- **Mehrfachauswahl**: ein Dialog, gleiche Werte für alle; unterschiedliche Werte leer/„mixed“, ändern nur bei neuer Wahl; gemischte Art → Art ungewählt, Farb-/Medienbereich aus.
-- **OK**: Tags schreiben (`IP_Id` neu vergeben, falls fehlend), Objekte positionsgleich auf die Ebene der Rolle verschieben, `vorauswahl`/`farbzuordnung` ins XMP. Rückmeldung an das Panel per CSEvent; Panel und ein offenes „Objekte“ lesen neu.
-- **Enter** = OK, **Esc** = Abbrechen; Warnungen wie bisher nur die erste, OK gesperrt.
+- **Art**: Digitaldruck | Plott (in dieser Reihenfolge) [M]. **Anzahl**: Feld, ganze Zahl ≥ 1, Standard 1; bei Mehrfachauswahl mit unterschiedlichen Werten leer („mixed“).
+- **Plott**: Block „Farben im Objekt“ — eine Zeile je Füllfarbe der ausgewählten Objekte (Chip, Name, Status „✓ <Schlüssel>“ bei erkannter Oracal-Farbe oder bekannter `farbzuordnung`, sonst „→ zuordnen“); die markierte Zeile ist die, der die nächste Wahl gilt, nach einer Zuordnung springt die Markierung zur nächsten offenen Zeile. Darunter Serie (651, 751C, 951, 970G, 970M), Feld „Farb-Nr.“ (filtert die Kacheln der gewählten Serie beim Tippen auf Teiltreffer der Nummer; ohne Serie alle Serien; genau ein Treffer + Enter übernimmt) und das Kachelraster der Serie (eine Kachel je ASE-Farbe, Farbe LAB → sRGB, Nummer als Tooltip; Klick ordnet der markierten Zeile zu). OK erst, wenn alle Zeilen zugeordnet sind. Umfärben bei OK (Farbfeld anlegen/wiederverwenden), Originalfarben als Tag am Pfad sichern und bei späterer Druck-Zuordnung zurückholen (wie bisher). Konturen, Bilder, Verläufe sperren Plott.
+- **Digitaldruck**: Medium (3162, 3551, 3951, 3676, UltraTack, MonsterTack), Laminat matt | glänzend (3676 nur glänzend).
+- **Komplexität** K0–K3 nur bei Plott und bei Druck mit Cutkontur [R 1.8]; Tooltip aus `komplexitaet()` (Bezeichnung, Prozent). **Aufschläge** Sicke, Wölbung (aus `aufschlaege()`, Tooltip mit Wert); bei Druck zusätzlich „Tape auto“ (Vorschlag aus dem letzten Berechnen; Klick setzt manuell; Tooltip wie bisher).
+- **Vorauswahl**: Art nach Tag, sonst Sandbox → Digitaldruck, sonst nach Ebene; Medium/Laminat/Serie aus `vorauswahl`.
+- **Mehrfachauswahl** [M]: ein Dialog, gleiche Werte für alle; unterschiedliche Werte gestrichelt/leer („mixed“), ändern nur bei neuer Wahl; gemischte Art → Art ungewählt, Farb-/Medienbereich aus. Jedes Objekt bleibt ein eigenes Stück; Gruppen sind ein Stück mit ggf. mehreren Folien.
+- **OK**: Tags schreiben (`IP_Id` vergeben, falls fehlend; Varianten-Erkennung vorher), Objekte positionsgleich auf die Ebene der Rolle, `vorauswahl`/`farbzuordnung` ins XMP; CSEvent an das Panel, Panel und ein offenes „Zusammenfassung“ lesen neu. **Enter** = OK, **Esc** = Abbrechen; Fußzeile zeigt die erste offene Warnung, OK gesperrt.
 
 ## 7. Nesting und Rollenwahl
 
@@ -133,7 +133,7 @@ Ergebnis: VK und Mindest-VK, je „nur Aufkleber“ und „inkl. Montage“, net
 Button Berechnen: Prüfungen (§5) → Nesting (§7) → Kalkulation → Datensatz ins XMP → Fenster „Details“ öffnen/aktualisieren → Hinweise als ein Popup. Grafikminuten aus `grafikzeit.eintraege` (auto + manuell) in den Block `grafik`.
 
 ### 8.3 Anzeige
-Panel: beide VK-Preise netto/brutto; Hinweis „Mindestbetrag Produkt/Montage greift“ (orange) wie bisher. „Details“: Folien (Schlüssel, Rolle, Bögen, lfm, m², EK), Objekte (Name, Anzahl, Folie, Material, Produktion min, Montage min, Betrag, inkl. Montage; abweichende Attribute; Variante von …), Summen (VK und Mindest-VK je netto/brutto), Grafik als eigener Block. Endgültige Form nach MockUp.
+Panel (A5): eine Preiszeile, links „Material <netto> <brutto>“ (= „nur Aufkleber“), rechts „inkl. Mont. <netto> <brutto>“, brutto fett; kein Hinweis „Mindestbetrag …“ im Panel (nur in der Zusammenfassung) [M]. Fenster „Zusammenfassung“: Abschnitt 9.
 
 ### 8.4 Kalkulationsdatensatz (XMP `kalkulation`, identisch mit dem späteren JSONB [R 6.13])
 
@@ -155,7 +155,7 @@ Panel: beide VK-Preise netto/brutto; Hinweis „Mindestbetrag Produkt/Montage gr
   "preise": {
     "vk":      { "nur_aufkleber": { "netto": 28.9, "gerundet": 35, "brutto": 41.65 }, "inkl_montage": { "netto": 69.3, "gerundet": 70, "brutto": 83.30 } },
     "mindest": { "nur_aufkleber": { "netto": 20.6, "gerundet": 35, "brutto": 41.65 }, "inkl_montage": { "netto": 46.0, "gerundet": 65, "brutto": 77.35 } },
-    "mindestbetrag_greift": { "produkt": true, "montage": false }
+    "mindestbetrag_greift": { "vk": { "produkt": true, "montage": false }, "mindest": { "produkt": true, "montage": true } }
   },
   "materialbedarf": [ { "schluessel": "751C-031", "verbrauch_m2": 0.78, "lfm": 0.62, "rollenbreite_mm": 1260 } ],
   "grafik": { "min_auto": 0, "min_manuell": 0, "stundensatz": 96, "betrag": 0 },
@@ -163,16 +163,19 @@ Panel: beide VK-Preise netto/brutto; Hinweis „Mindestbetrag Produkt/Montage gr
 }
 ```
 
-Zahlen im Beispiel sind Platzhalter für die Struktur. `materialbedarf` nach [R 6.10]. Betragsfelder je Objekt enthalten VK und Mindest-VK, damit die App beides zeigen kann.
+Zahlen im Beispiel sind Platzhalter für die Struktur. `materialbedarf` nach [R 6.10]. Betragsfelder je Objekt enthalten VK und Mindest-VK, damit die App beides zeigen kann. `mindestbetrag_greift` je Preisart (`vk`, `mindest`) — Änderung gegenüber 2a (dort nur VK).
 
-## 9. Produktionsdatenblatt `<Kunde>_Info.pdf` [M 2]
+## 9. Fenster „Zusammenfassung“ und `<Kunde>_Zusammenfassung.pdf` (MockUp C3)
 
-Stückliste ohne Preise, ohne EK, ohne Grafik; über den Exportkern in den Auftragsordner, Nummerierung `_02` bei Wiederholung [R 5.7]. Erzeugt mit jsPDF aus dem letzten Kalkulationsdatensatz (vorher automatisch Berechnen, wie bisher beim PDF). Inhalt [A-6]:
-- Kopf: Kunde, Auftragsart, Datum, Maßstab der Arbeitsdatei.
-- Je Objekt: Name, Anzahl, Verfahren, Folie bzw. Medium + Laminat, Maß B × H mm (Realmaß, ein Exemplar), Fläche m², Teile, Schnittlänge m, Komplexität, Sicke/Wölbung/Tape, „Variante von …“.
-- Je Folie: Rolle (Breite), Bögen, lfm, m².
-- Warnungen des Laufs.
-Auslöser: Button in „Details“ (Lage im MockUp).
+Modeless-Extension, ersetzt „Objekte“ und „Details“ [M]; öffnet nach „berechnen“ im Panel, liest beim Öffnen und nach Panel-Aktionen (Zuordnen, berechnen). Breite 620, Höhe nach Inhalt; Objekttabelle scrollt ab etwa 12 Zeilen, Folien und Summen bleiben sichtbar. Keine Information doppelt [M]: Beträge je Objekt nur in der Objekttabelle, Material/Minuten/Preise nur in den Summen.
+
+1. **Objekte** (Tabelle): Objekt (Farbstreifen Plott/Druck, Name; Varianten eingerückt unter dem Original mit „· Variante“), Anzahl, Folie (Chip + Schlüssel bzw. Medium + Laminat), Attribute (nur Abweichungen: K1–K3, Sicke, Wölbung, Tape), Teile, m² (Stückfläche × Anzahl), Betrag, inkl. M. — Werte aus dem letzten Datensatz, sonst „–“. Darunter Gruppe „Ohne Zuordnung (n) – wird nicht berechnet“ (Warnfarbe) mit Ebene. Klick wählt in Illustrator aus (Cmd/Shift wie bisher), Doppelklick öffnet „Objekt“.
+2. **Folien**: Folie, Rolle (mm), Bögen, lfm, m² Verbrauch, EK €.
+3. **Summen**: Material; Produktion (min); Montage (min, davon je Auftrag); „nur Aufkleber“ netto gerundet fett + brutto „inkl. MwSt. n %“; darunter „Mindest-VK (<Satz> €/h)“ netto/brutto; „inkl. Montage“ ebenso (Betrag orange); Hinweis „Mindestbetrag Produkt/Montage greift“ als Hinweiszeile an der Preiszeile, bei der er greift (VK oder Mindest-VK).
+4. **Grafik** abgesetzt: „Grafik N min (a auto, m manuell) · <Satz> €/h“ und Betrag.
+5. Fuß: **berechnen** (rechnet neu, aktualisiert), **PDF**, **Schließen** (auch Esc).
+
+**PDF** `<Kunde>_Zusammenfassung.pdf` [M]: Inhalt der Abschnitte 1, 2 und Kopf (Kunde, Auftragsart, Datum, Maßstab) plus Warnungen des Laufs — ohne Summen, Preise, EK und Grafik. Erzeugt mit jsPDF aus dem letzten Datensatz (vorher automatisch berechnen), über den Exportkern in den Auftragsordner, Nummerierung `_02` bei Wiederholung [R 5.7].
 
 ## 10. Plott-Schneidedaten (Summa)
 
@@ -194,22 +197,23 @@ Export für Profil `flach` (Stufe 1) bleibt; der Button erkennt am XMP, ob Arbei
 - Feld „+ min“ im Panel: ganze Minuten, auch negativ, Enter → Eintrag `manuell: true`. [R 4.8]
 - Anzeige „Grafik N min“ = Σ Einträge. Keine Verrechnung [P §2.7].
 
-## 13. Panel (Stufe 2)
+## 13. Panel (Stufe 2, MockUp A5/A7)
 
-Zustände und Funktionen; Gestaltung nach MockUp:
-- **Ohne Panel-Dokument**: wie Stufe 1 (Kopfzeile leer, „Auftrag“, „Export“ gesperrt).
-- **Arbeitsdatei Fahrzeugbeschriftung/Beschriftung**: Kopfzeile Kunde · Auftragsart (ohne Maßstab [M 6]); Objektzeile (Name der Auswahl, „n Objekte“, „Keine Auswahl“); Grafik N min + „+ min“; Buttons Zuordnen (add/edit je Auswahl), Objekte, Berechnen, Summa, Druck, Export, Auftrag; Preiszeilen VK „nur Aufkleber“/„inkl. Montage“ netto/brutto, Hinweis Mindestbetrag. Orange: Zuordnen, solange Zuordnen der nächste Schritt ist, sonst Berechnen; Export-Button orange; „Auftrag“ Schrift orange [R 4.3].
-- **Andere Auftragsart (flach)**: wie Stufe 1 plus Grafikzeit.
-- **Druckbogen vorn**: Kopfzeile „Kunde · Druckbogen Medium Laminat Breite n/m“, nur Export und Auftrag aktiv.
-- Aktualisierung nur bei Maus ins Panel und nach eigener Aktion [R 4.7]. Fenster „Objekte“/„Details“ als Modeless-Extensions, lesen beim Öffnen und nach Panel-Aktionen; Klick in „Objekte“ wählt in Illustrator aus, Doppelklick öffnet Zuordnen.
+320 × 142 (Inhalt 122 px), Mindesthöhe entsprechend; Aktualisierung nur bei Maus ins Panel und nach eigener Aktion [R 4.7].
+- **Zeile 1**: Kunde · Auftragsart (ohne Maßstab [M 6]) · rechts „Grafik N min“ mit Feld „+m“.
+- **Zeile 2 (Objektzeile)**: Name der Auswahl (fett), rechts Folie mit Chip und Anzahl-Marke „×n“; „Keine Auswahl“ gedimmt; bei mehreren Objekten „n Objekte“, Folie nur wenn alle gleich.
+- **Zeile 3**: **add** (Auswahl nicht oder nicht vollständig zugeordnet) bzw. **edit** · **berechnen** (rechnet, schreibt den Datensatz, öffnet/aktualisiert „Zusammenfassung“, Hinweise als ein Popup). Orange: add, solange Zuordnen der nächste Schritt ist, sonst berechnen.
+- **Zeile 4 (Werkzeugzeile, Linie)**: **Summa** · **Druck** · **Export** (orange) · **Auftrag** (Schrift orange).
+- **Zeile 5**: „Material <netto> <brutto>“ links, „inkl. Mont. <netto> <brutto>“ rechts (8.3).
+- **Zustände**: ohne Panel-Dokument wie Stufe 1; Arbeitsdatei anderer Auftragsart (flach) wie Stufe 1 plus Zeile 1 mit Grafikzeit; **Druckbogen vorn**: Zeile 1 „Kunde · Druckbogen <Medium> <Laminat> <Breite> · n/m“, nur Export und Auftrag aktiv, Zeilen 2 und 5 leer.
 
 ## 14. Aufbau im Repo, Reihenfolge, Tests
 
-Neue/geänderte Dateien: `config/medien.json`, `config/serien.json`, `config/farbfelder/*.ase`; `panel/lib/preisquelle.js`, `preisquelle_csv.js`, `teile.js`, `nesting.js`, `rollen.js`, `kalkulation.js`, `herkunft.js`, `opos.js`, `info_pdf.js` (+ jsPDF), `aktivitaet.js`, `grafikzeit.js`; `panel/objekt.html/.js`, `objekte.html/.js`, `details.html/.js`, `hintergrund.html/.js`, `fenster.js`; Erweiterungen im Manifest `.objekt` (ModalDialog), `.objekte`, `.details` (Modeless), `.hintergrund` (Custom, StartOn); JSX-Kern: Objekte lesen/Tags/Umfärben/Verschieben, Hilfsdokument und Messung, Schneidedokumente, Druckbogen mit Symbolen, Marken zeichnen, PDF speichern. Version 3.1.0.
+Neue/geänderte Dateien: `config/medien.json`, `config/serien.json`, `config/farbfelder/*.ase`; `panel/lib/preisquelle.js`, `preisquelle_csv.js`, `teile.js`, `nesting.js`, `rollen.js`, `kalkulation.js`, `herkunft.js`, `opos.js`, `zusammenfassung_pdf.js` (+ jsPDF), `aktivitaet.js`, `grafikzeit.js`; `panel/objekt.html/.js`, `zusammenfassung.html/.js`, `hintergrund.html/.js`, `fenster.js`; Erweiterungen im Manifest `.objekt` (ModalDialog), `.zusammenfassung` (Modeless), `.hintergrund` (Custom, StartOn); JSX-Kern: Objekte lesen/Tags/Umfärben/Verschieben, Hilfsdokument und Messung, Schneidedokumente, Druckbogen mit Symbolen, Marken zeichnen, PDF speichern. Version 3.1.0.
 
 Teilstufen (je ein CC-Auftrag, je Commit):
 - **2a** Konfiguration, Preisquelle, Lesen/Messen, Nesting, Kalkulation, Kalkulationsdatensatz, Varianten-Erkennung — reine Node-Module plus JSX-Lesefunktionen, ohne UI.
-- **2b** Zuordnen-Dialog, Panel-Erweiterung, Fenster „Objekte“ und „Details“, Info.pdf — nach den MockUps.
+- **2b** Zuordnen-Dialog, Panel-Erweiterung, Fenster „Zusammenfassung“, Zusammenfassung.pdf — nach den freigegebenen MockUps.
 - **2c** Summa, Druck, Export (Druckbögen, OPOS).
 - **2d** Grafikzeit.
 
@@ -226,3 +230,29 @@ Tests: `node --test tests/*.test.js` für die Node-Module (Preisquelle mit der e
 7. Dateinummer NN = Bogen im Aufbau; Wiederholung → `_02` am Grundnamen durch den Exportkern. — ok
 8. Aktivitätserkennung der Grafikzeit mit genau einer Plattformweiche in `panel/lib/aktivitaet.js` (Ausnahme zu R 7.2). — ok
 9. Grafikzeit-Puffer je Rechner (Abschnitt 12) statt Verlust ungeschriebener Minuten; mit Auftrag in Stufe 3 ggf. direkt über das SDK. — ok
+
+## 16. UI-Festlegungen aus der MockUp-Phase (Markus, 30.10.)
+
+1. Panel A5: Objektzeile mit Folie und Anzahl; zwei Buttonzeilen; Preise in einer Zeile „Material“ links / „inkl. Mont.“ rechts; kein Mindestbetrag-Hinweis im Panel.
+2. Ein Button „berechnen“ rechnet und öffnet die Zusammenfassung; „list“ entfällt.
+3. Button-Texte als Kurzformen (add/edit, Summa, Druck, Export, Auftrag, PDF).
+4. Zuordnen: Reihenfolge Digitaldruck | Plott; Farbliste des Objekts; Kacheln bleiben, Suchfeld „Farb-Nr.“; Mehrfach-Bearbeiten mit gestrichelter Anzeige bleibt; Anzahl als Feld; kein Namensfeld.
+5. Ein Fenster „Zusammenfassung“ statt „Objekte“/„Details“, Objektdarstellung als einzeilige Tabelle, nichts doppelt; Fenstergrößen nach Bedarf.
+6. PDF heißt `<Kunde>_Zusammenfassung.pdf`, Inhalt ohne Preise.
+7. Passermarken für mehrfarbigen Plott: Regeln werden in Teilstufe 2c abgefragt.
+
+## 17. Festlegungen CC aus Teilstufe 2a — bestätigt 30.10.
+
+1. Preisquelle als Kern + Adapter (Prüfung/Auflösung in `preisquelle.js`, Adapter liefert Zeilen). — ok
+2. `laden()` nimmt das Feld `preis` der Auftragsart (`fahrzeug` | `beschriftung`) für `gilt_fuer`. — ok
+3. `preise_freigegeben` als Pflichtparameter. — überflüssig, in 2b streichen
+4. Nur sichtbare Objekte lesen, gemessen wird nur Zugeordnetes. — ok
+5. Gesperrte Ebenen/Objekte werden zum Tag-Schreiben kurz entsperrt. — ok
+6. Plott gilt immer als getapt (Zeitanteil), `tape` im Datensatz bleibt `false`. — ok
+7. Komplexität bei Druck ohne Cutkontur → Stufe 0. — ok
+8. Zusätzliche Prüfungen (unbekannte Attribute/Stufe/Ebenen als Warnung; Abbruch bei Druckobjekt ohne passende Rolle, Tape ohne `tape_vk_m2`, ungültiger Anzahl). — ok
+9. Datensatz: `netto` nach Mindestbetrag vor Rundung; Fläche/Teile je Exemplar, Minuten/Beträge für alle; Rundung 2/4 Nachkommastellen. — ok; `mindestbetrag_greift` in 2b je Preisart (`vk`, `mindest`)
+10. Varianten-Erkennung vorerst nur bei Berechnen. — ok, Zuordnen kommt in 2b dazu
+11. Neue Meldungstexte („… hat eine ungültige Folie (…) – wird nicht berechnet“, „…: Anzahl „…“ ungültig – ganze Zahl ≥ 1 erforderlich“). — freigegeben
+
+Künftig: eigene Festlegungen von CC, die über den Auftrag hinausgehen, stehen in `FESTLEGUNGEN.md` im Repo (Abschnitt je Teilstufe, nummeriert, je ein Satz), nicht verteilt in README-Absätzen; README übernimmt sie erst nach Bestätigung durch Markus.

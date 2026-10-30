@@ -189,7 +189,7 @@ function datensatz(erg, kx) {
     preise: {
       vk: { nur_aufkleber: preisFeld(erg.vk.nur_aufkleber), inkl_montage: preisFeld(erg.vk.inkl_montage) },
       mindest: { nur_aufkleber: preisFeld(erg.mindest.nur_aufkleber), inkl_montage: preisFeld(erg.mindest.inkl_montage) },
-      mindestbetrag_greift: { produkt: erg.vk.greift.produkt, montage: erg.vk.greift.montage }
+      mindestbetrag_greift: { vk: { produkt: erg.vk.greift.produkt, montage: erg.vk.greift.montage }, mindest: { produkt: erg.mindest.greift.produkt, montage: erg.mindest.greift.montage } }
     },
     materialbedarf: erg.folien.map(f => ({ schluessel: f.schluessel, verbrauch_m2: r4(f.verbrauch_m2), lfm: r2(f.lfm), rollenbreite_mm: f.rollenbreite_mm })),
     grafik: grafik(xmp, P("stundensatz.grafik")),

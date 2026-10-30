@@ -14,7 +14,7 @@ const SPALTEN = ["typ", "schluessel", "gilt_fuer", "bezeichnung", "verfahren", "
 // andere Typen (z. B. platte der Schildlogik) werden ignoriert
 const TYPEN = ["parameter", "serie", "zeit", "aufschlag", "komplexitaet"];
 const GILT = ["fahrzeug", "beschriftung", "schild", "alle"];
-const PFLICHT = ["stundensatz.vk", "stundensatz.produktion", "stundensatz.grafik", "mindest.produkt", "mindest.montage", "rundung", "preise_freigegeben", "mwst", "tape.min_schnittdichte", "tape.min_teiledichte"];
+const PFLICHT = ["stundensatz.vk", "stundensatz.produktion", "stundensatz.grafik", "mindest.produkt", "mindest.montage", "rundung", "mwst", "tape.min_schnittdichte", "tape.min_teiledichte"];
 // Zeitschlüssel [P §8.4]: je Verfahren; datei_rip nur bei Druck; je Auftrag mit Verfahren „alle“
 const ZEIT_VERFAHREN = ["ruesten", "datei_cut", "tape_m2", "produktion_m2", "teil", "schnitt_m", "trennen", "stueck", "montage_m2", "reinigen_m2", "montage_teil"];
 const ZEIT_DRUCK = ["datei_rip"];

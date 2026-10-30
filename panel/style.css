@@ -1,17 +1,30 @@
-/* PAM-Werkzeuge: kompakt wie die Illustrator-Panels. Farben aus dem Illustrator-Theme (gemeinsam.js); Orange nur für „Export“ (Button) und „Auftrag“ (Schrift). */
-:root { --bg: #323232; --fg: #e6e6e6; --muted: #9a9a9a; --line: #4a4a4a; --feld: #3c3c3c; --feldrand: #555; --accent: #f29c14; --accent-fg: #1a1a1a; }
-:root.hell { --fg: #1d1d1d; --muted: #6b6b6b; --line: #cfcfcf; --feld: #ffffff; --feldrand: #bdbdbd; }
+/* PAM-Werkzeuge: kompakt wie die Illustrator-Panels (MockUp A5). Farben aus dem Illustrator-Theme (gemeinsam.js); Orange: Export (Button), Auftrag (Schrift),
+ * dazu add bzw. berechnen nach SPEZ_02 §13. Abstände 3 px statt 5 px wie im MockUp, damit die fünf Zeilen in 122 px passen. */
+:root { --bg: #323232; --fg: #e6e6e6; --muted: #9a9a9a; --line: #4a4a4a; --feld: #3c3c3c; --feldrand: #555; --accent: #f29c14; --accent-fg: #1a1a1a; --marke: rgba(255,255,255,.07); }
+:root.hell { --fg: #1d1d1d; --muted: #6b6b6b; --line: #cfcfcf; --feld: #ffffff; --feldrand: #bdbdbd; --marke: rgba(0,0,0,.07); }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { margin: 0; padding: 1px 5px; background: var(--bg); color: var(--fg); font: 11px/1.3 -apple-system, "Helvetica Neue", sans-serif; }
+body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); font: 11px/1.3 -apple-system, "Helvetica Neue", sans-serif; overflow: hidden; }
 button { font: inherit; color: var(--fg); background: var(--feld); border: 1px solid var(--feldrand); border-radius: 2px; cursor: pointer; white-space: nowrap; }
 button:hover:not(:disabled) { filter: brightness(1.15); }
 button:disabled { opacity: .5; cursor: default; }
-button.akzent { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+button.akzent { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; }
 button.akzent-schrift { color: var(--accent); } /* „Auftrag“: Hintergrund wie alle Buttons, Schrift orange */
 .besch { cursor: wait; }
+.muted { color: var(--muted); }
 
-#inhalt { padding: 3px 0; display: flex; flex-direction: column; gap: 6px; }
-#kopf { min-height: 18px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#knoepfe { display: flex; gap: 4px; }
-#knoepfe button { flex: 1 1 0; min-width: 0; height: 22px; font-size: 12px; padding: 0 2px; overflow: hidden; text-overflow: ellipsis; }
+#inhalt { height: 122px; padding: 4px 5px 3px; display: flex; flex-direction: column; gap: 3px; }
+.z { display: flex; align-items: center; gap: 4px; min-height: 18px; }
+.wachsen { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.name { font-size: 12px; font-weight: 600; }
+.z button { flex: 1 1 0; min-width: 0; height: 22px; font-size: 12px; padding: 0 2px; overflow: hidden; text-overflow: ellipsis; }
+.z.wz { border-top: 1px solid var(--line); padding-top: 4px; }
+.grafik { display: flex; align-items: center; gap: 3px; flex: none; white-space: nowrap; }
+input.min { width: 28px; height: 18px; font: inherit; font-size: 11px; padding: 0 3px; color: var(--fg); background: var(--feld); border: 1px solid var(--feldrand); border-radius: 2px; }
+.chip { display: inline-block; width: 10px; height: 10px; border: 1px solid #222; border-radius: 1px; margin-right: 4px; vertical-align: -1px; }
+#objFolie { white-space: nowrap; flex: none; }
+.marke { display: inline-block; flex: none; min-width: 16px; padding: 0 4px; border-radius: 3px; background: var(--marke); color: var(--muted); font-size: 10px; font-weight: 600; text-align: center; }
+.z.preis { justify-content: space-between; font-variant-numeric: tabular-nums; }
+.p1 { white-space: nowrap; }
+.p1 .netto { margin-left: 4px; }
+.p1 b { font-weight: 700; }

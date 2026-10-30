@@ -116,7 +116,7 @@ test("6.5 Datensatz-Struktur nach SPEZ_02 §8.4 über berechnen() mit Host-Attra
   felder(d.folien[0], ["schluessel", "serie", "verfahren", "laminat", "rollenbreite_mm", "nutzbreite_mm", "boegen", "lfm", "verbrauch_m2", "flaeche_m2", "teile", "ek"]);
   felder(d.auftrag, ["datei_rip_min", "auftrag_montage_min", "reinigen_rest_min", "produktion_min", "montage_min"]);
   for (const s of ["vk", "mindest"]) for (const k of ["nur_aufkleber", "inkl_montage"]) felder(d.preise[s][k], ["netto", "gerundet", "brutto"]);
-  felder(d.preise.mindestbetrag_greift, ["produkt", "montage"]);
+  for (const s of ["vk", "mindest"]) felder(d.preise.mindestbetrag_greift[s], ["produkt", "montage"]);
   felder(d.materialbedarf[0], ["schluessel", "verbrauch_m2", "lfm", "rollenbreite_mm"]);
   felder(d.grafik, ["min_auto", "min_manuell", "stundensatz", "betrag"]);
   assert.strictEqual(d.objekte[0].anzahl, 2);

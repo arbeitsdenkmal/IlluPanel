@@ -1,0 +1,211 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>PAM-Werkzeuge Stufe 2 – MockUps</title>
+<style>
+:root { --bg:#2b2b2b; --fg:#d9d9d9; --muted:#9a9a9a; --panel:#535353; --panel-fg:#e6e6e6; --panel-muted:#b0b0b0;
+  --feld:#3c3c3c; --feldrand:#2e2e2e; --line:#666; --kopf:#474747; --accent:#e8a33d; --accent-fg:#1e1e1e; --warn:#f0b24a; --ok:#8fd18f;
+  --plott:#7aa7d9; --druck:#e8a33d; --zebra:rgba(255,255,255,.04); --kopf-bg:rgba(255,255,255,.07); --warn-bg:rgba(240,178,74,.16); --an:#a4ccfe; --an-fg:#1a1a1a;
+  --font:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif; color-scheme:dark; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 var(--font); padding:24px 20px 60px; }
+h1 { font-size:20px; font-weight:600; margin:0 0 4px; }
+h2 { font-size:15px; font-weight:600; margin:36px 0 8px; padding-top:14px; border-top:1px solid #444; }
+p.lead { color:var(--muted); margin:0 0 10px; max-width:80ch; }
+.reihe { display:flex; flex-wrap:wrap; gap:22px 30px; align-items:flex-start; }
+.fall { display:flex; flex-direction:column; gap:6px; }
+.fall>.titel { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.notizen { max-width:52ch; color:var(--muted); font-size:13px; padding-left:18px; margin:0; }
+.notizen li { margin:0 0 5px; } .notizen b { color:var(--fg); font-weight:600; }
+.ui button,.ui input,.ui select { font:inherit; font-size:12px; color:var(--panel-fg); background:var(--feld); border:1px solid var(--feldrand); border-radius:2px; height:22px; padding:0 6px; white-space:nowrap; box-sizing:border-box; }
+.ui button.primaer { background:var(--accent); border-color:var(--accent); color:var(--accent-fg); font-weight:600; }
+.ui button.akzent-schrift { color:var(--accent); }
+.ui button.an { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:#6b5634; font-weight:600; }
+.ui button.mixed { border-style:dashed; border-color:#aaa; }
+.ui button:disabled { opacity:.45; }
+.ui .muted { color:var(--panel-muted); } .ui .warn { color:var(--warn); }
+.chip { display:inline-block; width:10px; height:10px; border:1px solid #222; border-radius:1px; margin-right:4px; vertical-align:-1px; }
+/* Panel */
+.cep { background:var(--panel); color:var(--panel-fg); border:1px solid #1f1f1f; border-radius:4px; box-shadow:0 4px 18px rgba(0,0,0,.45); overflow:hidden; font:11px/1.3 var(--font); width:320px; }
+.cep .tab { background:#3d3d3d; border-bottom:1px solid #2a2a2a; padding:0 8px; height:20px; line-height:20px; font-weight:600; }
+.cep .inhalt { padding:5px 5px 4px; box-sizing:border-box; display:flex; flex-direction:column; gap:5px; }
+.cep .z { display:flex; align-items:center; gap:4px; min-height:18px; }
+.cep .wachsen { flex:1 1 0; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cep .name { font-size:12px; font-weight:600; }
+.cep .z button { flex:1 1 0; min-width:0; padding:0 2px; overflow:hidden; text-overflow:ellipsis; height:22px; }
+.cep input.min { width:28px; height:18px; font-size:11px; padding:0 3px; }
+.cep .grafik { display:flex; align-items:center; gap:3px; flex:none; }
+.cep .z.wz { border-top:1px solid var(--line); padding-top:5px; }
+.cep .hinweise { flex:1 1 0; min-width:0; color:var(--warn); line-height:1.15; }
+.cep .preise { flex:none; margin-left:auto; display:grid; grid-template-columns:max-content max-content max-content; gap:0 6px; font-variant-numeric:tabular-nums; line-height:1.2; }
+.cep .preise .netto { text-align:right; } .cep .preise b { font-weight:700; text-align:right; }
+.cep .preis1 { gap:10px; justify-content:flex-end; font-variant-numeric:tabular-nums; } .cep .preis1 .p1 { white-space:nowrap; } .cep .preis1 .netto { margin-left:4px; }
+.cep .tagz { display:flex; gap:4px; align-items:center; }
+.marke { display:inline-block; min-width:16px; padding:0 4px; border-radius:3px; background:var(--kopf-bg); color:var(--panel-muted); font-size:10px; font-weight:600; text-align:center; }
+.mass { font-size:11px; color:var(--panel-muted); margin-top:2px; }
+/* Fenster */
+.fenster { background:var(--panel); color:var(--panel-fg); border:1px solid #1f1f1f; border-radius:6px; box-shadow:0 6px 24px rgba(0,0,0,.5); overflow:hidden; font:12px/1.3 var(--font); display:flex; flex-direction:column; box-sizing:border-box; }
+.fenster .kopf { height:24px; flex:none; background:#3d3d3d; border-bottom:1px solid #2a2a2a; display:flex; align-items:center; padding:0 10px; font-weight:600; }
+.fenster .kopf .ampel { width:11px; height:11px; border-radius:50%; background:#ff5f57; margin-right:10px; }
+.fenster main { flex:1 1 auto; padding:10px 12px 8px; display:flex; flex-direction:column; gap:9px; }
+.fenster .fuss { flex:none; display:flex; align-items:center; gap:6px; padding:7px 12px; border-top:1px solid var(--line); }
+.fenster .fuss .hinweis { flex:1 1 0; color:var(--warn); }
+.fenster .fuss button { height:26px; min-width:84px; }
+.fenster button,.fenster select,.fenster input { height:24px; border-radius:3px; padding:0 8px; }
+.lbl { color:var(--panel-muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+.feldz { display:grid; grid-template-columns:84px 1fr; column-gap:10px; row-gap:8px; align-items:center; }
+.seg { display:flex; gap:4px; flex-wrap:wrap; } .seg button { min-width:52px; } .seg.eng.serie button { min-width:0; padding:0 7px; }
+.seg.eng button { min-width:0; padding:0 9px; }
+.farben { display:flex; flex-direction:column; gap:4px; }
+.farbe { display:flex; align-items:center; gap:8px; padding:4px 6px; border-radius:3px; background:var(--zebra); }
+.farbe.an { background:#5d4a2c; box-shadow:inset 0 0 0 1px var(--accent); }
+.farbe .big { width:16px; height:16px; border:1px solid #222; border-radius:2px; flex:none; }
+.farbe .was { flex:1 1 0; }
+.raster { display:grid; grid-template-columns:repeat(24,16px); gap:3px; }
+.raster span { width:16px; height:16px; border:1px solid #222; border-radius:2px; display:block; position:relative; }
+.raster span.an { outline:2px solid var(--accent); outline-offset:1px; }
+.raster span.an::after { content:attr(data-n); position:absolute; left:20px; top:-3px; font-size:11px; color:var(--panel-fg); background:#333; padding:0 4px; border-radius:2px; white-space:nowrap; }
+.block { border-top:1px solid var(--line); padding-top:8px; }
+/* Objekte */
+.abschnitt-kopf { padding:4px 6px; border-radius:2px; background:var(--kopf-bg); font-weight:600; border-left:4px solid var(--panel-fg); margin-top:6px; }
+.abschnitt-kopf.ohne { color:var(--warn); border-left-color:var(--warn); }
+.obj { display:flex; flex-direction:column; padding:4px 6px 4px 8px; border-left:4px solid transparent; border-radius:2px; }
+.obj.zebra { background:var(--zebra); } .obj.plott { border-left-color:var(--plott); } .obj.druck { border-left-color:var(--druck); }
+.obj.ohne { color:var(--panel-muted); } .obj.var { margin-left:18px; }
+.obj .z1 { display:flex; align-items:baseline; gap:8px; font-size:13px; } .obj .z1 .n { font-weight:600; flex:1 1 0; } .obj .z1 .betrag { font-variant-numeric:tabular-nums; }
+.obj .z2 { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--panel-muted); margin-top:1px; } .obj .z2 .folie { color:var(--panel-fg); }
+.obj.gewaehlt { background:var(--an); color:var(--an-fg); } .obj.gewaehlt .z2, .obj.gewaehlt .folie, .obj.gewaehlt .marke { color:var(--an-fg); }
+table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; }
+th,td { padding:3px 6px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+th { font-weight:600; color:var(--panel-muted); font-size:11px; }
+td.l,th.l { text-align:left; } td.n { font-weight:600; }
+tr.grp td { background:var(--kopf-bg); font-weight:600; text-align:left; }
+tr.grp.ohne td { color:var(--warn); }
+tr.zebra td { background:var(--zebra); } tr.var td.l:first-child { padding-left:22px; }
+tr.sel td { background:var(--an); color:var(--an-fg); }
+tr.ohne td { color:var(--panel-muted); }
+.streif { display:inline-block; width:4px; height:12px; border-radius:1px; vertical-align:-2px; margin-right:6px; }
+/* Details */
+.ueber { font-weight:600; font-size:12px; color:var(--panel-muted); text-transform:uppercase; letter-spacing:.04em; margin:4px 0 2px; }
+.summen td { border-bottom:none; padding:2px 6px; }
+tr.preis td { font-size:15px; font-weight:700; padding-top:6px; } tr.preis td .brutto { font-size:13px; font-weight:400; margin-left:12px; color:var(--panel-fg); }
+tr.preis.akzent td.w { color:var(--accent); }
+tr.mvk td { color:var(--panel-muted); font-size:12px; padding-top:0; }
+.hinweiszeile { padding:3px 8px; border-radius:2px; background:var(--warn-bg); color:var(--warn); display:inline-block; }
+.min { color:var(--panel-muted); }
+</style></head><body>
+<h1>PAM-Werkzeuge – Stufe 2, MockUps (3. Fassung)</h1>
+<p class="lead">Stand nach Klärung 30.10.: Panel nach A3 mit einem Button für Berechnen + Fenster; „Objekte“ und „Details“ zusammengefasst zu „Zusammenfassung“ (Tabelle C2, nichts doppelt); Zuordnen mit Suchfeld, Reihenfolge Digitaldruck | Plott. Inhalte wie 1. Fassung (ASE-Farben, Preisliste, Fall „Streifen“ nach V6; Grafikminuten 12 sind Beispiel).</p>
+
+<h2>A. Panel „PAM-Werkzeuge“</h2>
+<p class="lead">Objektzeile mit Name, Folie und Anzahl. Ein Button <b>berechnen</b> rechnet und öffnet „Zusammenfassung“ . Preise bleiben im Panel.</p>
+<div class="reihe">
+<div class="fall"><div class="titel">A5 – zwei Buttonzeilen, Preise in einer Zeile · 320 × 142</div>
+<div class="cep ui"><div class="tab">PAM-Werkzeuge</div><div class="inhalt" style="height:122px">
+ <div class="z"><span class="wachsen"><b>Streifen</b> · Fahrzeugbeschriftung</span><span class="grafik muted">Grafik 12 min <input class="min" value="+m" readonly></span></div>
+ <div class="z tagz"><span class="wachsen name">Streifen</span><span class="muted"><span class="chip" style="background:rgb(191,10,15)"></span>751C-031</span><span class="marke">×2</span></div>
+ <div class="z"><button>edit</button><button class="primaer">berechnen</button></div>
+ <div class="z wz"><button>Summa</button><button>Druck</button><button class="primaer">Export</button><button class="akzent-schrift">Auftrag</button></div>
+ <div class="z preis1"><span class="hinweise"></span><span class="p1">Material <span class="netto">60,00</span> <b>71,40</b></span><span class="p1">inkl. Mont. <span class="netto">105,00</span> <b>124,95</b></span></div>
+</div></div><div class="mass">Preise in einer Zeile → 142 px. Beschriftung „Material“ / „inkl. Mont.“ wie vorgegeben. Für den Hinweis „Mindestbetrag … greift“ bleibt in dieser Zeile kein Platz – er steht dann nur in der Zusammenfassung.</div></div>
+
+<div class="fall"><div class="titel">A7 – Zustände (A5): keine Auswahl · Druckbogen vorn · 320 × 142</div>
+<div class="cep ui" style="margin-bottom:10px"><div class="tab">PAM-Werkzeuge</div><div class="inhalt" style="height:122px">
+ <div class="z"><span class="wachsen"><b>Streifen</b> · Fahrzeugbeschriftung</span><span class="grafik muted">Grafik 12 min <input class="min" value="+m" readonly></span></div>
+ <div class="z tagz"><span class="wachsen name muted">Keine Auswahl</span></div>
+ <div class="z"><button class="primaer">add</button><button>berechnen</button></div>
+ <div class="z wz"><button>Summa</button><button>Druck</button><button class="primaer">Export</button><button class="akzent-schrift">Auftrag</button></div>
+ <div class="z preis1"><span class="hinweise"></span><span class="p1">Material <span class="netto">60,00</span> <b>71,40</b></span><span class="p1">inkl. Mont. <span class="netto">105,00</span> <b>124,95</b></span></div>
+</div></div>
+<div class="cep ui"><div class="tab">PAM-Werkzeuge</div><div class="inhalt" style="height:122px">
+ <div class="z"><span class="wachsen"><b>Streifen</b> · Druckbogen 3551 matt 1370 · 1/1</span></div>
+ <div class="z"></div>
+ <div class="z"><button disabled>add</button><button disabled>berechnen</button></div>
+ <div class="z wz"><button disabled>Summa</button><button disabled>Druck</button><button class="primaer">Export</button><button class="akzent-schrift">Auftrag</button></div>
+ <div class="z"></div>
+</div></div></div>
+</div>
+
+<h2>B. Fenster „Objekt“ (Zuordnen)</h2>
+<div class="reihe">
+<div class="fall"><div class="titel">B3 – Plott, Suche „03“ eingetippt · 480 × ca. 400</div>
+<div class="fenster ui" style="width:480px"><div class="kopf"><span class="ampel"></span>Objekt</div><main>
+ <div class="feldz">
+  <span class="lbl">Art</span><div class="seg"><button>Digitaldruck</button><button class="an">Plott</button></div>
+  <span class="lbl">Anzahl</span><div><input value="2" style="width:56px;text-align:right"></div>
+ </div>
+ <div class="block">
+  <div class="lbl" style="margin-bottom:5px">Farben im Objekt</div>
+  <div class="farben">
+   <div class="farbe"><span class="big" style="background:rgb(191,10,15)"></span><span class="was">Rot</span><span class="ok">✓ 751C-031</span></div>
+   <div class="farbe an"><span class="big" style="background:#fff"></span><span class="was">Weiß</span><span class="warn">→ zuordnen</span></div>
+  </div>
+ </div>
+ <div class="feldz" style="margin-top:2px">
+  <span class="lbl">Serie</span><div class="seg eng serie" style="flex-wrap:nowrap"><button>651</button><button class="an">751C</button><button>951</button><button>970G</button><button>970M</button><span style="display:inline-flex;align-items:center;gap:6px;margin-left:6px;white-space:nowrap"><span class="lbl">Farb-Nr.</span><input value="03" style="width:44px;padding:0 5px"></span></div>
+ </div>
+ <div class="raster" id="raster751"></div>
+ <div class="block feldz">
+  <span class="lbl">Komplexität</span><div class="seg eng"><button class="an" title="normal, +0 % auf die Produktion">K0</button><button title="erschwert, +25 %">K1</button><button title="stark erschwert, +50 %">K2</button><button title="extrem, +100 %">K3</button></div>
+  <span class="lbl">Aufschläge</span><div class="seg eng"><button title="Sicke: +50 % auf die Montage des Stücks">Sicke</button><button title="Wölbung: +36 min je m² Stückfläche">Wölbung</button></div>
+ </div>
+</main><footer class="fuss"><span class="hinweis">Weiß: keine Oracal-Farbe – bitte zuordnen</span><button>Abbrechen</button><button class="primaer" disabled>OK</button></footer></div>
+<ul class="notizen">
+<li><b>Suche:</b> das Feld filtert die Kacheln der gewählten Serie beim Tippen (hier „03“ → 030 … 035, 306, 403, 403 …); leer = alle 117. Ein Treffer → Enter übernimmt; mehrere → Klick auf die Kachel. Ohne gewählte Serie wird über alle Serien gesucht.</li>
+<li>Eine Kachel ordnet die markierte Zeile der Farbliste zu; danach springt die Markierung zur nächsten offenen Zeile.</li>
+</ul></div>
+
+<div class="fall"><div class="titel">B4 – Digitaldruck, drei Objekte bearbeiten, Laminat unterschiedlich · 480 × ca. 250</div>
+<div class="fenster ui" style="width:480px"><div class="kopf"><span class="ampel"></span>Objekt</div><main>
+ <div class="feldz">
+  <span class="lbl">Art</span><div class="seg"><button class="an">Digitaldruck</button><button>Plott</button></div>
+  <span class="lbl">Anzahl</span><div><input value="1" style="width:56px;text-align:right"></div>
+  <span class="lbl">Medium</span><div class="seg eng"><button>3162</button><button class="an">3551</button><button>3951</button><button>3676</button><button>UltraTack</button><button>MonsterTack</button></div>
+  <span class="lbl">Laminat</span><div class="seg eng"><button class="mixed">matt</button><button class="mixed">glänzend</button></div>
+ </div>
+ <div class="block feldz">
+  <span class="lbl">Aufschläge</span><div class="seg eng"><button>Sicke</button><button>Wölbung</button><button class="an">Tape auto</button></div>
+ </div>
+</main><footer class="fuss"><span class="hinweis"></span><button>Abbrechen</button><button class="primaer">OK</button></footer></div>
+<ul class="notizen"><li>Gestrichelt = unterschiedliche Werte, bleiben je Objekt, bis neu gewählt wird. Komplexität fehlt, weil keines der Objekte eine Cutkontur hat.</li></ul></div>
+</div>
+
+<h2>C. Fenster „Zusammenfassung“ (ersetzt „Objekte“ und „Details“) · 620 × ca. 520</h2>
+<p class="lead">Oben die Objekte (Tabelle C2; Klick wählt in Illustrator aus, Doppelklick öffnet „Objekt“), darunter Folien und Summen; nichts doppelt: Beträge je Objekt nur in der Objekttabelle, Material/Minuten/Preise nur in den Summen. Fuß: <b>berechnen</b> rechnet neu, <b>PDF</b> schreibt <code>&lt;Kunde&gt;_Zusammenfassung.pdf</code> (Inhalt ohne Preise).</p>
+<div class="reihe">
+<div class="fall"><div class="titel">C3 – nach berechnen</div>
+<div class="fenster ui" style="width:620px"><div class="kopf"><span class="ampel"></span>Zusammenfassung</div><main>
+ <table>
+  <thead><tr><th class="l">Objekt</th><th>Anzahl</th><th class="l">Folie</th><th class="l">Attribute</th><th>Teile</th><th>m²</th><th>Betrag</th><th>inkl. M.</th></tr></thead>
+  <tbody>
+   <tr class="sel"><td class="l n"><span class="streif" style="background:var(--plott)"></span>Streifen</td><td>2</td><td class="l"><span class="chip" style="background:rgb(191,10,15)"></span>751C-031</td><td class="l"></td><td>2</td><td>1,94</td><td>57,68</td><td>96,18</td></tr>
+   <tr class="zebra"><td class="l n"><span class="streif" style="background:var(--druck)"></span>Logo</td><td>1</td><td class="l">3551 matt</td><td class="l">Tape</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+   <tr class="var"><td class="l"><span class="streif" style="background:var(--druck)"></span>Logo <span class="min">· Variante</span></td><td>1</td><td class="l">3551 matt</td><td class="l"></td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+   <tr class="grp ohne"><td colspan="8">Ohne Zuordnung (1) – wird nicht berechnet</td></tr>
+   <tr class="ohne"><td class="l">Pfeil</td><td></td><td class="l">Sandbox</td><td class="l"></td><td></td><td></td><td></td><td></td></tr>
+  </tbody>
+ </table>
+ <div class="ueber" style="margin-top:8px">Folien</div>
+ <table><thead><tr><th class="l">Folie</th><th>Rolle</th><th>Bögen</th><th>lfm</th><th>m² Verbrauch</th><th>EK €</th></tr></thead>
+ <tbody><tr><td class="l"><span class="chip" style="background:rgb(191,10,15)"></span>751C-031</td><td>1260</td><td>1</td><td>2,08</td><td>2,62</td><td>19,95</td></tr></tbody></table>
+ <div class="ueber" style="margin-top:8px">Summen</div>
+ <table class="summen"><tbody>
+  <tr><td class="l">Material</td><td>28,00</td></tr>
+  <tr><td class="l">Produktion <span class="min">11 min</span></td><td>29,68</td></tr>
+  <tr><td class="l">Montage <span class="min">17 min, davon 2 je Auftrag</span></td><td>43,67</td></tr>
+  <tr class="preis"><td class="l">nur Aufkleber</td><td class="w">60,00 €<span class="brutto">71,40 € inkl. MwSt. 19 %</span></td></tr>
+  <tr class="mvk"><td class="l">Mindest-VK <span class="min">(84 €/h)</span></td><td>45,00 € <span class="min">53,55 €</span></td></tr>
+  <tr class="preis akzent"><td class="l">inkl. Montage</td><td class="w">105,00 €<span class="brutto">124,95 € inkl. MwSt. 19 %</span></td></tr>
+  <tr class="mvk"><td class="l">Mindest-VK <span class="min">(84 €/h)</span></td><td>75,00 € <span class="min">89,25 €</span> &nbsp;<span class="hinweiszeile">Mindestbetrag Montage greift</span></td></tr>
+ </tbody></table>
+ <div class="block"><table class="summen"><tbody><tr><td class="l min">Grafik 12 min <span class="min">(12 auto, 0 manuell) · 96 €/h</span></td><td class="min">19,20 €</td></tr></tbody></table></div>
+</main><footer class="fuss"><span class="hinweis"></span><button>berechnen</button><button>PDF</button><button>Schließen</button></footer></div></div>
+<ul class="notizen">
+<li>Objekttabelle: Teile und m² (Stückfläche × Anzahl) je Objekt, weil sie die Beträge erklären; Logo-Zeilen „–“, weil nach dem letzten Berechnen zugeordnet.</li>
+<li>Höhe wächst mit der Objektzahl; die Objekttabelle scrollt ab etwa 12 Zeilen, Folien und Summen bleiben sichtbar.</li>
+<li>Button „PDF“ wie im alten Panel.</li>
+</ul>
+</div>
+<script>
+const f751=[["020",[255,172,0]],["219",[255,178,0]],["203",[255,188,0]],["211",[255,192,0]],["019",[248,172,0]],["208",[226,166,0]],["209",[255,194,0]],["021",[255,197,0]],["216",[255,203,0]],["022",[255,208,0]],["025",[255,233,14]],["026",[104,9,26]],["361",[143,0,18]],["030",[147,14,25]],["348",[163,0,23]],["306",[189,0,0]],["031",[191,10,15]],["027",[198,9,10]],["028",[209,0,12]],["325",[218,9,0]],["324",[225,0,0]],["032",[213,23,0]],["326",[222,28,0]],["047",[223,52,0]],["033",[227,55,0]],["335",[243,60,0]],["333",[255,88,5]],["034",[250,87,0]],["332",[250,98,0]],["035",[255,102,0]],["340",[80,18,32]],["048",[111,0,45]],["415",[98,37,85]],["040",[87,49,102]],["403",[81,49,133]],["043",[115,99,164]],["042",[179,145,187]],["041",[195,26,95]],["077",[198,48,108]],["044",[211,84,127]],["045",[237,129,178]],["532",[14,24,35]],["588",[0,25,55]],["590",[0,23,54]],["518",[0,24,61]],["591",[0,36,88]],["050",[0,47,91]],["058",[0,45,110]],["537",[0,24,91]],["065",[0,35,109]],["049",[0,51,124]],["592",[0,39,125]],["593",[0,39,125]],["150",[0,55,172]],["536",[0,42,120]],["510",[0,52,136]],["067",[0,63,125]],["595",[0,76,119]],["057",[0,67,147]],["051",[0,82,162]],["509",[0,73,153]],["508",[0,85,169]],["052",[0,104,188]],["507",[0,101,177]],["555",[34,123,190]],["594",[0,119,180]],["517",[0,127,190]],["053",[0,136,207]],["056",[0,162,212]],["549",[112,143,162]],["608",[0,88,110]],["054",[0,153,154]],["055",[67,204,188]],["599",[117,208,216]],["060",[0,68,41]],["661",[0,72,47]],["078",[4,83,30]],["617",[0,94,46]],["607",[0,99,83]],["604",[0,111,71]],["066",[0,124,143]],["061",[0,114,74]],["068",[0,120,73]],["619",[0,136,86]],["062",[0,140,62]],["064",[0,163,27]],["063",[109,193,67]],["080",[71,41,30]],["803",[70,35,19]],["828",[80,51,33]],["079",[102,33,18]],["083",[190,90,27]],["801",[132,79,33]],["811",[179,135,79]],["081",[174,134,94]],["818",[229,187,145]],["804",[230,201,149]],["023",[248,216,158]],["813",[236,214,184]],["018",[231,210,187]],["070",[14,13,13]],["720",[45,48,50]],["073",[76,78,79]],["713",[87,95,98]],["071",[102,107,104]],["721",[114,130,137]],["076",[134,138,141]],["074",[138,143,140]],["724",[164,164,162]],["072",[198,200,198]],["109",[214,221,222]],["010",[239,242,242]],["090",[128,132,135]],["930",[151,111,67]],["093",[66,68,63]],["918",[98,98,96]],["932",[68,70,72]]];
+const r=document.getElementById('raster751');
+for(const [n,c] of f751){if(!n.includes('03'))continue;const s=document.createElement('span');s.style.background=`rgb(${c})`;s.title=n+' (751 C)';s.dataset.n='751C-'+n;r.appendChild(s);}
+</script>
+</body></html>

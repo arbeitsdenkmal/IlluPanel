@@ -21,6 +21,7 @@
     "position": "IP_Position",
     "verfahren": "IP_Verfahren",
     "stufen": "IP_Stufen",
-    "farbe": "IP_Farbe"
+    "farbe": "IP_Farbe",
+    "originalfarbe": "IP_Originalfarbe"
   }
 }

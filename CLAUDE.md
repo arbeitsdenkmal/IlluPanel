@@ -14,6 +14,7 @@
 
 ## c) Ende jeder Stufe
 - `README.md` (aktueller Architektur- und Funktionsstand, keine Historie), `CHANGELOG.md` (knapp), `TESTBERICHT.md` (minimal); dann `git commit` und `git push`.
+- FESTLEGUNGEN.md pflegen (eigene Festlegungen, nummeriert); README erst nach Bestätigung.
 
 ## d) Festlegungen
 - Keine Namen, Anzeigetexte oder Festlegungen erfinden; bei Unklarheit fragen und anhalten.

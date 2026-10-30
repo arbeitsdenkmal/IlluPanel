@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="12.0" ExtensionBundleId="de.pamnm.illupanels" ExtensionBundleVersion="3.1.0-2a"
+<ExtensionManifest Version="12.0" ExtensionBundleId="de.pamnm.illupanels" ExtensionBundleVersion="3.1.0-2b"
                    ExtensionBundleName="PAM-Werkzeuge" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="de.pamnm.illupanels.panel" Version="3.1.0-2a"/>
-    <Extension Id="de.pamnm.illupanels.anlegen" Version="3.1.0-2a"/>
+    <Extension Id="de.pamnm.illupanels.panel" Version="3.1.0-2b"/>
+    <Extension Id="de.pamnm.illupanels.anlegen" Version="3.1.0-2b"/>
+    <Extension Id="de.pamnm.illupanels.objekt" Version="3.1.0-2b"/>
+    <Extension Id="de.pamnm.illupanels.zusammenfassung" Version="3.1.0-2b"/>
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>
@@ -26,8 +28,8 @@
           <Type>Panel</Type>
           <Menu>PAM-Werkzeuge</Menu>
           <Geometry>
-            <Size><Height>160</Height><Width>320</Width></Size>
-            <MinSize><Height>120</Height><Width>320</Width></MinSize>
+            <Size><Height>142</Height><Width>320</Width></Size>
+            <MinSize><Height>142</Height><Width>320</Width></MinSize>
           </Geometry>
         </UI>
       </DispatchInfo>
@@ -46,6 +48,45 @@
           <Type>ModalDialog</Type>
           <Geometry>
             <Size><Height>420</Height><Width>420</Width></Size>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- SPEZ_02 §6: Fenster „Objekt“ (Zuordnen), eine feste Höhe für den Plott-Zustand (ORACAL 951 mit 145 Kacheln); Inhalt oben ausgerichtet -->
+    <Extension Id="de.pamnm.illupanels.objekt">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel/objekt.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+        <UI>
+          <Type>ModalDialog</Type>
+          <Geometry>
+            <Size><Height>470</Height><Width>480</Width></Size>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- SPEZ_02 §9: Fenster „Zusammenfassung“, nicht modal, skalierbar -->
+    <Extension Id="de.pamnm.illupanels.zusammenfassung">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel/zusammenfassung.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+        <UI>
+          <Type>Modeless</Type>
+          <Geometry>
+            <Size><Height>520</Height><Width>620</Width></Size>
+            <MinSize><Height>240</Height><Width>480</Width></MinSize>
           </Geometry>
         </UI>
       </DispatchInfo>

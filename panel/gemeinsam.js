@@ -41,6 +41,21 @@
     const appId = JSON.parse(cep.getHostEnvironment()).appId;
     cep.dispatchEvent({ type, scope: "APPLICATION", appId, extensionId, data: JSON.stringify(data || {}) });
   }
+  // CSEvent empfangen, data als Objekt
+  const empfangen = (type, fn) => cep.addEventListener(type, ev => { let d = {}; try { d = typeof ev.data === "string" ? JSON.parse(ev.data) : ev.data || {}; } catch (e) { /* leer */ } fn(d); });
 
-  window.PAM = { cep, EXT, lib, host, evalRoh, kernLaden, popup, senden, EVENT_ANGELEGT: "de.pamnm.illupanels.angelegt" };
+  // Übergabe Panel -> Fenster „Objekt“ über eine Datei im temporären Ordner (Muster der alten Fenster), Rückmeldung per CSEvent EVENT_OBJEKT_FERTIG
+  const fs = require("fs"), os = require("os");
+  const UEBERGABE = path.join(os.tmpdir(), "de.pamnm.illupanels.objekt.json");
+  const uebergabe = {
+    lesen() { try { return JSON.parse(fs.readFileSync(UEBERGABE, "utf8")); } catch (e) { return {}; } },
+    schreiben(o) { fs.writeFileSync(UEBERGABE, JSON.stringify(o || {})); }
+  };
+  const ID = { panel: "de.pamnm.illupanels.panel", anlegen: "de.pamnm.illupanels.anlegen", objekt: "de.pamnm.illupanels.objekt", zusammenfassung: "de.pamnm.illupanels.zusammenfassung" };
+
+  window.PAM = { cep, EXT, lib, host, evalRoh, kernLaden, popup, senden, empfangen, uebergabe, ID,
+    EVENT_ANGELEGT: "de.pamnm.illupanels.angelegt",
+    EVENT_OBJEKT_FERTIG: "de.pamnm.illupanels.objektFertig",       // Fenster „Objekt“: OK
+    EVENT_OBJEKT_OEFFNEN: "de.pamnm.illupanels.objektOeffnen",     // „Zusammenfassung“: Doppelklick -> Panel öffnet „Objekt“
+    EVENT_BERECHNET: "de.pamnm.illupanels.berechnet" };            // Panel bzw. „Zusammenfassung“ hat berechnet oder exportiert
 })();
