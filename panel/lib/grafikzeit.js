@@ -1,6 +1,6 @@
 /* Grafikzeit (SPEZ_02 §12): Zähllogik der Hintergrund-Extension und Puffer grafikzeit_puffer.json im Rechnerordner.
  * Gezählt wird nur, wenn gleichzeitig Illustrator vorn ist, die letzte Eingabe < 30 s her ist und das aktive Dokument einen Schlüssel hat
- * (Pfad der Arbeitsdatei, bei Druckbögen bogen.arbeitsdatei). Gerechnet wird mit Zeitstempeln (Abstand zwischen zwei Abfragen), Lücken
+ * (Pfad der Arbeitsdatei; Druckbögen zählen nicht, SPEZ_02 Fassung 8 §12). Gerechnet wird mit Zeitstempeln (Abstand zwischen zwei Abfragen), Lücken
  * (Ruhezustand, Hänger) höchstens 15 s. Der Zähler schreibt nicht selbst; die Hintergrund-Extension hängt seine Einträge an den Puffer an.
  * Ins XMP schreibt nur das Panel: es übernimmt die Puffereinträge der vorderen Arbeitsdatei und entfernt genau die übernommenen Ids [B-15].
  * Puffer: { "<Pfad Arbeitsdatei>": [ { id, von, bis, sekunden } ] }; beide Seiten lesen–ändern–schreiben atomar (Temp-Datei + Umbenennen). */
@@ -8,6 +8,7 @@
 const fs = require("fs");
 const path = require("path");
 const K = require("./konfiguration");
+const D = require("./dokument");
 const { neueId } = require("./teile");
 
 const PUFFER = "grafikzeit_puffer.json";
@@ -24,17 +25,21 @@ function pufferLesen(datei) {
     return p && typeof p === "object" && !Array.isArray(p) ? p : {};
   } catch (e) { return {}; }
 }
+function atomarSchreiben(datei, p) {
+  fs.mkdirSync(path.dirname(datei), { recursive: true });
+  const tmp = `${datei}.${process.pid}.${Math.random().toString(36).slice(2, 8)}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(p, null, 1));
+  fs.renameSync(tmp, datei);
+}
 /** Lesen, ändern, atomar schreiben (Hintergrund-Extension und Panel schreiben in dieselbe Datei); leere Listen entfallen */
 function pufferAendern(datei, fn) {
   const p = pufferLesen(datei);
   fn(p);
   for (const k of Object.keys(p)) if (!Array.isArray(p[k]) || !p[k].length) delete p[k];
-  fs.mkdirSync(path.dirname(datei), { recursive: true });
-  const tmp = `${datei}.${process.pid}.${Math.random().toString(36).slice(2, 8)}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(p, null, 1));
-  fs.renameSync(tmp, datei);
+  atomarSchreiben(datei, p);
   return p;
 }
+
 /** Eintrag { von, bis, sekunden } des Zählers mit neuer Id an den Puffer anhängen */
 function anhaengen(datei, pfad, eintrag) {
   const k = schluessel(pfad);
@@ -80,6 +85,32 @@ function uebernahme(datei, pfad, xmp, weitere) {
   r.grafikzeit.eintraege.push(...neu);
   return { xmp: r, ids: p.map(e => e.id) };
 }
+/**
+ * Übernahme ins XMP über den JSX-Kern (host = evalScript-Brücke), nur Panel und „Zusammenfassung“: vordere Arbeitsdatei; bei vorderem Druckbogen nur
+ * mit opts.druckbogen (Export) die Arbeitsdatei aus bogen.arbeitsdatei, wenn sie offen ist. opts.weitere = zusätzliche Einträge („+m“).
+ * Kein XMP-Schreiben ohne neue Einträge. Rückgabe true, wenn geschrieben wurde.
+ */
+async function uebernehmenXmp(host, datei, opts) {
+  const o = opts || {};
+  const i = await host("dokumentInfo");
+  if (!i.hatDokument) return false;
+  let vorn = null;
+  try { vorn = D.parsen(i.xmp); } catch (e) { return false; }
+  if (!vorn) return false;
+  let pfad = i.pfad || null, xmp = vorn;
+  if (vorn.rolle === "druckbogen") {
+    pfad = o.druckbogen && vorn.bogen && typeof vorn.bogen.arbeitsdatei === "string" ? vorn.bogen.arbeitsdatei : null;
+    if (!pfad) return false;
+    try { xmp = D.parsen((await host("xmpLesen", pfad)).text); } catch (e) { return false; } // Arbeitsdatei nicht offen
+    if (!xmp || xmp.rolle !== "arbeitsdatei") return false;
+  } else if (vorn.rolle !== "arbeitsdatei") return false;
+  const u = uebernahme(datei, datei && pfad ? pfad : null, xmp, o.weitere);
+  if (!u) return false;
+  if (pfad) await host("xmpSchreiben", D.serialisieren(u.xmp), pfad); else await host("xmpSchreiben", D.serialisieren(u.xmp));
+  entfernen(datei, pfad, u.ids);
+  return true;
+}
+
 /** Anzeige „Grafik N min“: Σ aller Einträge, ganzzahlig gerundet [B-16] */
 const summeMinuten = xmp => {
   const e = xmp && xmp.grafikzeit && Array.isArray(xmp.grafikzeit.eintraege) ? xmp.grafikzeit.eintraege : [];
@@ -117,5 +148,5 @@ class Zaehler {
   }
 }
 
-module.exports = { PUFFER, pufferDatei, schluessel, pufferLesen, pufferAendern, anhaengen, eintraegeVon, entfernen, minuten, eintragAuto, eintragManuell,
+module.exports = { PUFFER, pufferDatei, uebernehmenXmp, schluessel, pufferLesen, pufferAendern, anhaengen, eintraegeVon, entfernen, minuten, eintragAuto, eintragManuell,
   manuellLesen, uebernahme, summeMinuten, Zaehler };

@@ -1,0 +1,10 @@
+{
+  "musterdateien": "~/tools/folienkalkulation",
+  "illustrator": "/Applications/Adobe Illustrator 2026/Adobe Illustrator.app",
+  "zeitgrenze_schritt_s": 120,
+  "verbindung_s": 10,
+  "abschnitt_s": 900,
+  "lauf_s": 3600,
+  "antwort_s": 30,
+  "panel_warten_s": 180
+}

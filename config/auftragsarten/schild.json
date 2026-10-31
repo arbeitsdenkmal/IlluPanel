@@ -43,25 +43,41 @@
     "profil": "schild",
     "preset": "pam x4",
     "dateiname": null,
+    "anschnitt": "dokument",
     "techniken": [
       {
         "rolle": "digitaldruck",
-        "name": "druck",
-        "anschnitt": "dokument"
+        "name": "druck"
       },
       {
         "rolle": "uv-vorn",
-        "name": "uv-vorn",
-        "anschnitt": "vorlage",
-        "vorlage": "config/vorlagen/UV-Schild.ait"
+        "name": "uv-vorn"
       },
       {
         "rolle": "uv-hinten",
-        "name": "uv-hinten",
-        "anschnitt": "vorlage",
-        "vorlage": "config/vorlagen/UV-Schild.ait"
+        "name": "uv-hinten"
       }
-    ]
+    ],
+    "laser": {
+      "name": "laser",
+      "max_mm": [
+        300,
+        600
+      ],
+      "kontur_pt": 0.25,
+      "umriss_cmyk": [
+        0,
+        100,
+        0,
+        0
+      ],
+      "loch_cmyk": [
+        100,
+        0,
+        0,
+        0
+      ]
+    }
   },
   "komplexitaet": {
     "plott": "immer",
@@ -90,8 +106,35 @@
       ]
     }
   },
-  "vorlage": {
-    "datei": "config/vorlagen/Schild.ait"
+  "druck": {
+    "abstand_mm": 20,
+    "beschnitt_mm": 3,
+    "max_laenge_mm": 2500,
+    "max_laenge_sonder_mm": 5700,
+    "cut_farbfeld": "Cutkontur",
+    "cut_cmyk": [
+      0,
+      100,
+      0,
+      0
+    ]
+  },
+  "bohrungen": {
+    "standard": {
+      "anordnung": "ecken",
+      "abstand_x_mm": 20,
+      "abstand_y_mm": 20,
+      "durchmesser_mm": 5
+    },
+    "markierung": {
+      "durchmesser_mm": 2,
+      "cmyk": [
+        100,
+        0,
+        0,
+        0
+      ]
+    }
   },
   "nesting": {
     "abstand_mm": 20,
@@ -109,7 +152,8 @@
     }
   ],
   "werkzeuge": [
-    "summa"
+    "summa",
+    "druck"
   ],
   "arten": [
     {
@@ -136,64 +180,7 @@
   "dateien": {
     "arbeitsdatei": "Arbeitsdatei.ai"
   },
-  "materialien": [
-    {
-      "schluessel": "dibond-3",
-      "bezeichnung": "Dibond 3 mm",
-      "kuerzel": "Dib",
-      "staerke": 3,
-      "acryl": false
-    },
-    {
-      "schluessel": "forex-3",
-      "bezeichnung": "Forex 3 mm",
-      "kuerzel": "PVC",
-      "staerke": 3,
-      "acryl": false
-    },
-    {
-      "schluessel": "forex-5",
-      "bezeichnung": "Forex 5 mm",
-      "kuerzel": "PVC",
-      "staerke": 5,
-      "acryl": false
-    },
-    {
-      "schluessel": "forex-10",
-      "bezeichnung": "Forex 10 mm",
-      "kuerzel": "PVC",
-      "staerke": 10,
-      "acryl": false
-    },
-    {
-      "schluessel": "acryl-3",
-      "bezeichnung": "Acryl 3 mm",
-      "kuerzel": "PMMA",
-      "staerke": 3,
-      "acryl": true
-    },
-    {
-      "schluessel": "acryl-5",
-      "bezeichnung": "Acryl 5 mm",
-      "kuerzel": "PMMA",
-      "staerke": 5,
-      "acryl": true
-    },
-    {
-      "schluessel": "acryl-8",
-      "bezeichnung": "Acryl 8 mm",
-      "kuerzel": "PMMA",
-      "staerke": 8,
-      "acryl": true
-    },
-    {
-      "schluessel": "acryl-10",
-      "bezeichnung": "Acryl 10 mm",
-      "kuerzel": "PMMA",
-      "staerke": 10,
-      "acryl": true
-    }
-  ],
+  "materialien": "config/schild_materialien.csv",
   "uv_max_mm": [
     420,
     594

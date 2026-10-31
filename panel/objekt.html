@@ -6,21 +6,25 @@
 <link rel="stylesheet" href="fenster.css">
 </head>
 <body>
-  <!-- SPEZ_02 §6, MockUp B3 (Plott) / B4 (Digitaldruck): Art, Anzahl; Digitaldruck Medium, Laminat; Plott Farben im Objekt, Serie, Farb-Nr., Kachelraster;
-       Komplexität (Plott, Druck mit Cutkontur), Aufschläge. Feste Größe 480 × 470 aus dem Manifest, Inhalt oben ausgerichtet. -->
+  <!-- SPEZ_03_Oberflaeche §5, MOCKUP_THEMA6_Zuordnen_2 A (480 × 440, Inhalt oben ausgerichtet): Zeile 1 Art als Segment-Buttons, rechts Anzahl (bei UV ohne);
+       Digitaldruck Medium, Laminat; Plott Farben im Objekt, Farb-Nr. groß vor den Serien, Kachelraster (Schlüssel auch bei Mouseover);
+       Komplexität (Plott, Druck mit Cutkontur), Aufschläge. Schild (SPEZ_03_Schild §8.1): zusätzlich UV-Vorn, UV-Hinten, ohne Tape -->
   <main>
-    <div class="feldz">
-      <span class="lbl">Art</span><div id="arten" class="seg" role="group" aria-label="Art"></div>
-      <span class="lbl">Anzahl</span><div><input id="anzahl" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" style="width:56px;text-align:right"></div>
-      <span id="mediumL" class="lbl">Medium</span><div id="medium" class="seg eng" role="group" aria-label="Medium"></div>
-      <span id="laminatL" class="lbl">Laminat</span><div id="laminat" class="seg eng" role="group" aria-label="Laminat"></div>
+    <div class="zeile">
+      <div id="arten" class="seg" role="group" aria-label="Art"></div><span class="fuell"></span>
+      <span id="anzahlL" class="lbl">Anzahl</span><span id="anzahlZ"><input id="anzahl" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" style="width:56px;text-align:right"></span>
+    </div>
+    <div id="druck" class="feldz">
+      <span class="lbl">Medium</span><div id="medium" class="seg eng" role="group" aria-label="Medium"></div>
+      <span class="lbl">Laminat</span><div id="laminat" class="seg eng" role="group" aria-label="Laminat"></div>
     </div>
     <div id="plott" class="block">
       <div class="lbl" style="margin-bottom:5px">Farben im Objekt</div>
       <div id="farben" class="farben"></div>
     </div>
-    <div id="serieZ" class="feldz" style="margin-top:2px">
-      <span class="lbl">Serie</span><div class="seg eng serie" style="flex-wrap:nowrap"><span id="serien" class="seg eng serie" style="flex-wrap:nowrap"></span><span style="display:inline-flex;align-items:center;gap:6px;margin-left:6px;white-space:nowrap"><span class="lbl">Farb-Nr.</span><input id="farbNr" type="text" autocomplete="off" spellcheck="false" style="width:44px;padding:0 5px"></span></div>
+    <div id="serieZ" class="zeile">
+      <span class="lbl">Farb-Nr.</span><input id="farbNr" class="fnr" type="text" autocomplete="off" spellcheck="false"><span class="fuell"></span>
+      <span id="serien" class="seg eng serie" style="flex-wrap:nowrap"></span>
     </div>
     <div id="raster" class="raster"></div>
     <div id="zusatz" class="block feldz">

@@ -1,0 +1,149 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>PAM-Werkzeuge Skript-Buttons</title>
+<style>
+:root { --bg:#2b2b2b; --fg:#d9d9d9; --muted:#9a9a9a; --panel:#535353; --panel-fg:#e6e6e6; --panel-muted:#b0b0b0;
+  --feld:#3c3c3c; --feldrand:#2e2e2e; --line:#666; --accent:#e8a33d; --accent-fg:#1e1e1e; --kopf-bg:rgba(255,255,255,.07);
+  --font:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif; color-scheme:dark; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 var(--font); padding:24px 20px 60px; }
+h1 { font-size:20px; font-weight:600; margin:0 0 4px; }
+h2 { font-size:15px; font-weight:600; margin:36px 0 8px; padding-top:14px; border-top:1px solid #444; }
+p.lead { color:var(--muted); margin:0 0 10px; max-width:90ch; }
+.reihe { display:flex; flex-wrap:wrap; gap:22px 30px; align-items:flex-start; }
+.fall { display:flex; flex-direction:column; gap:6px; }
+.fall>.titel { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.ui button,.ui input { font:inherit; font-size:12px; color:var(--panel-fg); background:var(--feld); border:1px solid var(--feldrand); border-radius:2px; height:22px; padding:0 6px; white-space:nowrap; box-sizing:border-box; }
+.ui button.primaer { background:var(--accent); border-color:var(--accent); color:var(--accent-fg); font-weight:600; }
+.ui button.akzent-schrift { color:var(--accent); }
+.ui button:disabled { opacity:.45; }
+.ui .muted { color:var(--panel-muted); }
+.chip { display:inline-block; width:10px; height:10px; border:1px solid #222; border-radius:1px; margin-right:4px; vertical-align:-1px; }
+.cep { background:var(--panel); color:var(--panel-fg); border:1px solid #1f1f1f; border-radius:4px; box-shadow:0 4px 18px rgba(0,0,0,.45); overflow:visible; font:11px/1.3 var(--font); width:320px; position:relative; }
+.cep .tab { background:#3d3d3d; border-bottom:1px solid #2a2a2a; padding:0 8px; height:20px; line-height:20px; font-weight:600; display:flex; border-radius:4px 4px 0 0; }
+.cep .tab .menu { margin-left:auto; color:var(--panel-muted); font-weight:400; letter-spacing:1px; }
+.cep .inhalt { padding:5px 5px 4px; box-sizing:border-box; display:flex; flex-direction:column; gap:5px; }
+.cep .z { display:flex; align-items:center; gap:4px; min-height:18px; }
+.cep .wachsen { flex:1 1 0; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cep .name { font-size:12px; font-weight:600; }
+.cep .z button { flex:1 1 0; min-width:0; padding:0 2px; overflow:hidden; text-overflow:ellipsis; height:22px; }
+.cep input.min { width:28px; height:18px; font-size:11px; padding:0 3px; }
+.cep .grafik { display:flex; align-items:center; gap:3px; flex:none; }
+.cep .z.wz { border-top:1px solid var(--line); padding-top:5px; }
+.cep .preis1 { gap:10px; justify-content:flex-end; font-variant-numeric:tabular-nums; } .cep .preis1 .p1 { white-space:nowrap; } .cep .preis1 .netto { margin-left:4px; }
+.marke { display:inline-block; min-width:16px; padding:0 4px; border-radius:3px; background:var(--kopf-bg); color:var(--panel-muted); font-size:10px; font-weight:600; text-align:center; }
+.mass { font-size:11px; color:var(--panel-muted); margin-top:2px; max-width:320px; }
+.flyout { position:absolute; right:4px; top:19px; width:150px; background:#3a3a3a; border:1px solid #1f1f1f; border-radius:4px; box-shadow:0 6px 18px rgba(0,0,0,.55); padding:4px 0; font-size:12px; z-index:2; }
+.flyout div { padding:3px 14px; } .flyout div.aus { color:#7d7d7d; } .flyout div.hl { background:#2d6ad6; color:#fff; } .flyout hr { border:0; border-top:1px solid #555; margin:4px 0; }
+.fenster { background:var(--panel); color:var(--panel-fg); border:1px solid #1f1f1f; border-radius:6px; box-shadow:0 6px 24px rgba(0,0,0,.5); overflow:hidden; font:12px/1.3 var(--font); display:flex; flex-direction:column; }
+.fenster .kopf { height:24px; background:#3d3d3d; border-bottom:1px solid #2a2a2a; display:flex; align-items:center; padding:0 10px; font-weight:600; }
+.fenster .kopf .ampel { width:11px; height:11px; border-radius:50%; background:#ff5f57; margin-right:10px; }
+.fenster main { padding:12px; display:grid; grid-template-columns:auto 80px; gap:8px 10px; align-items:center; }
+.fenster main input { height:24px; text-align:right; }
+.fenster .fuss { display:flex; justify-content:flex-end; gap:6px; padding:7px 12px; border-top:1px solid var(--line); }
+.fenster .fuss button { height:26px; min-width:84px; }
+</style></head><body>
+<h1>PAM-Werkzeuge – Breite, Masken, Logo, VK-CC, Alex · MockUps (1. Fassung)</h1>
+<p class="lead">Panel und Zeilen 1–5 wie Stufe 2 (MockUp A5/A7, <code>panel/index.html</code>). Buttontexte aus <code>config/werkzeuge.json</code> des alten Projekts. Sichtbarkeit nach deinen Antworten: Breite nur ohne Panel-Datei; Masken immer; Logo und VK-CC ohne Panel-Datei und bei Sonstiges; Alex wie bisher nur ohne Panel-Datei. Kunde „Streifen“, Grafik 12 min und Preise sind die Beispielwerte aus MOCKUP_STUFE2. Drei Zustände je Variante: <b>1</b> Kundendatei ohne Panel-XMP · <b>2</b> Arbeitsdatei Sonstiges · <b>3</b> kalkulierte Arbeitsdatei.</p>
+
+<h2>Variante 1 – eigene Skriptzeile unter der Werkzeugzeile · 320 × 168</h2>
+<p class="lead">Sechste Zeile, immer sichtbar, nicht zutreffende Buttons gesperrt (Prinzip „alle Zeilen bleiben stehen“ aus Stufe 2). Panel wird 26 px höher.</p>
+<div class="reihe">
+<div class="fall"><div class="titel">V1 · 1 Kundendatei</div>
+<div class="cep ui"><div class="tab">PAM-Werkzeuge</div><div class="inhalt" style="height:148px">
+ <div class="z"><span class="wachsen"></span></div>
+ <div class="z"></div>
+ <div class="z"><button disabled>add</button><button disabled>berechnen</button></div>
+ <div class="z wz"><button disabled>Summa</button><button disabled>Druck</button><button disabled>Export</button><button class="akzent-schrift">Auftrag</button></div>
+ <div class="z"></div>
+ <div class="z wz"><button>Breite</button><button>Masken</button><button>Logo</button><button>VK-CC</button><button>Alex</button></div>
+</div></div></div>
+<div class="fall"><div class="titel">V1 · 2 Sonstiges</div>
+<div class="cep ui"><div class="tab">PAM-Werkzeuge</div><div class="inhalt" style="height:148px">
+ <div class="z"><span class="wachsen"><b>Streifen</b> · Sonstiges</span><span class="grafik muted">Grafik 12 min <input class="min" value="+m" readonly></span></div>
+ <div class="z"></div>
+ <div class="z"><button disabled>add</button><button disabled>berechnen</button></div>
+ <div class="z wz"><button disabled>Summa</button><button disabled>Druck</button><button class="primaer">Export</button><button class="akzent-schrift">Auftrag</button></div>
+ <div class="z"></div>
+ <div class="z wz"><button disabled>Breite</button><button>Masken</button><button>Logo</button><button>VK-CC</button><button disabled>Alex</button></div>
+</div></div></div>
+<div class="fall"><div class="titel">V1 · 3 kalkuliert</div>
+<div class="cep ui"><div class="tab">PAM-Werkzeuge</div><div class="inhalt" style="height:148px">
+ <div class="z"><span class="wachsen"><b>Streifen</b> · Fahrzeugbeschriftung</span><span class="grafik muted">Grafik 12 min <input class="min" value="+m" readonly></span></div>
+ <div class="z"><span class="wachsen name">Streifen</span><span class="muted"><span class="chip" style="background:rgb(191,10,15)"></span>751C-031</span><span class="marke">×2</span></div>
+ <div class="z"><button>edit</button><button class="primaer">berechnen</button></div>
+ <div class="z wz"><button>Summa</button><button>Druck</button><button class="primaer">Export</button><button class="akzent-schrift">Auftrag</button></div>
+ <div class="z preis1"><span class="p1">Material <span class="netto">60,00</span> <b>71,40</b></span><span class="p1">inkl. Mont. <span class="netto">105,00</span> <b>124,95</b></span></div>
+ <div class="z wz"><button disabled>Breite</button><button>Masken</button><button disabled>Logo</button><button disabled>VK-CC</button><button disabled>Alex</button></div>
+</div></div></div>
+</div>
+
+<h2>Variante 2 – freie Zeilen umbelegen · 320 × 142 (Größe bleibt)</h2>
+<p class="lead">Wo Zeilen 2, 3 und 5 nichts zu tun haben, stehen dort die Skript-Buttons; nur zutreffende Buttons erscheinen. In kalkulierten Dateien sitzt Masken rechts in Zeile 3.</p>
+<div class="reihe">
+<div class="fall"><div class="titel">V2 · 1 Kundendatei</div>
+<div class="cep ui"><div class="tab">PAM-Werkzeuge</div><div class="inhalt" style="height:122px">
+ <div class="z"><span class="wachsen"></span></div>
+ <div class="z"><button>Breite</button><button>Masken</button></div>
+ <div class="z"><button>Logo</button><button>VK-CC</button><button>Alex</button></div>
+ <div class="z wz"><button disabled>Summa</button><button disabled>Druck</button><button disabled>Export</button><button class="akzent-schrift">Auftrag</button></div>
+ <div class="z"></div>
+</div></div></div>
+<div class="fall"><div class="titel">V2 · 2 Sonstiges</div>
+<div class="cep ui"><div class="tab">PAM-Werkzeuge</div><div class="inhalt" style="height:122px">
+ <div class="z"><span class="wachsen"><b>Streifen</b> · Sonstiges</span><span class="grafik muted">Grafik 12 min <input class="min" value="+m" readonly></span></div>
+ <div class="z"><button>Masken</button></div>
+ <div class="z"><button>Logo</button><button>VK-CC</button></div>
+ <div class="z wz"><button disabled>Summa</button><button disabled>Druck</button><button class="primaer">Export</button><button class="akzent-schrift">Auftrag</button></div>
+ <div class="z"></div>
+</div></div></div>
+<div class="fall"><div class="titel">V2 · 3 kalkuliert</div>
+<div class="cep ui"><div class="tab">PAM-Werkzeuge</div><div class="inhalt" style="height:122px">
+ <div class="z"><span class="wachsen"><b>Streifen</b> · Fahrzeugbeschriftung</span><span class="grafik muted">Grafik 12 min <input class="min" value="+m" readonly></span></div>
+ <div class="z"><span class="wachsen name">Streifen</span><span class="muted"><span class="chip" style="background:rgb(191,10,15)"></span>751C-031</span><span class="marke">×2</span></div>
+ <div class="z"><button>edit</button><button class="primaer">berechnen</button><button>Masken</button></div>
+ <div class="z wz"><button>Summa</button><button>Druck</button><button class="primaer">Export</button><button class="akzent-schrift">Auftrag</button></div>
+ <div class="z preis1"><span class="p1">Material <span class="netto">60,00</span> <b>71,40</b></span><span class="p1">inkl. Mont. <span class="netto">105,00</span> <b>124,95</b></span></div>
+</div></div></div>
+</div>
+
+<h2>Variante 3 – Panelmenü (Flyout ≡ im Panelkopf) · 320 × 142 (Größe bleibt)</h2>
+<p class="lead">Kein Platz im Panel; die fünf Funktionen stehen im Illustrator-eigenen Panelmenü, nicht zutreffende Einträge grau. Zwei Klicks statt einem.</p>
+<div class="reihe">
+<div class="fall"><div class="titel">V3 · 1 Kundendatei, Menü offen</div>
+<div class="cep ui"><div class="tab">PAM-Werkzeuge<span class="menu">≡</span></div>
+ <div class="flyout"><div class="hl">Breite</div><div>Masken</div><hr><div>Logo</div><div>VK-CC</div><div>Alex</div></div>
+ <div class="inhalt" style="height:122px">
+ <div class="z"><span class="wachsen"></span></div>
+ <div class="z"></div>
+ <div class="z"><button disabled>add</button><button disabled>berechnen</button></div>
+ <div class="z wz"><button disabled>Summa</button><button disabled>Druck</button><button disabled>Export</button><button class="akzent-schrift">Auftrag</button></div>
+ <div class="z"></div>
+</div></div></div>
+<div class="fall"><div class="titel">V3 · 2 Sonstiges, Menü offen</div>
+<div class="cep ui"><div class="tab">PAM-Werkzeuge<span class="menu">≡</span></div>
+ <div class="flyout"><div class="aus">Breite</div><div>Masken</div><hr><div>Logo</div><div>VK-CC</div><div class="aus">Alex</div></div>
+ <div class="inhalt" style="height:122px">
+ <div class="z"><span class="wachsen"><b>Streifen</b> · Sonstiges</span><span class="grafik muted">Grafik 12 min <input class="min" value="+m" readonly></span></div>
+ <div class="z"></div>
+ <div class="z"><button disabled>add</button><button disabled>berechnen</button></div>
+ <div class="z wz"><button disabled>Summa</button><button disabled>Druck</button><button class="primaer">Export</button><button class="akzent-schrift">Auftrag</button></div>
+ <div class="z"></div>
+</div></div></div>
+<div class="fall"><div class="titel">V3 · 3 kalkuliert, Menü offen</div>
+<div class="cep ui"><div class="tab">PAM-Werkzeuge<span class="menu">≡</span></div>
+ <div class="flyout"><div class="aus">Breite</div><div>Masken</div><hr><div class="aus">Logo</div><div class="aus">VK-CC</div><div class="aus">Alex</div></div>
+ <div class="inhalt" style="height:122px">
+ <div class="z"><span class="wachsen"><b>Streifen</b> · Fahrzeugbeschriftung</span><span class="grafik muted">Grafik 12 min <input class="min" value="+m" readonly></span></div>
+ <div class="z"><span class="wachsen name">Streifen</span><span class="muted"><span class="chip" style="background:rgb(191,10,15)"></span>751C-031</span><span class="marke">×2</span></div>
+ <div class="z"><button>edit</button><button class="primaer">berechnen</button></div>
+ <div class="z wz"><button>Summa</button><button>Druck</button><button class="primaer">Export</button><button class="akzent-schrift">Auftrag</button></div>
+ <div class="z preis1"><span class="p1">Material <span class="netto">60,00</span> <b>71,40</b></span><span class="p1">inkl. Mont. <span class="netto">105,00</span> <b>124,95</b></span></div>
+</div></div></div>
+</div>
+
+<h2>Fenster „Breite“ (für alle Varianten)</h2>
+<p class="lead">Ersetzt die zwei Eingabefenster des Skripts in einem Schritt. Texte aus <code>Druckbreite.jsx</code>; Zielbreite vorbelegt mit der aktuellen sichtbaren Breite (Beispiel 523,4), Zugabe mit 2.</p>
+<div class="reihe"><div class="fall"><div class="titel">Breite · modal</div>
+<div class="fenster ui" style="width:320px"><div class="kopf"><span class="ampel"></span>Breite</div>
+<main><span>Zielbreite in mm?</span><input value="523,4"><span>Umlaufende Zugabe in mm?</span><input value="2"></main>
+<div class="fuss"><button>Abbrechen</button><button>OK</button></div></div></div></div>
+</body></html>

@@ -2,7 +2,8 @@
   "rechner": "MacBook",
   "server": {
     "kunden": "/Volumes/Server A-Z/_03_Kunden A-Z",
-    "dtf_bestellen": "/Volumes/Server A-Z/_02_Produktion/= DTF bestellen ="
+    "dtf_bestellen": "/Volumes/Server A-Z/_02_Produktion/= DTF bestellen =",
+    "wmd_bestellen": "/Volumes/Server A-Z/_02_Produktion/= wmd bestellen ="
   },
   "lokal": {
     "arbeitsdateien": "~/Desktop",

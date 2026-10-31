@@ -1,4 +1,5 @@
-/* Gemeinsames für die Fenster „Objekt“ und „Zusammenfassung“ (nach gemeinsam.js geladen): „Abbrechen“ bzw. „Schließen“ und Esc schließen das Fenster. */
+/* Gemeinsames für die Fenster „Objekt“, „Zusammenfassung“, „Breite“, „Schilder“, „Motiv“, „Textilfarbe“, „Modell“, „Nutzen“, „WEA-Etiketten“ und
+ * „Bögl Nummern“ (nach gemeinsam.js geladen): „Abbrechen“ bzw. „Schließen“ und Esc schließen das Fenster. */
 (function () {
   "use strict";
   const G = window.PAM;

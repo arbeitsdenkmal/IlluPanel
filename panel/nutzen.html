@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Nutzen</title>
+<link rel="stylesheet" href="fenster.css">
+</head>
+<body>
+  <!-- SPEZ_03_Nutzen §5.3, SPEZ_03_Oberflaeche §11 (840 × 380): Schritt 1 „Nutzen“ (Angaben ohne Box „Motiv (gemessen)“; Linie; Bogenformat, Modus, Abstände),
+       Schritt 2 „Vorschau“ (Vorgabe, Layout wählen mit hervorgehobener Zeile, Detailbox) -->
+  <main id="schritt1" class="nutzen">
+    <div class="feldz">
+      <span class="lbl">Kunde</span><div><input id="kunde" type="text" autocomplete="off" spellcheck="false" style="width:260px"><span id="kundeT"></span></div>
+      <span class="lbl">Stückzahl</span><div><input id="stueckzahl" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" style="width:70px;text-align:right"><span id="stueckzahlT"></span></div>
+      <span class="lbl">Medium</span><div><div id="medium" class="seg eng" role="group" aria-label="Medium"></div><span id="mediumT"></span></div>
+      <span class="lbl">Laminat</span><div><div id="laminat" class="seg eng" role="group" aria-label="Laminat"></div><span id="laminatT"></span></div>
+      <span class="lbl">Produkt</span><div><input id="produkt" type="text" autocomplete="off" spellcheck="false" style="width:260px"></div>
+    </div>
+    <div class="feldz block">
+      <span class="lbl">Bogenformat</span><div id="format" class="seg" role="group" aria-label="Bogenformat"></div>
+      <span id="modusL" class="lbl">Modus</span><div id="modus" class="senkrecht links" role="group" aria-label="Modus"></div>
+      <span class="lbl">Abstand Motive (mm)</span><div><input id="abstand" type="text" autocomplete="off" spellcheck="false" style="width:70px;text-align:right"></div>
+      <span id="abstandBL" class="lbl"></span><div id="abstandB" class="muted"></div>
+    </div>
+  </main>
+  <main id="schritt2" class="nutzen" hidden>
+    <div><div class="lbl">Vorgabe</div><div id="vorgabe" class="vor"></div></div>
+    <div class="block"><div class="lbl">Layout wählen</div><div id="layouts" class="layouts"></div><div id="detail" class="vor detail"></div></div>
+  </main>
+  <footer class="fuss"><span id="hinweis" class="hinweis"></span><button id="abbrechen">Abbrechen</button><button id="weiter" class="primaer" disabled>Weiter →</button><button id="aufbauen" class="primaer" hidden>Aufbauen</button></footer>
+  <script src="gemeinsam.js"></script>
+  <script src="fenster.js"></script>
+  <script src="nutzen.js"></script>
+</body>
+</html>

@@ -1,7 +1,8 @@
 /* Unsichtbare Hintergrund-Extension (de.pamnm.illupanels.hintergrund, SPEZ_02 §12): zählt die Grafikzeit, unabhängig davon, ob das Panel offen ist.
  * Keine Abfragen an Illustrator (evalScript) [R 4.7] – eine Abfrage während des PDF-Imports ließ im alten Panel den Inhalt im bereits offenen Dokument
  * landen. Das aktive Dokument kommt aus den Ereignisdaten (Pfad), Rolle und bogen.arbeitsdatei liest Node aus dem XMP der gespeicherten Datei
- * (lib/dokument_xmp.js); ungespeichertes Dokument: kein Zählen. Alle 5 s „Illustrator vorn“ und „Sekunden seit letzter Eingabe“ (lib/aktivitaet.js);
+ * (lib/dokument_xmp.js). Ungespeichertes Dokument und Druckbogen: kein Zählen (SPEZ_02 Fassung 8 §12). Alle 5 s „Illustrator vorn“ und
+ * „Sekunden seit letzter Eingabe“ (lib/aktivitaet.js);
  * der Zähler legt seine Einträge alle 60 s, bei Dokumentwechsel und beim Beenden im Puffer ab (lib/grafikzeit.js); ins XMP schreibt nur das Panel. */
 (function () {
   "use strict";
@@ -22,7 +23,7 @@
   function setzen(pfad) {
     aktiverPfad = pfad; schluessel = null;
     const n = ++stand;
-    X.arbeitsdateiAusDatei(pfad).then(s => { if (n === stand) schluessel = s; });
+    if (pfad) X.arbeitsdateiAusDatei(pfad).then(s => { if (n === stand) schluessel = s; });
   }
   const zaehler = new GZ.Zaehler({
     schreiben: (s, eintrag) => { try { if (puffer) GZ.anhaengen(puffer, s, eintrag); } catch (e) { /* Rechnerordner nicht beschreibbar o. ä. */ } }

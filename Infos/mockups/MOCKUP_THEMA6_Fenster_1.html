@@ -1,0 +1,272 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>PAM-Werkzeuge Thema 6 – übrige Fenster, 1. Fassung</title>
+<style>
+:root { --bg:#2b2b2b; --fg:#d9d9d9; --muted:#9a9a9a; --panel:#535353; --panel-fg:#e6e6e6; --panel-muted:#b0b0b0;
+  --feld:#3c3c3c; --feldrand:#2e2e2e; --line:#666; --accent:#e8a33d; --accent-fg:#1e1e1e; --warn:#f0b24a; --ok:#8fd18f;
+  --plott:#7aa7d9; --druck:#e8a33d; --zebra:rgba(255,255,255,.04); --kopf-bg:rgba(255,255,255,.07); --warn-bg:rgba(240,178,74,.16); --an:#a4ccfe; --an-fg:#1a1a1a;
+  --font:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif; color-scheme:dark; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 var(--font); padding:24px 20px 60px; }
+h1 { font-size:20px; font-weight:600; margin:0 0 4px; }
+h2 { font-size:16px; font-weight:600; margin:40px 0 8px; padding-top:14px; border-top:1px solid #555; }
+h3 { font-size:14px; font-weight:600; margin:22px 0 6px; color:var(--fg); }
+p.lead { color:var(--muted); margin:0 0 10px; max-width:100ch; }
+code { font-size:12px; }
+.reihe { display:flex; flex-wrap:wrap; gap:22px 26px; align-items:flex-start; }
+.fall { display:flex; flex-direction:column; gap:6px; }
+.fall>.titel { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.notizen { max-width:100ch; color:var(--muted); font-size:13px; padding-left:18px; margin:0 0 12px; }
+.notizen li { margin:0 0 5px; } .notizen b { color:var(--fg); font-weight:600; }
+.chip { display:inline-block; width:10px; height:10px; border:1px solid #222; border-radius:1px; margin-right:4px; vertical-align:-1px; }
+.mass { font-size:11px; color:var(--panel-muted); margin-top:2px; max-width:640px; }
+/* Fenster (wie panel/fenster.css) */
+.fenster { background:var(--panel); color:var(--panel-fg); border:1px solid #1f1f1f; border-radius:6px; box-shadow:0 6px 24px rgba(0,0,0,.5); overflow:hidden; font:12px/1.3 var(--font); display:flex; flex-direction:column; box-sizing:border-box; }
+.fenster .kopf { height:24px; flex:none; background:#3d3d3d; border-bottom:1px solid #2a2a2a; display:flex; align-items:center; padding:0 10px; font-weight:600; }
+.fenster .kopf .ampel { width:11px; height:11px; border-radius:50%; background:#ff5f57; margin-right:10px; }
+.fenster main { flex:1 1 auto; padding:10px 12px 8px; display:flex; flex-direction:column; gap:9px; min-height:0; }
+.fenster .fuss { flex:none; display:flex; align-items:center; gap:6px; padding:7px 12px; border-top:1px solid var(--line); }
+.fenster .fuss .hinweis { flex:1 1 0; min-width:0; color:var(--warn); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fenster .fuss button { height:26px; min-width:84px; }
+.fenster button,.fenster select,.fenster input,.fenster textarea { font:inherit; font-size:12px; color:var(--panel-fg); background:var(--feld); border:1px solid var(--feldrand); border-radius:3px; height:24px; padding:0 8px; white-space:nowrap; box-sizing:border-box; }
+.fenster textarea { height:auto; padding:4px 8px; white-space:pre; resize:none; }
+.fenster button.primaer { background:var(--accent); border-color:var(--accent); color:var(--accent-fg); font-weight:600; }
+.fenster button.an { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:#6b5634; font-weight:600; }
+.fenster button.mixed, .fenster input.mixed { border-style:dashed; border-color:#aaa; }
+.fenster button:disabled { opacity:.45; }
+.fenster .muted { color:var(--panel-muted); } .fenster .warn { color:var(--warn); } .fenster .ok { color:var(--ok); }
+.lbl { color:var(--panel-muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+.feldz { display:grid; grid-template-columns:84px 1fr; column-gap:10px; row-gap:8px; align-items:center; }
+.seg { display:flex; gap:4px; flex-wrap:wrap; align-items:center; } .seg button { min-width:52px; }
+.seg.eng button { min-width:0; padding:0 9px; }
+.seg.voll { flex-wrap:nowrap; } .seg.voll button { flex:1 1 0; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.block { border-top:1px solid var(--line); padding-top:8px; }
+.zeile { display:flex; align-items:center; gap:6px; }
+.pre { white-space:pre; font:11px/1.45 ui-monospace, Menlo, monospace; color:var(--panel-fg); }
+table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; }
+th,td { padding:3px 6px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+th { font-weight:600; color:var(--panel-muted); font-size:11px; }
+td.l,th.l { text-align:left; } td.n { font-weight:600; }
+tr.zebra td { background:var(--zebra); }
+tr.sel td { background:var(--an); color:var(--an-fg); } tr.sel td .min { color:var(--an-fg); }
+tr.grp td { background:var(--kopf-bg); font-weight:600; text-align:left; } tr.grp.ohne td { color:var(--warn); }
+tr.ohne td { color:var(--panel-muted); }
+.min { color:var(--panel-muted); }
+.ueber { font-weight:600; font-size:12px; color:var(--panel-muted); text-transform:uppercase; letter-spacing:.04em; margin:4px 0 2px; }
+.summen td { border-bottom:none; padding:2px 6px; }
+tr.preis td { font-size:15px; font-weight:700; padding-top:6px; } tr.preis td .brutto { font-size:13px; font-weight:400; margin-left:12px; color:var(--panel-fg); }
+tr.preis.akzent td.w { color:var(--accent); }
+tr.mvk td { color:var(--panel-muted); font-size:12px; padding-top:0; }
+.hinweiszeile { padding:3px 8px; border-radius:2px; background:var(--warn-bg); color:var(--warn); display:inline-block; }
+
+.liste { display:flex; flex-direction:column; border:1px solid var(--line); border-radius:3px; }
+.liste .zl { display:grid; grid-template-columns:1fr 70px 84px; gap:6px; align-items:center; padding:3px 6px; }
+.liste .zl:nth-child(even) { background:var(--zebra); }
+.liste .kopfz { color:var(--panel-muted); font-size:11px; border-bottom:1px solid var(--line); }
+.lay { display:flex; flex-direction:column; gap:3px; }
+.lay label { display:flex; gap:6px; align-items:center; padding:2px 4px; border-radius:3px; }
+.lay label.an { background:#5d4a2c; box-shadow:inset 0 0 0 1px var(--accent); }
+.lay input { height:auto; margin:0; }
+.vor { background:rgba(0,0,0,.18); border-radius:3px; padding:6px 8px; }
+table.t td, table.t th { padding:3px 6px; }
+table.t tr.an td { background:#5d4a2c; }
+table.t input[type=radio] { height:auto; margin:0; }
+.schild { display:grid; grid-template-columns:120px 1fr; gap:10px; padding:6px; border-radius:3px; background:var(--zebra); align-items:center; }
+.schild .rechts { display:flex; flex-direction:column; gap:6px; }
+.schild label, .schilder label { display:inline-flex; align-items:center; gap:4px; color:var(--panel-muted); font-size:11px; margin-right:6px; }
+.schild input, .schilder input { width:52px; text-align:right; padding:0 5px; }
+.skizze { display:flex; align-items:center; justify-content:center; height:84px; }
+.platte { position:relative; background:#8c8c8c; border:1px solid #bbb; border-radius:2px; }
+.loch { position:absolute; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:#222; }
+.schilder td { text-align:left; border-bottom:0; padding:4px 4px; }
+.schilder tr:nth-child(even) td { background:var(--zebra); }
+.kach { display:grid; gap:4px; }
+.kach .k { display:flex; flex-direction:column; gap:2px; padding:3px; border:1px solid transparent; border-radius:3px; font-size:11px; text-align:center; }
+.kach .k.an { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:rgba(232,163,61,.22); font-weight:600; }
+.kach .k i { display:block; border:1px solid #999; border-radius:2px; }
+.kach .k span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mini { display:grid; grid-template-columns:repeat(12,24px); gap:4px; }
+.mini i { display:block; width:24px; height:24px; border:1px solid #888; border-radius:2px; position:relative; }
+.mini i.an { outline:2px solid var(--accent); outline-offset:1px; }
+.spalten { display:grid; gap:12px; min-height:0; }
+.spalten > div { display:flex; flex-direction:column; gap:3px; min-width:0; }
+.spalten > div + div { border-left:1px solid var(--line); padding-left:12px; }
+.liste2 button { width:100%; text-align:left; }
+.etikett { width:180px; height:72px; background:#f2f2f2; color:#111; border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font:600 15px/1.1 var(--font); border:2px solid #e8007f; }
+.etikett .u { font-size:13px; font-weight:500; }
+.num { display:grid; grid-template-columns:repeat(2, auto 70px); gap:6px 10px; align-items:center; justify-content:start; }
+.num5 { display:grid; grid-template-columns:repeat(5, 72px); gap:6px 8px; }
+.num5 div { display:flex; flex-direction:column; gap:2px; } .num5 input { width:72px; text-align:right; }
+.pdf { width:500px; background:#fff; color:#111; font:10px/1.35 var(--font); padding:22px 26px; box-shadow:0 6px 24px rgba(0,0,0,.5); }
+.pdf table th, .pdf table td { border-bottom:1px solid #ccc; color:#111; padding:2px 4px; font-size:9.5px; }
+.pdf .k1 { font-size:14px; font-weight:700; } .pdf .k2 { display:flex; justify-content:space-between; color:#444; margin:2px 0 10px; }
+.pdf .ab { font-weight:700; font-size:10px; margin:8px 0 3px; text-transform:uppercase; letter-spacing:.04em; color:#555; }
+tr.preis td.w { white-space:normal; }
+</style></head><body>
+<h1>PAM-Werkzeuge – Thema 6, übrige Fenster (1. Fassung)</h1>
+<p class="lead">Inhalte aus den Fenstern im Projektordner (<code>zusammenfassung</code>, <code>breite</code>, <code>schilder</code>, <code>textilfarbe</code>, <code>modell</code>, <code>nutzen</code>, <code>gitter</code>, <code>mbnr</code>) und <code>config/</code>. Plan-, Varianten- und Detailzeilen bei Nutzen und WEA-Etiketten sind mit dem echten Code gerechnet (<code>nutzen.js</code>, <code>gitter.js</code>; Motiv 80 × 50 mm, Anschnitt 2, 100 Stk, 3551 matt; drei Kundendateien); Dateinamen, Kopfzeilen, Typbezeichnung, Maße, Mengen und Beträge sind Beispiele.</p>
+
+<h2>1. Fenster „Zusammenfassung“, Textil (Festlegungen Textil 32/33)</h2>
+<ul class="notizen"><li>Aufbau C3 bleibt (Objekte oben, Folien, Summen, Grafik, Fuß berechnen · PDF · Schließen); offen ist nur die Darstellung der Textil-Zeilen und der PDF-Kopf.</li></ul>
+<div class="reihe" id="zf"></div>
+
+<h2>2. Fenster „Breite“ · 320 × 120</h2>
+<ul class="notizen"><li>Mit Thema 1 freigegeben (MOCKUP_STUFE3_Werkzeuge), unverändert; nur zur Vollständigkeit.</li></ul>
+<div class="reihe"><div class="fall"><div class="fenster" style="width:320px"><div class="kopf"><span class="ampel"></span>Breite</div>
+<main style="display:grid;grid-template-columns:auto 80px;gap:8px 10px;align-items:center;padding:12px"><span>Zielbreite in mm?</span><input value="523,4" style="text-align:right"><span>Umlaufende Zugabe in mm?</span><input value="2" style="text-align:right"></main>
+<footer class="fuss"><span class="hinweis"></span><button>Abbrechen</button><button class="primaer">OK</button></footer></div></div></div>
+
+<h2>3. Fenster „Schilder“</h2>
+<div class="reihe" id="sch"></div>
+
+<h2>4. Fenster „Textilfarbe“</h2>
+<div class="reihe" id="tf"></div>
+
+<h2>5. Fenster „Modell“</h2>
+<div class="reihe" id="mo"></div>
+
+<h2>6. Fenster „Nutzen“ (Einstieg B; bei Einstieg A stehen Kunde, Stückzahl, Medium, Laminat als Text)</h2>
+<div id="nu"></div>
+
+<h2>7. Fenster „WEA-Etiketten“</h2>
+<div id="ge"></div>
+
+<h2>8. Fenster „Bögl Nummern“</h2>
+<div class="reihe" id="mb"></div>
+
+<script>
+const fuss = (btns, h = "") => `<footer class="fuss"><span class="hinweis">${h}</span>${btns}</footer>`;
+const OKF = fuss(`<button>Abbrechen</button><button class="primaer">OK</button>`);
+const win = (w, titel, kopf, inhalt, f, unter, h) => `<div class="fall"><div class="titel">${titel}</div><div class="fenster" style="width:${w}px${h ? `;height:${h}px` : ""}"><div class="kopf"><span class="ampel"></span>${kopf}</div>${inhalt}${f}</div><div class="mass">${unter || ""}</div></div>`;
+const seg = (t, an, cls = "eng") => `<div class="seg ${cls}">${t.map(x => `<button class="${x === an ? "an" : ""}">${x}</button>`).join("")}</div>`;
+
+// ---------- 1 Zusammenfassung Textil ----------
+const summenT = `<div class="ueber" style="margin-top:8px">Folien</div><table><thead><tr><th class="l">Farbschlüssel</th><th>Streifen</th><th>lfm</th><th>m² Verbrauch</th><th>EK €</th></tr></thead><tbody><tr><td class="l">PoliTape Turbo-rot</td><td>1</td><td>0,86</td><td>0,43</td><td>4,30</td></tr></tbody></table>
+ <div class="ueber" style="margin-top:8px">Summen</div><table class="summen"><tbody>
+ <tr><td class="l">Material</td><td>12,40</td></tr><tr><td class="l">Produktion <span class="min">18 min</span></td><td></td></tr>
+ <tr><td class="l">Pressen <span class="min">14 min, 14 Pressvorgänge</span></td><td></td></tr><tr><td class="l">Falten <span class="min">5 min, Textilzahl 14</span></td><td></td></tr>
+ <tr class="preis akzent"><td class="l">Preis</td><td class="w">75,60 €<span class="brutto">89,96 € inkl. MwSt. 19 %</span> &nbsp;<span class="hinweiszeile">Mindestbetrag je Motiv greift (14 Exemplare)</span></td></tr>
+ <tr class="mvk"><td class="l">Mindest-VK <span class="min">(84 €/h)</span></td><td>75,60 € <span class="min">89,96 €</span></td></tr></tbody></table>
+ <div class="block"><table class="summen"><tbody><tr><td class="l min">Grafik 12 min <span class="min">(12 auto, 0 manuell) · 96 €/h</span></td><td class="min">19,20 €</td></tr></tbody></table></div>`;
+const zfFuss = fuss(`<button>berechnen</button><button>PDF</button><button>Schließen</button>`);
+const zf1 = `<main><table><thead><tr><th class="l">Motiv</th><th class="l">Position</th><th class="l">Verfahren</th><th class="l">Druckgrößen</th><th>K</th><th>Teile</th><th>Betrag</th></tr></thead><tbody>
+ <tr class="sel"><td class="l n">Objekt 1</td><td class="l">Front</td><td class="l">Flex · PoliTape Turbo · rot</td><td class="l">280 mm · 10 Stk · S, M, L, XL · zeigen<br>260 mm · 4 Stk · XS, S · blockout</td><td>K1</td><td>12</td><td>75,60</td></tr>
+ <tr class="zebra"><td class="l n">Objekt 2</td><td class="l">Brust links</td><td class="l">DTF</td><td class="l">90 mm · 14 Stk · S, M, L · zeigen</td><td></td><td>–</td><td>–</td></tr></tbody></table>${summenT}</main>`;
+const zf2 = `<main><table><thead><tr><th class="l">Motiv</th><th class="l">Position</th><th class="l">Verfahren</th><th>Maß mm</th><th>Menge</th><th class="l">Textilgrößen</th><th class="l"></th><th>K</th><th>Teile</th><th>Betrag</th></tr></thead><tbody>
+ <tr class="sel"><td class="l n">Objekt 1</td><td class="l">Front</td><td class="l">Flex · PoliTape Turbo · rot</td><td>280</td><td>10</td><td class="l">S, M, L, XL</td><td class="l">zeigen</td><td>K1</td><td>12</td><td>75,60</td></tr>
+ <tr class="sel"><td></td><td></td><td></td><td>260</td><td>4</td><td class="l">XS, S</td><td class="l">blockout</td><td></td><td></td><td></td></tr>
+ <tr class="zebra"><td class="l n">Objekt 2</td><td class="l">Brust links</td><td class="l">DTF</td><td>90</td><td>14</td><td class="l">S, M, L</td><td class="l">zeigen</td><td></td><td>–</td><td>–</td></tr></tbody></table>${summenT}</main>`;
+const pdfKopf = `<div class="k1">Streifen</div><div class="k2"><span>Textil · B&amp;C E190 · Natural</span><span>Datum: 31.10.2026</span></div><div class="ab">Objekte</div>`;
+const pdf1 = `<div class="pdf">${pdfKopf}<table><tr><th class="l">Motiv</th><th class="l">Position</th><th class="l">Verfahren</th><th class="l">Druckgrößen</th><th>K</th><th>Teile</th></tr>
+ <tr><td class="l">Objekt 1</td><td class="l">Front</td><td class="l">Flex · PoliTape Turbo · rot</td><td class="l">280 mm · 10 Stk · S, M, L, XL · zeigen<br>260 mm · 4 Stk · XS, S · blockout</td><td>K1</td><td>12</td></tr>
+ <tr><td class="l">Objekt 2</td><td class="l">Brust links</td><td class="l">DTF</td><td class="l">90 mm · 14 Stk · S, M, L · zeigen</td><td></td><td>–</td></tr></table><div class="ab">Folien</div><table><tr><th class="l">Farbschlüssel</th><th>Streifen</th><th>lfm</th><th>m² Verbrauch</th></tr><tr><td class="l">PoliTape Turbo-rot</td><td>1</td><td>0,86</td><td>0,43</td></tr></table></div>`;
+const pdf2 = `<div class="pdf">${pdfKopf}<table><tr><th class="l">Motiv</th><th class="l">Position</th><th class="l">Verfahren</th><th>Maß mm</th><th>Menge</th><th class="l">Textilgrößen</th><th></th><th>K</th><th>Teile</th></tr>
+ <tr><td class="l">Objekt 1</td><td class="l">Front</td><td class="l">Flex · PoliTape Turbo · rot</td><td>280</td><td>10</td><td class="l">S, M, L, XL</td><td class="l">zeigen</td><td>K1</td><td>12</td></tr>
+ <tr><td></td><td></td><td></td><td>260</td><td>4</td><td class="l">XS, S</td><td class="l">blockout</td><td></td><td></td></tr>
+ <tr><td class="l">Objekt 2</td><td class="l">Brust links</td><td class="l">DTF</td><td>90</td><td>14</td><td class="l">S, M, L</td><td class="l">zeigen</td><td></td><td>–</td></tr></table><div class="ab">Folien</div><table><tr><th class="l">Farbschlüssel</th><th>Streifen</th><th>lfm</th><th>m² Verbrauch</th></tr><tr><td class="l">PoliTape Turbo-rot</td><td>1</td><td>0,86</td><td>0,43</td></tr></table></div>`;
+document.getElementById("zf").innerHTML =
+  win(660, "V1 – wie gebaut: Druckgrößen untereinander in einer Zelle", "Zusammenfassung", zf1, zfFuss)
+  + `<div class="fall"><div class="titel">V1 – PDF-Kopf und Objekte</div>${pdf1}</div>`
+  + win(700, "V2 – eine Zeile je Druckgröße, Maß/Menge/Textilgrößen als Spalten", "Zusammenfassung", zf2, zfFuss, "Spaltenköpfe aus dem Fenster „Motiv“ (Maß mm, Menge, Textilgrößen); blockout und zeigen in einer Spalte ohne Kopf.")
+  + `<div class="fall"><div class="titel">V2 – PDF-Kopf und Objekte</div>${pdf2}</div>`;
+
+// ---------- 3 Schilder ----------
+const SCH = [["Schild 01","600 × 400 mm","4 Ecken",[["Abstand waagrecht","20"],["Abstand senkrecht","20"],["Durchmesser","5"]],600,400,"e"],
+             ["Schild 02","300 × 200 mm","2 mittig oben/unten",[["Abstand senkrecht","15"],["Durchmesser","5"]],300,200,"ou"],
+             ["Schild 03","200 × 200 mm","keine",[],200,200,""]];
+const felder = f => f.map(([l, v]) => `<label>${l} <input value="${v}"> mm</label>`).join("");
+const anSel = a => `<select><option>${a}</option></select>`;
+const sch1 = `<main><div class="muted">Folie · Dibond 3 mm</div><table class="schilder"><tbody>${SCH.map(s => `<tr><td>${s[0]}</td><td class="muted">${s[1]}</td><td>${anSel(s[2])}</td><td>${felder(s[3])}</td></tr>`).join("")}</tbody></table></main>`;
+function skizze(b, h, art, ax, ay) {
+  const k = Math.min(100 / b, 76 / h), W = b * k, H = h * k, sx = ax * k, sy = ay * k;
+  const L = art === "e" ? [[sx, sy], [W - sx, sy], [sx, H - sy], [W - sx, H - sy]] : art === "ou" ? [[W / 2, sy], [W / 2, H - sy]] : [];
+  return `<div class="skizze"><div class="platte" style="width:${W}px;height:${H}px">${L.map(([x, y]) => `<span class="loch" style="left:${x}px;top:${y}px"></span>`).join("")}</div></div>`;
+}
+const sch2 = `<main><div class="muted">Folie · Dibond 3 mm</div>${SCH.map(s => `<div class="schild">${skizze(s[4], s[5], s[6], 20, s[6] === "ou" ? 15 : 20)}<div class="rechts"><div class="zeile"><b>${s[0]}</b><span class="muted">${s[1]}</span><span style="flex:1"></span>${anSel(s[2])}</div><div>${felder(s[3])}</div></div></div>`).join("")}</main>`;
+document.getElementById("sch").innerHTML =
+  win(880, "V1 – Tabelle wie gebaut, aufgeräumt", "Schilder", sch1, OKF, "Eine Zeile je Schild; Felder nur, die die Anordnung braucht.")
+  + win(560, "V2 – je Schild eine Karte mit Skizze der Bohrungen", "Schilder", sch2, OKF, "Skizze maßstäblich zum Schild, Löcher nach Anordnung und Abständen; ändert sich beim Tippen mit. Bei vielen Schildern scrollt der Inhalt.");
+
+// ---------- 4 Textilfarbe ----------
+const FARB = [["Natural","#F4F1E8"],["Sand","#E8DFCB"],["Solar Yellow","#FBEA60"],["Gold","#F3C85D"],["Apricot","#EAAA3D"],["Orange","#D45B2F"],["Urban Orange","#BB5726"],["Sunset Orange","#D45740"],["Fire Red","#CE2E28"],["Orchid Pink","#F6E0E3"],["Sorbet","#B9275C"],["Burgundy","#552C3F"],["Swimming Pool","#59AAC0"],["Atoll","#438EBD"],["Diva Blue","#346E84"],["Sky Blue","#85AFD7"],["Stone Blue","#4F7294"],["Navy Blue","#171744"],["Cobalt Blue","#415780"],["Millennial Lilac","#696195"],["Radiant Purple","#392262"],["Urban Purple","#2A104C"],["Pixel Lime","#DEFF53"],["Orchid Green","#A1C24D"],["Millennial Mint","#9ABEB9"],["Kelly Green","#438F52"],["Bottle Green","#214520"],["Urban Khaki","#474A3D"],["Ash (Heather)","#E2E3E3"],["Pacific Grey","#BFC1C2"],["Dark Grey (Solid)","#303840"],["Used Black","#212730"],["Brown","#42221A"],["Chocolate","#785B42"],["White","#FFFFFF"],["Black","#000000"],["Navy","#252934"],["Sport Grey (Heather)","#9B9D9D"],["Royal Blue","#2B4D89"],["Red","#C72B2C"]];
+const gross = (n, sel = "Natural", h = 40) => `<div class="kach" style="grid-template-columns:repeat(${n},1fr)">${FARB.map(([a, c]) => `<div class="k${a === sel ? " an" : ""}"><i style="height:${h}px;background:${c}"></i><span>${a}</span></div>`).join("")}</div>`;
+const mini = sel => `<div class="mini">${FARB.map(([a, c]) => `<i title="${a}" class="${a === sel ? "an" : ""}" style="background:${c}"></i>`).join("")}</div>`;
+document.getElementById("tf").innerHTML =
+  win(420, "V1 – große Kacheln mit Namen (wie gebaut)", "Textilfarbe", `<main style="overflow:hidden"><div class="muted">B&amp;C E190</div><div style="overflow-y:auto;max-height:200px">${gross(5)}</div></main>`, OKF, "420 × 300; scrollt ab der dritten Reihe.", 300)
+  + win(420, "V2 – kleine Kacheln, Name der gewählten Farbe oben", "Textilfarbe", `<main><div class="zeile"><span class="muted">B&amp;C E190</span><span style="flex:1"></span><span class="chip" style="background:#F4F1E8;width:14px;height:14px"></span><b>Natural</b></div>${mini("Natural")}</main>`, OKF, "Alle Farben ohne Scrollen; Name beim Überfahren als Tooltip, die gewählte steht oben rechts. Höhe ergibt sich (~ 260).");
+
+// ---------- 5 Modell ----------
+const MARKEN = ["B&amp;C","Promodoro","Neutral","Sonstige","Kundenware"], MOD = ["E190","Polo","Hoodie","Zip Hoodie","E190 Women","Sweatshirt"];
+const mo1 = `<main style="overflow:hidden"><div><div class="lbl">Marke</div><div class="seg eng">${MARKEN.map((m, i) => `<button class="${i === 0 ? "an" : ""}"${i ? " disabled" : ""}>${m}</button>`).join("")}</div></div>
+ <div><div class="lbl">Modell</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">${MOD.map(m => `<button class="${m === "Hoodie" ? "an" : ""}">${m}</button>`).join("")}</div></div>
+ <div><div class="lbl">Farbe</div><div style="overflow-y:auto;max-height:120px">${gross(5, "Navy", 30)}</div></div></main>`;
+const mo2 = `<main><div class="spalten" style="grid-template-columns:110px 130px 1fr">
+ <div class="liste2"><div class="lbl">Marke</div>${MARKEN.map((m, i) => `<button class="${i === 0 ? "an" : ""}"${i ? " disabled" : ""}>${m}</button>`).join("")}</div>
+ <div class="liste2"><div class="lbl">Modell</div>${MOD.map(m => `<button class="${m === "Hoodie" ? "an" : ""}">${m}</button>`).join("")}</div>
+ <div><div class="lbl">Farbe</div><div style="overflow-y:auto;max-height:230px">${gross(4, "Navy", 26)}</div></div></div></main>`;
+document.getElementById("mo").innerHTML =
+  win(480, "V1 – untereinander (wie gebaut)", "Modell", mo1, OKF, "480 × 380; Farbraster scrollt.", 380)
+  + win(720, "V2 – drei Spalten Marke · Modell · Farbe", "Modell", mo2, OKF, "720 × ca. 330; alle drei Ebenen gleichzeitig sichtbar.");
+
+// ---------- 6 Nutzen ----------
+const MOTIV = "Cutkontur:     80 × 50 mm  (1 Objekt(e))\nAnschnitt:     max. 2 mm über die Cutkontur hinaus";
+const VORG = "Motiv (Cutkontur): 80 × 50 mm   |   100 Stk.   |   Medium 3551 matt, Rolle 1370 mm\nZielformat: A4 210 × 297 mm (exakt oder kleiner)   |   Abstände: Motive 5 mm, Bögen 20 mm";
+const PLAN = ["0.48 m  |  Bogen 180×270 mm (3×3)  |  7 Bögen/Reihe  |  14 Bögen gesamt  |  1 Bögen  |  5 zu viel  |  Motiv 90°",
+  "0.5 m  |  Bogen 290×185 mm (5×2)  |  4 Bögen/Reihe  |  12 Bögen gesamt  |  1 Bögen  |  Motiv 90°  |  Bogen quer",
+  "0.5 m  |  Bogen 185×290 mm (2×5)  |  7 Bögen/Reihe  |  14 Bögen gesamt  |  1 Bögen  |  12 zu viel",
+  "0.57 m  |  Bogen 270×180 mm (3×3)  |  4 Bögen/Reihe  |  12 Bögen gesamt  |  1 Bögen  |  8 zu viel  |  Bogen quer"];
+const PT = [["0.48","180 × 270 (3×3)","7","14","1","5","✓",""],["0.5","290 × 185 (5×2)","4","12","1","","✓","✓"],["0.5","185 × 290 (2×5)","7","14","1","12","",""],["0.57","270 × 180 (3×3)","4","12","1","8","","✓"]];
+const DET = "Nutzen: 1240 × 435 mm   |   Zeichenfläche: 1288.4 × 483.4 mm   |   105 Motive im Nutzen\nFüllung: 21 Plätze je Motivzeile (7 Bögen × 3), 5 Motivzeile(n) in 2 Bogenzeile(n).\nLetzte Motivzeile voll aufgefüllt: 105 statt 100 Stk. – 5 Überproduktion.";
+const medien = ["3162","3551","3951","3676","UltraTack","MonsterTack"];
+const angaben = `<div class="feldz"><span class="lbl">Kunde</span><input value="Streifen" style="width:260px"><span class="lbl">Stückzahl</span><input value="100" style="width:70px;text-align:right">
+ <span class="lbl">Medium</span>${seg(medien, "3551")}<span class="lbl">Laminat</span>${seg(["matt","glänzend"], "matt")}<span class="lbl">Produkt</span><input value="Aufkleber" style="width:260px"></div>`;
+const bogen = `<div class="feldz"><span class="lbl">Bogenformat</span>${seg(["A4","A3","ohne"], "A4", "")}<span class="lbl">Modus</span><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start"><button class="an">exakt oder kleiner – Lagerung beim Kunden</button><button>ca. ± 25 % – nur Handling</button></div>
+ <span class="lbl">Abstand Motive (mm)</span><input value="5" style="width:70px;text-align:right"><span></span><span class="muted">Abstand Bögen: 20 (fix – Schneidetisch)</span></div>`;
+const motivBlock = `<div><div class="lbl">Motiv (gemessen)</div><div class="vor pre">${MOTIV}</div></div>`;
+const layoutsText = `<div class="lay">${PLAN.map((p, i) => `<label class="${i === 0 ? "an" : ""}"><input type="radio" ${i === 0 ? "checked" : ""}><span class="pre">${p}</span></label>`).join("")}</div>`;
+const layoutsTab = `<table class="t"><thead><tr><th></th><th>m</th><th class="l">Bogen mm</th><th>Bögen/Reihe</th><th>Bögen gesamt</th><th>Bögen</th><th>zu viel</th><th>Motiv 90°</th><th>Bogen quer</th></tr></thead><tbody>${PT.map((r, i) => `<tr class="${i === 0 ? "an" : i % 2 ? "zebra" : ""}"><td><input type="radio" ${i === 0 ? "checked" : ""}></td><td>${r[0]}</td><td class="l">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td style="text-align:center">${r[6]}</td><td style="text-align:center">${r[7]}</td></tr>`).join("")}</tbody></table>`;
+const nWeiter = fuss(`<button>Abbrechen</button><button class="primaer">Weiter →</button>`), nAuf = fuss(`<button>Abbrechen</button><button class="primaer">Aufbauen</button>`);
+document.getElementById("nu").innerHTML = `<h3>V1 – zwei Schritte wie gebaut, aufgeräumt · 840 breit</h3><div class="reihe">`
+  + win(840, "Schritt 1", "Nutzen", `<main>${motivBlock}<div class="block">${angaben}</div><div class="block">${bogen}</div></main>`, nWeiter)
+  + win(840, "Schritt 2", "Vorschau", `<main><div><div class="lbl">Vorgabe</div><div class="vor pre">${VORG}</div></div><div class="block"><div class="lbl">Layout wählen</div>${layoutsText}<div class="vor pre" style="margin-top:6px">${DET}</div></div></main>`, nAuf)
+  + `</div><h3>V2 – zwei Schritte, Schritt 1 zweispaltig, Layouts als Tabelle · 640 breit</h3><div class="reihe">`
+  + win(640, "Schritt 1", "Nutzen", `<main>${motivBlock}<div class="block" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${angaben.replace(/width:260px/g, "width:100%").replace(`grid-template-columns:84px 1fr`, ``)}${bogen}</div></main>`, nWeiter, "Spalten: links Auftrag und Material, rechts Bogen.")
+  + win(640, "Schritt 2", "Vorschau", `<main><div><div class="lbl">Vorgabe</div><div class="vor pre" style="font-size:10.5px">${VORG}</div></div><div class="block"><div class="lbl">Layout wählen</div>${layoutsTab}<div class="vor pre" style="margin-top:6px;font-size:10.5px">${DET}</div></div></main>`, nAuf, "Spaltenköpfe aus den Texten der Planzeile; Werte gleich.")
+  + `</div><h3>V3 – eine Seite: Angaben links, Layouts rechts, rechnet bei jeder Änderung neu · 1080 breit</h3><div class="reihe">`
+  + win(1080, "eine Seite, kein „Weiter“", "Nutzen", `<main><div style="display:grid;grid-template-columns:400px 1fr;gap:14px"><div style="display:flex;flex-direction:column;gap:9px">${motivBlock}<div class="block">${angaben.replace(/width:260px/g, "width:100%")}</div><div class="block">${bogen}</div></div>
+     <div style="border-left:1px solid var(--line);padding-left:14px;display:flex;flex-direction:column;gap:9px"><div class="lbl">Layout wählen</div>${layoutsTab}<div class="vor pre" style="font-size:10.5px">${DET}</div></div></div></main>`, nAuf, "Funktionsänderung: Prüfungen und Planung laufen bei jeder Eingabe statt bei „Weiter“; Rückfragen (Anschnitt, ohne Cutkontur) dann beim Aufbauen.")
+  + `</div>`;
+
+// ---------- 7 WEA-Etiketten ----------
+const DATEIEN = [["15x_Ring 01.pdf","15"],["15x_Ring 02.pdf","15"],["8x_Ring 03.xlsx","8"]];
+const liste = `<div class="liste"><div class="zl kopfz"><span>Datei</span><span>Anzahl</span><span></span></div>${DATEIEN.map(([n, a]) => `<div class="zl"><span>${n}</span><input value="${a}" style="width:60px;text-align:right"><button>Entfernen</button></div>`).join("")}</div><div><button>Dateien hinzufügen …</button></div>`;
+const VAR = ["1 Datei, 3× drucken          |   3.45 m Material   |   1 Streifen zu viel   |   längster Bogen 1106 mm",
+  "1 Datei, 2× drucken          |   3.84 m Material   |   2 Streifen zu viel   |   längster Bogen 1876 mm",
+  "1 Datei, 4× drucken          |   4.16 m Material   |   2 Streifen zu viel   |   längster Bogen 996 mm",
+  "2 Dateien, 2 Drucke gesamt   |   4.23 m Material   |   exakt   |   längster Bogen 2070 mm"];
+const VT = [["1 Datei, 3× drucken","3.45","1 Streifen zu viel","1106"],["1 Datei, 2× drucken","3.84","2 Streifen zu viel","1876"],["1 Datei, 4× drucken","4.16","2 Streifen zu viel","996"],["2 Dateien, 2 Drucke gesamt","4.23","exakt","2070"]];
+const GDET = "Bogen 1: 3× drucken, 1300 × 1106 mm  –  längs 12 (996 mm)  +  quer 1 (90 mm)";
+const KOPFZ = "Spalte A  |  Spalte B  |  Spalte C\nSpalte A  |  Spalte B";
+const typ = (vor) => `<main><div><div class="lbl">So steht es in der Datei</div><textarea rows="3" style="width:100%">${KOPFZ}</textarea></div>
+ <div class="block ${vor ? "" : "feldz"}" style="${vor ? "display:flex;gap:14px;align-items:center" : ""}">${vor ? `<div class="feldz" style="flex:1"><span class="lbl">Obere Zeile</span><input value="Typ A"><span class="lbl">Untere Zeile</span><input value="Ring"></div><div class="etikett"><span>Typ A</span><span class="u">Ring</span></div>` : `<span class="lbl">Obere Zeile</span><input value="Typ A"><span class="lbl">Untere Zeile</span><input value="Ring">`}</div>
+ <div class="muted">24 Etiketten je Streifen, 15 mal benötigt.</div></main>`;
+const gWeiter = fuss(`<button>Abbrechen</button><button class="primaer">Weiter</button>`), gUeb = fuss(`<button>Abbrechen</button><button class="primaer">Übernehmen</button>`), gAuf = fuss(`<button>Abbrechen</button><button class="primaer">Aufbauen</button>`);
+document.getElementById("ge").innerHTML = `<h3>V1 – drei Schritte wie gebaut, aufgeräumt · 760 breit</h3><div class="reihe">`
+  + win(760, "Schritt 1 – Kundendateien", "WEA-Etiketten", `<main><div class="lbl">Kundendateien und Stückzahl  (PDF, XLSX, TXT, CSV)</div>${liste}</main>`, gWeiter)
+  + win(760, "Schritt 2 – je Datei", "Typbezeichnung – 15x_Ring 01.pdf", typ(false), gUeb)
+  + win(760, "Schritt 3", "WEA-Etiketten – Variante wählen", `<main><div class="lbl">Variante</div><div class="lay">${VAR.map((p, i) => `<label class="${i === 0 ? "an" : ""}"><input type="radio" ${i === 0 ? "checked" : ""}><span class="pre">${p}</span></label>`).join("")}</div><div class="vor pre">${GDET}</div></main>`, gAuf)
+  + `</div><h3>V2 – Etikett-Vorschau in Schritt 2, Varianten als Tabelle · 560 breit</h3><div class="reihe">`
+  + win(560, "Schritt 1 – Kundendateien", "WEA-Etiketten", `<main><div class="lbl">Kundendateien und Stückzahl  (PDF, XLSX, TXT, CSV)</div>${liste}</main>`, gWeiter)
+  + win(560, "Schritt 2 – je Datei, mit Vorschau des Etiketts", "Typbezeichnung – 15x_Ring 01.pdf", typ(true), gUeb, "Vorschau 90 × 36 als Sinnbild (Rahmen in Cutkontur-Magenta), zeigt die zwei Zeilen beim Tippen.")
+  + win(560, "Schritt 3", "WEA-Etiketten – Variante wählen", `<main><div class="lbl">Variante</div><table class="t"><thead><tr><th></th><th class="l"></th><th>m Material</th><th class="l"></th><th>längster Bogen mm</th></tr></thead><tbody>${VT.map((r, i) => `<tr class="${i === 0 ? "an" : i % 2 ? "zebra" : ""}"><td><input type="radio" ${i === 0 ? "checked" : ""}></td><td class="l">${r[0]}</td><td>${r[1]}</td><td class="l">${r[2]}</td><td>${r[3]}</td></tr>`).join("")}</tbody></table><div class="vor pre">${GDET}</div></main>`, gAuf, "Spaltenköpfe nur, wo die Zeile einen Text hat (Material, längster Bogen).")
+  + `</div>`;
+
+// ---------- 8 Bögl Nummern ----------
+const MEN = [22, 0, 15, 5, 0, 0, 10, 0, 0, 0];
+const mb1 = `<main><div class="lbl">Stückzahl je Nummer</div><div class="num">${[0,5,1,6,2,7,3,8,4,9].map(i => `<span>Nummer ${i + 1}:</span><input value="${MEN[i]}" style="text-align:right">`).join("")}</div><div class="muted">Mengen werden auf Vielfache von 5 aufgerundet – die Breite eines Blocks ist immer voll belegt.</div></main>`;
+const mb2 = `<main><div class="lbl">Stückzahl je Nummer</div><div class="num5">${MEN.map((m, i) => `<div><span class="muted">Nummer ${i + 1}:</span><input value="${m}"></div>`).join("")}</div><div class="muted">Mengen werden auf Vielfache von 5 aufgerundet – die Breite eines Blocks ist immer voll belegt.</div>
+ <div class="vor pre">Material ges.:  rund 0.26 m Bahn\n3 Stück Überproduktion durch das 5er-Raster.</div></main>`;
+const mbF = fuss(`<button>Abbrechen</button><button class="primaer">Aufbauen</button>`);
+document.getElementById("mb").innerHTML =
+  win(360, "V1 – zwei Spalten (wie gebaut)", "Bögl Nummern", mb1, mbF, "360 × ca. 260 statt 620 × 420.")
+  + win(460, "V2 – fünf je Reihe, Ergebnis beim Tippen", "Bögl Nummern", mb2, mbF, "Unten Material und Überproduktion aus der Planung (Texte der Info-Ebene), aktualisiert bei jeder Eingabe. Werte gerechnet mit mbnummern.planung.");
+</script>
+</body></html>

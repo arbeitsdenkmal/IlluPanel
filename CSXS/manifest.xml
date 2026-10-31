@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="12.0" ExtensionBundleId="de.pamnm.illupanels" ExtensionBundleVersion="3.1.0-2d"
+<ExtensionManifest Version="12.0" ExtensionBundleId="de.pamnm.illupanels" ExtensionBundleVersion="3.7.2"
                    ExtensionBundleName="PAM-Werkzeuge" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="de.pamnm.illupanels.panel" Version="3.1.0-2d"/>
-    <Extension Id="de.pamnm.illupanels.anlegen" Version="3.1.0-2d"/>
-    <Extension Id="de.pamnm.illupanels.objekt" Version="3.1.0-2d"/>
-    <Extension Id="de.pamnm.illupanels.zusammenfassung" Version="3.1.0-2d"/>
-    <Extension Id="de.pamnm.illupanels.hintergrund" Version="3.1.0-2d"/>
+    <Extension Id="de.pamnm.illupanels.panel" Version="3.7.2"/>
+    <Extension Id="de.pamnm.illupanels.anlegen" Version="3.7.2"/>
+    <Extension Id="de.pamnm.illupanels.objekt" Version="3.7.2"/>
+    <Extension Id="de.pamnm.illupanels.zusammenfassung" Version="3.7.2"/>
+    <Extension Id="de.pamnm.illupanels.hintergrund" Version="3.7.2"/>
+    <Extension Id="de.pamnm.illupanels.breite" Version="3.7.2"/>
+    <Extension Id="de.pamnm.illupanels.schilder" Version="3.7.2"/>
+    <Extension Id="de.pamnm.illupanels.motiv" Version="3.7.2"/>
+    <Extension Id="de.pamnm.illupanels.textilfarbe" Version="3.7.2"/>
+    <Extension Id="de.pamnm.illupanels.modell" Version="3.7.2"/>
+    <Extension Id="de.pamnm.illupanels.nutzen" Version="3.7.2"/>
+    <Extension Id="de.pamnm.illupanels.gitter" Version="3.7.2"/>
+    <Extension Id="de.pamnm.illupanels.mbnr" Version="3.7.2"/>
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>
@@ -29,8 +37,8 @@
           <Type>Panel</Type>
           <Menu>PAM-Werkzeuge</Menu>
           <Geometry>
-            <Size><Height>142</Height><Width>320</Width></Size>
-            <MinSize><Height>142</Height><Width>320</Width></MinSize>
+            <Size><Height>172</Height><Width>320</Width></Size>
+            <MinSize><Height>172</Height><Width>320</Width></MinSize>
           </Geometry>
         </UI>
       </DispatchInfo>
@@ -48,7 +56,7 @@
         <UI>
           <Type>ModalDialog</Type>
           <Geometry>
-            <Size><Height>420</Height><Width>420</Width></Size>
+            <Size><Height>480</Height><Width>560</Width></Size>
           </Geometry>
         </UI>
       </DispatchInfo>
@@ -67,7 +75,7 @@
         <UI>
           <Type>ModalDialog</Type>
           <Geometry>
-            <Size><Height>470</Height><Width>480</Width></Size>
+            <Size><Height>440</Height><Width>480</Width></Size>
           </Geometry>
         </UI>
       </DispatchInfo>
@@ -86,7 +94,7 @@
         <UI>
           <Type>Modeless</Type>
           <Geometry>
-            <Size><Height>520</Height><Width>620</Width></Size>
+            <Size><Height>520</Height><Width>700</Width></Size>
             <MinSize><Height>240</Height><Width>480</Width></MinSize>
           </Geometry>
         </UI>
@@ -106,6 +114,158 @@
         <UI>
           <Type>Custom</Type>
           <Geometry><Size><Height>1</Height><Width>1</Width></Size></Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- SPEZ_03 §3: Fenster „Breite“ (Zielbreite, Zugabe), eine Höhe -->
+    <Extension Id="de.pamnm.illupanels.breite">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel/breite.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+        <UI>
+          <Type>ModalDialog</Type>
+          <Geometry>
+            <Size><Height>120</Height><Width>320</Width></Size>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- SPEZ_03_Schild §6.2: Fenster „Schilder“ (Bohrungen je Schild), vorläufige Größe -->
+    <Extension Id="de.pamnm.illupanels.schilder">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel/schilder.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+        <UI>
+          <Type>ModalDialog</Type>
+          <Geometry>
+            <Size><Height>400</Height><Width>560</Width></Size>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- SPEZ_03_Textil §7: Fenster „Motiv“ (Zuordnen Textil), 640 × 470 wie 44B -->
+    <Extension Id="de.pamnm.illupanels.motiv">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel/motiv.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+        <UI>
+          <Type>ModalDialog</Type>
+          <Geometry>
+            <Size><Height>470</Height><Width>640</Width></Size>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- SPEZ_03_Textil §6.1: Fenster „Textilfarbe“, vorläufige Größe -->
+    <Extension Id="de.pamnm.illupanels.textilfarbe">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel/textilfarbe.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+        <UI>
+          <Type>ModalDialog</Type>
+          <Geometry>
+            <Size><Height>300</Height><Width>420</Width></Size>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- SPEZ_03_Textil §6.2: Fenster „Modell“ (Modell hinzufügen), vorläufige Größe -->
+    <Extension Id="de.pamnm.illupanels.modell">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel/modell.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+        <UI>
+          <Type>ModalDialog</Type>
+          <Geometry>
+            <Size><Height>320</Height><Width>720</Width></Size>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- SPEZ_03_Nutzen §5.3: Fenster „Nutzen“ (Schritt 1 „Nutzen“, Schritt 2 „Vorschau“), vorläufige Größe -->
+    <Extension Id="de.pamnm.illupanels.nutzen">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel/nutzen.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+        <UI>
+          <Type>ModalDialog</Type>
+          <Geometry>
+            <Size><Height>380</Height><Width>840</Width></Size>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- SPEZ_03_Nutzen §6: Fenster „WEA-Etiketten“ (Kundendateien, Typbezeichnung, Variante), vorläufige Größe -->
+    <Extension Id="de.pamnm.illupanels.gitter">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel/gitter.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+        <UI>
+          <Type>ModalDialog</Type>
+          <Geometry>
+            <Size><Height>260</Height><Width>560</Width></Size>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- SPEZ_03_Nutzen §7.1: Fenster „Bögl Nummern“, vorläufige Größe -->
+    <Extension Id="de.pamnm.illupanels.mbnr">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel/mbnr.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+        <UI>
+          <Type>ModalDialog</Type>
+          <Geometry>
+            <Size><Height>230</Height><Width>460</Width></Size>
+          </Geometry>
         </UI>
       </DispatchInfo>
     </Extension>

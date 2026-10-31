@@ -9,13 +9,21 @@ const path = require("path");
 const SCHEMA_JSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "config", "schema.json"), "utf8"));
 const SCHEMA = SCHEMA_JSON.xmp.schema;
 const ROLLEN = SCHEMA_JSON.rollen;
-const PANEL_VERSION = "3.1.0-2d"; // = ExtensionBundleVersion in CSXS/manifest.xml
+const PANEL_VERSION = "3.7.2"; // = ExtensionBundleVersion in CSXS/manifest.xml
 const QUELLEN = ["geoeffnet", "datei", "leer"];
 // SPEZ_02 §3.2: vorauswahl, farbzuordnung je Auftrag; kalkulation = letzter Kalkulationsdatensatz (§8.4); aufbau = letzter Druckbogen-Aufbau.
-// Druckbogen-Dokumente (rolle „druckbogen“) tragen zusätzlich bogen { aufbau, medium, laminat, breite_mm, nr, gesamt, arbeitsdatei } (config/schema.json „rollenfelder“).
-const STANDARD = { vorauswahl: () => ({}), farbzuordnung: () => ({}), kalkulation: () => null, aufbau: () => null };
+// Druckbogen-Dokumente (rolle „druckbogen“) tragen zusätzlich bogen { aufbau, art, produkt, medium, laminat, breite_mm, nr, gesamt, auflage, arbeitsdatei }
+// (config/schema.json „rollenfelder“); SPEZ_03_Nutzen §4: art null (Druckbogen) | „nutzen“ | „gitter“ | „mb“, produkt (Nutzen, sonst null), auflage (Gitter:
+// Drucke je Bogen, sonst 1), arbeitsdatei null bei Bögen ohne Arbeitsdatei (Nutzen Einstieg B, Gitter, MB).
+// SPEZ_03_Konfigurationen §8: art-spezifische Bereiche offset { produkt, bezeichnung, ausrichtung, seiten } und banner_rollup { variante }, sonst null.
+// SPEZ_03_Schild §5: schild { verfahren, material { schluessel, bezeichnung, kuerzel, staerke, acryl }, schilder [{ rect, name, nr, breite_mm, hoehe_mm,
+// bohrungen }] }, sonst null.
+// SPEZ_03_Textil §5: textil { modell { id, modell, bezeichnung, marke, faktor }, farbe { name, cmyk } | null }, sonst null.
+const STANDARD = { vorauswahl: () => ({}), farbzuordnung: () => ({}), kalkulation: () => null, aufbau: () => null, offset: () => null, banner_rollup: () => null,
+  schild: () => null, textil: () => null };
 
-/** neues Dokumentobjekt; d: { auftragsart, massstab, kunde, kundenordner, auftragsordner, quelle: { art, pfad }, rolle, jetzt } */
+/** neues Dokumentobjekt; d: { auftragsart, massstab, kunde, kundenordner, auftragsordner, quelle: { art, pfad }, rolle, jetzt, offset, banner_rollup, schild, textil,
+ *  auftrag (Modell hinzufügen: aus der aktiven Arbeitsdatei) } */
 function neu(d) {
   return {
     schema: SCHEMA,
@@ -25,7 +33,7 @@ function neu(d) {
     auftragsart: d.auftragsart,
     massstab: d.massstab,
     kunde: d.kunde,
-    auftrag: { orderId: null, productId: null },
+    auftrag: d.auftrag ? Object.assign({}, d.auftrag) : { orderId: null, productId: null },
     ablage: { kundenordner: d.kundenordner || null, auftragsordner: d.auftragsordner },
     quelle: { art: d.quelle ? d.quelle.art : "leer", pfad: d.quelle && d.quelle.pfad ? d.quelle.pfad : null },
     grafikzeit: { eintraege: [] },
@@ -33,8 +41,20 @@ function neu(d) {
     farbzuordnung: {},
     kalkulation: null,
     aufbau: null,
+    offset: d.offset || null,
+    banner_rollup: d.banner_rollup || null,
+    schild: d.schild || null,
+    textil: d.textil || null,
     exporte: []
   };
+}
+/** Feld bogen eines Druckbogens in der Reihenfolge von schema.json; fehlende Felder mit Standardwert (art null, produkt null, auflage 1, arbeitsdatei null) */
+const BOGEN_FELDER = SCHEMA_JSON.rollenfelder.druckbogen.bogen;
+const BOGEN_STANDARD = { art: null, produkt: null, auflage: 1, arbeitsdatei: null };
+function bogen(b) {
+  const r = {};
+  for (const k of BOGEN_FELDER) r[k] = b[k] !== undefined ? b[k] : (k in BOGEN_STANDARD ? BOGEN_STANDARD[k] : null);
+  return r;
 }
 /** fehlende bekannte Felder mit Standardwert ergänzen (in place) */
 function standardErgaenzen(o) {
@@ -99,5 +119,5 @@ function xmpZugriff(host) {
   };
 }
 
-module.exports = { SCHEMA, PANEL_VERSION, ROLLEN, QUELLEN, STANDARD, neu, parsen, serialisieren, pruefen, aendern, exportAnhaengen, kalkulationSetzen,
+module.exports = { SCHEMA, PANEL_VERSION, ROLLEN, QUELLEN, STANDARD, BOGEN_FELDER, bogen, neu, parsen, serialisieren, pruefen, aendern, exportAnhaengen, kalkulationSetzen,
   standardErgaenzen, xmpZugriff };

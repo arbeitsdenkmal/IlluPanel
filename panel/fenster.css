@@ -1,9 +1,12 @@
-/* Fenster „Objekt“ und „Zusammenfassung“ (MockUp B3/B4, C3): Maße in CSS-px wie dort; Farben aus dem Illustrator-Theme (gemeinsam.js). */
+/* Alle Fenster (SPEZ_03_Oberflaeche, MOCKUP_THEMA6_*_2; „Breite“ MOCKUP_STUFE3_Werkzeuge): Maße in CSS-px wie dort; Farben aus dem Illustrator-Theme (gemeinsam.js),
+ * neue Farben nur als Tokens mit Hell- und Dunkelwert (Silhouette, Bohrungsskizze, Etikett). */
 :root { --bg: #323232; --fg: #e6e6e6; --muted: #b0b0b0; --line: #666; --feld: #3c3c3c; --feldrand: #2e2e2e; --accent: #f29c14; --accent-fg: #1e1e1e;
   --an-bg: #6b5634; --warn: #f0b24a; --ok: #8fd18f; --plott: #7aa7d9; --druck: #e8a33d; --zebra: rgba(255,255,255,.04); --kopf-bg: rgba(255,255,255,.07);
-  --warn-bg: rgba(240,178,74,.16); --an: #a4ccfe; --an-fg: #1a1a1a; --farbe-an: #5d4a2c; }
+  --warn-bg: rgba(240,178,74,.16); --an: #a4ccfe; --an-fg: #1a1a1a; --farbe-an: #5d4a2c;
+  --silhouette: #6a6a6a; --silhouette-kontur: #8a8a8a; --platte: #8c8c8c; --loch: #222; --etikett: #f2f2f2; --cutkontur: #ec008c; }
 :root.hell { --fg: #1d1d1d; --muted: #6b6b6b; --line: #c8c8c8; --feld: #ffffff; --feldrand: #bdbdbd; --an-bg: #f6dcb0; --warn: #a86400; --ok: #2f7d32;
-  --zebra: rgba(0,0,0,.04); --kopf-bg: rgba(0,0,0,.06); --warn-bg: rgba(240,178,74,.22); --farbe-an: #f6e2c0; }
+  --zebra: rgba(0,0,0,.04); --kopf-bg: rgba(0,0,0,.06); --warn-bg: rgba(240,178,74,.22); --farbe-an: #f6e2c0;
+  --silhouette: #d4d4d4; --silhouette-kontur: #9a9a9a; --platte: #c8c8c8; --loch: #222; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { margin: 0; height: 100%; }
@@ -27,8 +30,14 @@ main { flex: 1 1 auto; min-height: 0; padding: 10px 12px 8px; display: flex; fle
 .seg { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; } .seg button { min-width: 52px; }
 .seg.eng button { min-width: 0; padding: 0 9px; } .seg.eng.serie button { min-width: 0; padding: 0 7px; }
 .block { border-top: 1px solid var(--line); padding-top: 8px; }
+main.fuellen { overflow: hidden; } main.fuellen > .tw-fuellen { min-height: 0; display: flex; flex-direction: column; } /* „Textilfarbe“, „Modell“: Raster scrollt */
+main.fuellen > .tw-fuellen > .tw-spalten { flex: 1 1 auto; }
+.zeile { display: flex; align-items: center; gap: 6px; }
+.fuell { flex: 1 1 0; }
+.cap { color: var(--muted); font-size: 11px; margin-bottom: 2px; } /* kleine Beschriftung über einem Feld */
+.seg.voll { flex-wrap: nowrap; } .seg.voll button { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
-/* Fenster „Objekt“: Farben im Objekt, Kachelraster */
+/* Fenster „Objekt“ (§5): Farben im Objekt, Farb-Nr., Kachelraster; Schlüssel an der gewählten Kachel und bei Mouseover */
 .farben { display: flex; flex-direction: column; gap: 4px; }
 .farbe { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 3px; background: var(--zebra); cursor: pointer; }
 .farbe.an { background: var(--farbe-an); box-shadow: inset 0 0 0 1px var(--accent); }
@@ -37,8 +46,11 @@ main { flex: 1 1 auto; min-height: 0; padding: 10px 12px 8px; display: flex; fle
 .raster { display: grid; grid-template-columns: repeat(24, 16px); gap: 3px; }
 .raster span { width: 16px; height: 16px; border: 1px solid #222; border-radius: 2px; display: block; position: relative; cursor: pointer; }
 .raster span.an { outline: 2px solid var(--accent); outline-offset: 1px; }
-.raster span.an::after { content: attr(data-n); position: absolute; left: 20px; top: -3px; font-size: 11px; color: var(--fg); background: #333; padding: 0 4px; border-radius: 2px; white-space: nowrap; z-index: 1; pointer-events: none; }
-:root.hell .raster span.an::after { background: #e8e8e8; }
+input.fnr { width: 64px; height: 28px; font-size: 15px; text-align: center; letter-spacing: .06em; padding: 0 4px; }
+.raster span:hover:not(.an) { outline: 1px solid var(--fg); outline-offset: 1px; }
+.raster span.an::after, .raster span:hover::after { content: attr(data-n); position: absolute; left: 20px; top: -3px; font-size: 11px; color: var(--fg); background: #333; padding: 0 4px; border-radius: 2px; white-space: nowrap; z-index: 1; pointer-events: none; }
+:root.hell .raster span.an::after, :root.hell .raster span:hover::after { background: #e8e8e8; }
+.raster span:hover::after { z-index: 2; }
 
 /* Fenster „Zusammenfassung“ */
 table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
@@ -64,3 +76,99 @@ tr.preis.akzent td.w { color: var(--accent); }
 tr.mvk td { color: var(--muted); font-size: 12px; padding-top: 0; }
 .hinweiszeile { padding: 3px 8px; border-radius: 2px; background: var(--warn-bg); color: var(--warn); display: inline-block; }
 .min { color: var(--muted); }
+
+/* Fenster „Breite“ (MOCKUP_STUFE3_Werkzeuge.html) */
+main.breite { display: grid; grid-template-columns: auto 80px; gap: 8px 10px; align-items: center; align-content: start; padding: 12px; }
+main.breite input { text-align: right; }
+
+/* Fenster „Schilder“ (SPEZ_03_Oberflaeche §8): Karte je Schild (Zebra, Innenabstand 6 px, Abstand 9 px), Skizze 120 × 84 mit Platte (--platte) und Löchern (--loch) */
+select { font: inherit; font-size: 12px; color: var(--fg); background: var(--feld); border: 1px solid var(--feldrand); border-radius: 3px; height: 24px; }
+.schilder { display: flex; flex-direction: column; gap: 9px; }
+.schild { display: grid; grid-template-columns: 120px 1fr; gap: 10px; padding: 6px; border-radius: 3px; background: var(--zebra); align-items: center; }
+.schild .srechts { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.skizze { display: flex; align-items: center; justify-content: center; height: 84px; }
+.platte { position: relative; background: var(--platte); border: 1px solid var(--line); border-radius: 2px; box-sizing: content-box; }
+.loch { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--loch); }
+.schilder label { display: inline-flex; align-items: center; gap: 4px; margin-right: 6px; color: var(--muted); font-size: 11px; }
+.schilder input { width: 52px; text-align: right; padding: 0 5px; }
+
+/* Fenster „Motiv“ (SPEZ_03_Oberflaeche §6, 640 × 470): oben zwei Silhouetten (210 × 196, Tokens --silhouette, --silhouette-kontur) mit Positions-Pillen,
+ * rechts Verfahren 2 × 2, bei Flex/Flock Serie und Komplexität, unten „Ohne Position“; darunter nur bei Flex/Flock die Farben im Objekt; unten „Druckgrößen“
+ * als Tabelle mit fester Kopfzeile und Zebra (scrollt) und Summenzeile */
+main.motiv { overflow: hidden; gap: 6px; padding: 8px 12px 6px; }
+main.motiv > * { flex: none; }
+main.motiv > .block { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding-top: 6px; }
+.oben { display: flex; gap: 12px; align-items: stretch; }
+.shirt { position: relative; width: 210px; height: 196px; flex: none; }
+.shirt svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.shirt svg path { fill: var(--silhouette); stroke: var(--silhouette-kontur); stroke-width: 1.5; } .shirt svg path.kragen { fill: none; }
+.shirt .seite { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; pointer-events: none; }
+.pillen { position: absolute; inset: 0; }
+.pille { position: absolute; transform: translate(-50%, -50%); height: 20px; line-height: 18px; padding: 0 9px; font-size: 11px; border-radius: 10px; background: var(--feld); border: 1px solid var(--feldrand); color: var(--fg); white-space: nowrap; }
+.pille.an { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; box-shadow: none; }
+.pille:disabled { opacity: .4; }
+.rechts { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding-left: 12px; border-left: 1px solid var(--line); }
+.v4 { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; } .v4 button { min-width: 0; padding: 0 4px; }
+.flexr { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; } .flexr select { width: 100%; }
+.flexfarben { display: flex; flex-direction: column; gap: 3px; }
+.fxreihe { display: flex; flex-wrap: wrap; gap: 4px 18px; max-height: 56px; overflow-y: auto; }
+.fx { display: flex; align-items: center; gap: 6px; } .fx .big { width: 14px; height: 14px; border: 1px solid #222; border-radius: 2px; flex: none; }
+.fx .fxname { width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .fx input { width: 150px; }
+.senkrecht { display: flex; flex-direction: column; gap: 4px; }
+.senkrecht button { width: 100%; }
+.rechts .ab { margin-top: auto; }
+.blocktitel { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.blocktitel .sub { color: var(--muted); font-size: 11px; flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.blocktitel .plus { margin-left: auto; }
+.blocktitel .plus button { height: 20px; font-size: 11px; padding: 0 8px; background: transparent; border: 1px dashed var(--line); color: var(--muted); }
+.stufen { flex: 0 1 auto; min-height: 0; overflow-y: auto; }
+table.dg { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
+table.dg th { position: sticky; top: 0; z-index: 1; background: var(--bg); font-weight: normal; color: var(--muted); font-size: 11px; text-align: left; padding: 0 6px 2px 0; }
+table.dg td { padding: 2px 6px 2px 0; text-align: left; border-bottom: 0; overflow: visible; }
+table.dg tr.z2 td { background: var(--zebra); }
+table.dg td.zeigen, table.dg th.zeigen { text-align: center; }
+table.dg td.zeigen input, table.dg td.bo input { margin: 0; height: auto; }
+col.c-zeigen { width: 44px; } col.c-mass { width: 184px; } col.c-bezug { width: 82px; } col.c-menge { width: 58px; } col.c-bo { width: 60px; } col.c-weg { width: 26px; }
+table.dg .massz { display: flex; gap: 4px; align-items: center; }
+table.dg select, table.dg input { padding: 0 4px; }
+table.dg .massz select { width: 70px; flex: none; }
+table.dg .massz input { width: 50px; flex: none; }
+table.dg select.bezug { width: 76px; }
+table.dg input.menge { width: 50px; }
+table.dg input.gr { width: 100%; }
+table.dg td.bo { text-align: center; }
+table.dg td.weg { text-align: right; }
+table.dg button.weg { width: 22px; height: 22px; min-width: 0; padding: 0; color: var(--muted); }
+.summe { color: var(--muted); font-size: 11px; margin-top: 3px; }
+.summe b { color: var(--fg); font-weight: 600; }
+
+/* Fenster „Nutzen“, „WEA-Etiketten“, „Bögl Nummern“ (SPEZ_03_Oberflaeche §11, §12): Überschriften 84 px, Boxen (Vorgabe, Detail, Ergebnis) mit --kopf-bg,
+ * gewählte Layout- bzw. Variantenzeile wie .farbe.an, Etikett-Vorschau 180 × 72 (--etikett, Rand 2 px --cutkontur) */
+main.nutzen { gap: 8px; }
+.vor { white-space: pre; font: 11px/1.45 ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; background: var(--kopf-bg); border-radius: 3px; padding: 6px 8px; }
+.vor.detail { white-space: pre-wrap; min-height: 60px; margin-top: 6px; }
+.senkrecht.links { align-items: flex-start; } .senkrecht.links button { width: auto; }
+.layouts { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+.layouts label { display: flex; align-items: center; gap: 6px; white-space: pre; padding: 2px 4px; border-radius: 3px; font: 11px/1.45 ui-monospace, Menlo, monospace; }
+.layouts label.an { background: var(--farbe-an); box-shadow: inset 0 0 0 1px var(--accent); }
+.layouts input { height: auto; margin: 0; }
+.liste { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 3px; min-height: 40px; flex: 1 1 auto; overflow: hidden; }
+.liste .zeilen { overflow-y: auto; min-height: 0; flex: 1 1 auto; }
+.liste .zl { display: grid; grid-template-columns: 1fr 70px 84px; gap: 6px; align-items: center; padding: 3px 6px; }
+.liste .zeilen .zl:nth-child(even) { background: var(--zebra); }
+.liste .kopfz { color: var(--muted); font-size: 11px; border-bottom: 1px solid var(--line); flex: none; }
+.liste .leer { display: block; }
+.liste .dname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.liste input { width: 60px; text-align: right; }
+textarea { font: inherit; color: var(--fg); background: var(--feld); border: 1px solid var(--feldrand); border-radius: 3px; padding: 4px 8px; resize: none; width: 100%; white-space: pre; }
+.etikettz { display: flex; gap: 14px; align-items: center; } .etikettz .feldz { flex: 1 1 0; min-width: 0; }
+.etikett { width: 180px; height: 72px; flex: none; background: var(--etikett); color: #111; border: 2px solid var(--cutkontur); border-radius: 4px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px; font-size: 15px; font-weight: 600; line-height: 1.1; overflow: hidden; text-align: center; }
+.etikett span { max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .etikett .u { font-size: 13px; font-weight: 400; }
+table.varianten td, table.varianten th { padding: 3px 6px; }
+table.varianten tr { cursor: default; } table.varianten tr.an td { background: var(--farbe-an); }
+table.varianten input { height: auto; margin: 0; }
+.nummern { display: grid; grid-template-columns: repeat(5, 72px); gap: 6px 8px; }
+.nummern .nummer { display: flex; flex-direction: column; gap: 2px; font-size: 11px; }
+.nummern input { width: 72px; text-align: right; }
+#ergebnis { min-height: 40px; }

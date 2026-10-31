@@ -1,25 +1,31 @@
 /* Preisquellen-Schnittstelle (SPEZ_02 §4). Eine Quelle (Adapter) liefert nur Zeilen; Prüfung und Auflösung liegen hier.
  *   const pq = preisquelle(adapter, { medien })
- *   await pq.laden(auftragsart)  -> { ok, version, stand, quelle, zeilen[], fehler[] }   auftragsart = gilt_fuer-Schlüssel (fahrzeug | beschriftung)
+ *   await pq.laden(auftragsart)  -> { ok, version, stand, quelle, zeilen[], fehler[] }   auftragsart = gilt_fuer-Schlüssel (fahrzeug | beschriftung | textil)
  *   pq.z(name, verfahren)        Minutenwert; Auflösung Auftragsart vor „alle“, Verfahren vor „alle“ [P §8.4]
  *   pq.serie(schluessel)         { verfahren, ek_m2, vk_m2, tape_vk_m2 } oder null
  *   pq.parameter(name)           Zahl oder null
  *   pq.aufschlaege()             [{ schluessel, bezeichnung, prozent | minuten }]
  *   pq.komplexitaet()            [{ stufe, prozent, bezeichnung }] aufsteigend
  * Adapter: { quelle, async lesen() -> { zeilen: [{ typ, schluessel, gilt_fuer, … } als Text oder Zahl], version, stand } }.
- * Stufe 2: preisquelle_csv.js; Stufe 3 ersetzt nur den Adapter (SDK). Prüfungen wie bisher [P §9] aus dem alten Projekt übernommen. */
+ * Stufe 2: preisquelle_csv.js; Stufe 3 ersetzt nur den Adapter (SDK). Prüfungen wie bisher [P §9] aus dem alten Projekt übernommen.
+ * Textil Flex/Flock [P §13.5]: Serien mit verfahren flex bzw. flock (ek_m2/vk_m2 dürfen leer sein, null = ohne Preis), Zeitschlüssel je Verfahren flex/flock
+ * oder alle, Pflichtparameter textil.mindest und textil.rundung. */
 "use strict";
 
 const SPALTEN = ["typ", "schluessel", "gilt_fuer", "bezeichnung", "verfahren", "ek_m2", "vk_m2", "tape_vk_m2", "minuten", "prozent", "wert"];
 // andere Typen (z. B. platte der Schildlogik) werden ignoriert
 const TYPEN = ["parameter", "serie", "zeit", "aufschlag", "komplexitaet"];
-const GILT = ["fahrzeug", "beschriftung", "schild", "alle"];
+const GILT = ["fahrzeug", "beschriftung", "schild", "textil", "alle"];
 const PFLICHT = ["stundensatz.vk", "stundensatz.produktion", "stundensatz.grafik", "mindest.produkt", "mindest.montage", "rundung", "mwst", "tape.min_schnittdichte", "tape.min_teiledichte"];
 // Zeitschlüssel [P §8.4]: je Verfahren; datei_rip nur bei Druck; je Auftrag mit Verfahren „alle“
 const ZEIT_VERFAHREN = ["ruesten", "datei_cut", "tape_m2", "produktion_m2", "teil", "schnitt_m", "trennen", "stueck", "montage_m2", "reinigen_m2", "montage_teil"];
 const ZEIT_DRUCK = ["datei_rip"];
 const ZEIT_AUFTRAG = ["auftrag_montage", "reinigen_m2"];
-const KALKULIERT = ["fahrzeug", "beschriftung"];
+const KALKULIERT = ["fahrzeug", "beschriftung", "textil"];
+// Textil Flex/Flock [P §13.4]: Zeitschlüssel je Verfahren flex und flock (Auflösung über „alle“), Pflichtparameter
+const TEXTIL_VERFAHREN = ["flex", "flock"];
+const ZEIT_TEXTIL = ["ruesten", "datei_cut", "teil", "schnitt_m", "trennen", "pressen", "falten"];
+const PFLICHT_TEXTIL = ["textil.mindest", "textil.rundung"];
 
 /** Zahl mit Dezimalkomma oder -punkt; Tausenderpunkt bei Komma-Schreibweise erlaubt ("1.260,00"); leer -> null, ungültig -> NaN */
 function zahl(s) {
@@ -58,17 +64,19 @@ function pruefen(zeilen, A, medien) {
     if (gesehen.has(id)) { f.push(`${ort}: doppelter Eintrag (gleicher typ, schluessel, gilt_fuer, verfahren)`); return; }
     gesehen.add(id);
     const e = { typ, schluessel: key, gilt_fuer: gilt, bezeichnung: get("bezeichnung") || key };
-    if (!GILT.includes(gilt)) f.push(`${ort}: gilt_fuer muss fahrzeug, beschriftung, schild oder alle sein („${get("gilt_fuer")}“)`);
+    if (!GILT.includes(gilt)) f.push(`${ort}: gilt_fuer muss fahrzeug, beschriftung, schild, textil oder alle sein („${get("gilt_fuer")}“)`);
     if (typ === "serie") {
       e.verfahren = verf;
-      if (!["plott", "druck"].includes(verf)) f.push(`${ort}: verfahren muss plott oder druck sein („${get("verfahren")}“)`);
-      e.ek_m2 = pflichtZahl(ort, get, "ek_m2"); e.vk_m2 = pflichtZahl(ort, get, "vk_m2");
+      if (!["plott", "druck"].concat(TEXTIL_VERFAHREN).includes(verf)) f.push(`${ort}: verfahren muss plott, druck, flex oder flock sein („${get("verfahren")}“)`);
+      // Flex/Flock: ek_m2/vk_m2 trägt Markus ein; leer = ohne Preis (berechnen bricht dann ab, Summa läuft) [P §13.5]
+      const offen = s => TEXTIL_VERFAHREN.includes(verf) && get(s) === "";
+      e.ek_m2 = offen("ek_m2") ? null : pflichtZahl(ort, get, "ek_m2"); e.vk_m2 = offen("vk_m2") ? null : pflichtZahl(ort, get, "vk_m2");
       // Tape optional, nur Druck; leer = kein Tape-Preis (Fehler erst, wenn ein Objekt Tape hat)
       e.tape_vk_m2 = get("tape_vk_m2") === "" ? null : pflichtZahl(ort, get, "tape_vk_m2");
       if (verf === "plott" && e.tape_vk_m2 !== null) f.push(`${ort}: tape_vk_m2 nur bei verfahren druck (beim Plott steckt Tape im vk_m2)`);
     } else if (typ === "zeit") {
       e.verfahren = verf;
-      if (!["plott", "druck", "uv", "alle"].includes(verf)) f.push(`${ort}: verfahren muss plott, druck, uv oder alle sein („${get("verfahren")}“)`);
+      if (!["plott", "druck", "uv", "alle"].concat(TEXTIL_VERFAHREN).includes(verf)) f.push(`${ort}: verfahren muss plott, druck, uv, flex, flock oder alle sein („${get("verfahren")}“)`);
       e.minuten = pflichtZahl(ort, get, "minuten");
     } else if (typ === "aufschlag") {
       // [P §4.5, §9]: entweder prozent (Faktor auf die Montage) oder minuten (je m² Stückfläche), nicht beides, nicht keins
@@ -120,8 +128,13 @@ function pruefen(zeilen, A, medien) {
   if (A) {
     if (!KALKULIERT.includes(A)) f.push(`Keine Kalkulation für „${A}“`);
     if (!stufen(A).length) f.push(`Keine Komplexitätsstufen für „${A}“ (weder ${A} noch alle)`);
-    ["plott", "druck"].forEach(v => ZEIT_VERFAHREN.concat(v === "druck" ? ZEIT_DRUCK : []).forEach(k => { if (!zeitEintrag(k, A, v)) f.push(`Zeitschlüssel „${k}“ fehlt für Verfahren „${v}“ (${A})`); }));
-    ZEIT_AUFTRAG.forEach(k => { if (!zeitEintrag(k, A, "alle")) f.push(`Zeitschlüssel „${k}“ fehlt (${A})`); });
+    if (A === "textil") {
+      TEXTIL_VERFAHREN.forEach(v => ZEIT_TEXTIL.forEach(k => { if (!zeitEintrag(k, A, v)) f.push(`Zeitschlüssel „${k}“ fehlt für Verfahren „${v}“ (${A})`); }));
+      PFLICHT_TEXTIL.forEach(k => { if (!aufloesen("parameter", k, A)) f.push(`Pflichtparameter „${k}“ fehlt`); });
+    } else {
+      ["plott", "druck"].forEach(v => ZEIT_VERFAHREN.concat(v === "druck" ? ZEIT_DRUCK : []).forEach(k => { if (!zeitEintrag(k, A, v)) f.push(`Zeitschlüssel „${k}“ fehlt für Verfahren „${v}“ (${A})`); }));
+      ZEIT_AUFTRAG.forEach(k => { if (!zeitEintrag(k, A, "alle")) f.push(`Zeitschlüssel „${k}“ fehlt (${A})`); });
+    }
   }
   Object.assign(liste, { aufloesen, zeitEintrag, stufen });
   return { liste, fehler: f };
@@ -157,4 +170,4 @@ function preisquelle(adapter, opts) {
   };
 }
 
-module.exports = { preisquelle, pruefen, zahl, SPALTEN, PFLICHT, ZEIT_VERFAHREN, ZEIT_DRUCK, ZEIT_AUFTRAG };
+module.exports = { preisquelle, pruefen, zahl, SPALTEN, PFLICHT, ZEIT_VERFAHREN, ZEIT_DRUCK, ZEIT_AUFTRAG, ZEIT_TEXTIL, PFLICHT_TEXTIL, TEXTIL_VERFAHREN };

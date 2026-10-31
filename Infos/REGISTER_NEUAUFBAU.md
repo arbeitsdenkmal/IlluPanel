@@ -1,10 +1,18 @@
 # Entscheidungsregister Neuaufbau Illustrator Panels
 
-Stand: 30.10.2026 (Kopie des Projektdokuments `claude/REGISTER_NEUAUFBAU.md`). Dieses Register ersetzt für die Neuplanung alle älteren Stände; bei Widerspruch zu anderen Dokumenten gilt das Register.
+Stand: 31.10.2026 (Nachtrag SDK-unabhängige Reste; Thema 2 Konfigurationen abgenommen; Thema 3 Schild abgenommen; Thema 4 Textil gebaut; Thema 5 Nutzen/Gitter/MB-Nr gebaut; Thema 6 Oberfläche gebaut; Themen neu gezählt: 6 = MockUp-Runde, 7 = Kalibrierung; 31.10. abends: Thema 7 Kalibrierung zurückgestellt, Gesamtlauf in Illustrator statt Einzelproben, Vorlagen-Dateinamen Offset/Roll-up). Ergebnis der gemeinsamen Durchsicht (Markus hat jeden Punkt einzeln entschieden). Grundlage: KONTEXT.md, PREISLOGIK.md v6, CHANGELOG, Projektnotizen. Dieses Register ersetzt für die Neuplanung alle älteren Stände; bei Widerspruch zu anderen Dokumenten gilt das Register.
 
-**Nachtrag 30.10. abends — Brians SDK-Entscheidung:** Alles, was die Datenbank berührt, baut Brian als importierbare, dokumentierte Bibliotheken (SDK). Das Panel nutzt ausschließlich diese Bibliotheken; CC baut keine eigenen Datenbankwege. Projektordner heißt `~/tools/Illustrator Panel` (7.3). `SPEZ_01_Fundament.md` ist die Spezifikation der ersten Baustufe; ihr Umfang berührt Supabase nicht.
+Aktualisiert 30.10.2026: alle vier Planungsblöcke entschieden und eingearbeitet — Block 1 (Fundament), Block 2 (Struktur inkl. Mapping App-Typ → Auftragsart), Block 3 (Funktionen), Block 4 (Rand). GitHub-Repo `arbeitsdenkmal/IlluPanel` (7.3), Panelname „PAM-Werkzeuge“ (4.1).
 
-Legende: **MIT** = wird übernommen · **WEG** = entfällt · **ENTSCHIEDEN** = in der Neuplanung festgelegt
+**Nachtrag 30.10. abends — Brians SDK-Entscheidung:** Alles, was die Datenbank berührt, baut Brian als importierbare, dokumentierte Bibliotheken (SDK). Das Panel nutzt ausschließlich diese Bibliotheken; CC baut keine eigenen Datenbankwege. Das ersetzt in 6.8 den direkten supabase-js-Zugriff; die Abschnitte 0 und 5 von `claude/BRIEFING_Brian.md` sind in diesem Punkt überholt (Dokument bleibt wie versandt, Brians Antwort gilt). Außerdem: Projektordner heißt `~/tools/Illustrator Panel` (7.3, aus SPEZ_01). `claude/SPEZ_01_Fundament.md` ist die Spezifikation der ersten Baustufe; ihr Umfang berührt Supabase nicht und ist vom SDK-Wechsel unberührt.
+
+**Stufe 1 „Fundament“ abgenommen (30.10.):** Commits „Stufe 1 Fundament“ (3.0.0) und „Nachtrag Stufe 1“ (3.0.1) liegen auf `origin/main`. Aus der Prüfung des CC-Berichts: 4.7 geändert (keine Fokus-Abfrage), „Auftrag“ mit oranger Schrift wie bisher, `"rechner"` für MKs PC = „MK-PC“. Illustrator-Probe durch Markus (Anlegen „ohne Auftrag“, flacher Export): erfolgreich, keine Abweichung.
+
+**Stufenplan (30.10.):** Stufe 2 = Zuordnen, Plott-Schneidedaten, Druckbögen und Kalkulation für Fahrzeugbeschriftung/Beschriftung, SDK-unabhängig; die Kalkulation bekommt eine Preisquellen-Schnittstelle, die in der Entwicklung aus `Infos/Stammdaten/preisliste.csv` liest (Entwicklungsquelle im Repo, keine Kopie je Rechner) und in Stufe 3 durch Brians SDK ersetzt wird. Vor UI-Teilen MockUps (4.6, 4.5). Stufe 3 = alles mit Supabase über das SDK.
+
+**Nachtrag 31.10. — SDK-unabhängige Reste (Themen 1–7):** Stufe 2 (2a–2d) ist gebaut. Bis Brians SDK vorliegt, werden die SDK-unabhängigen Reste in dieser Reihenfolge bearbeitet: 1 Breite/Masken als Panel-Funktionen und Skript-Buttons Logo/VK-CC (4.3) · 2 Offset-Vorlagen, Lasergravur, Sonstiges, Banner/Roll-up als Konfigurationen (2.9, 2.10, Mapping) · 3 Schild (2.8) · 4 Textil-Dialog/-Export (2.11) und Preislogik Flex/Flock (2.2) · 5 Nutzen/Gitter/MB-Nr (3.9) · 6 Oberfläche = die große MockUp-Runde (7.10) · 7 Kalibrierung (1.15) — **Zählung festgelegt Markus 31.10.:** die MockUp-Runde ist Thema 6, Kalibrierung rückt auf 7, weitere Themen entsprechend. Je Thema eine `claude/SPEZ_03_<Thema>.md`. **Prozess geändert (Markus 31.10.):** zuerst ein Panel, das die Funktionen abbildet, mit vorläufiger Platzierung ohne Gestaltungsanspruch; die MockUp-Pflicht (7.10) gilt für die große MockUp-Runde = Thema 6, vor Thema 7 (Kalibrierung ändert nichts am Aussehen; Markus 31.10.), nicht je Teilstufe. Commit und Push nur auf ausdrückliche Ansage. **Geändert Markus 31.10. abends:** Thema 7 Kalibrierung ist bis auf weiteres zurückgestellt. Statt der Einzelproben 2b–2d durch Markus macht CC einen Gesamtlauf in Illustrator über alles Gebaute (ohne Themennummer, Testroutinen bleiben im Repo, Testablage nie auf dem Server), behebt Abweichungen Code ↔ Spezifikation und committet und pusht danach (3.7.2); offene Spezifikationsfragen halten den Commit an.
+
+Legende: **MIT** = wird übernommen · **WEG** = entfällt · **KLÄREN** = offen, Teil der Neuplanung · **ENTSCHIEDEN** = in der Neuplanung festgelegt
 
 ## 1. Preislogik
 
@@ -17,32 +25,32 @@ Legende: **MIT** = wird übernommen · **WEG** = entfällt · **ENTSCHIEDEN** = 
 | 1.5 | Ein Preis je Folienserie, keine Einträge je Farbe | MIT |
 | 1.6 | Laminat reine Produktionsinfo, kein Preis | MIT |
 | 1.7 | Zeitschlüssel je Verfahren (ruesten, datei_cut, tape_m2, produktion_m2 Plott 0, schnitt_m 0,12, trennen, stueck 5, montage_m2 0,8, reinigen_m2 1,65, montage_teil, datei_rip, auftrag_montage 2) | MIT |
-| 1.8 | Sicke 50 %, Wölbung 36 min/m²; Komplexität K0–K3 manuell auf Produktionszeit | MIT — Komplexität ist Tag am Objekt und wirkt auf dessen Produktionszeit. Sichtbar und setzbar nur, wo tatsächlich geschnitten wird: Plott immer, Druck nur mit Cutkontur, Textil Flex/Flock ja; reiner Druck ohne Cut, UV, Laser nie |
+| 1.8 | Sicke 50 %, Wölbung 36 min/m²; Komplexität K0–K3 manuell auf Produktionszeit | MIT — **Einbaustellen ENTSCHIEDEN (30.10.):** Komplexität ist Tag am Objekt und wirkt auf dessen Produktionszeit. Sichtbar und setzbar nur, wo tatsächlich geschnitten wird: Plott immer, Druck nur mit Cutkontur, Textil Flex/Flock ja; reiner Druck ohne Cut, UV, Laser nie. **Schild (31.10.):** Komplexität wird gesetzt und mitgeführt, wirkt im Panel auf nichts (keine Schildkalkulation, 1.13) |
 | 1.9 | Tape-Vorschlag ab 40 m Schnitt/m² bzw. 50 Teile/m², Material über `tape_vk_m2` | MIT |
-| 1.10 | Mindestbeträge Produkt 35 €, Montage 30 €, ohne Grafik | MIT |
-| 1.11 | Nettopreise je einzeln auf 5 € aufgerundet | MIT |
+| 1.10 | Mindestbeträge Produkt 35 €, Montage 30 €, ohne Grafik | MIT — **Textil Flex/Flock (31.10.):** statt dessen 5,40 € netto je Motiv je Textil (je Exemplar), keine Trennung Produkt/Montage |
+| 1.11 | Nettopreise je einzeln auf 5 € aufgerundet | MIT — **Textil Flex/Flock (31.10.):** auf 0,10 € aufgerundet |
 | 1.12 | Grafikzeit automatisch + manuelle Minuten, nur dokumentiert, nicht eingerechnet | MIT — Dokumentation über Supabase |
-| 1.13 | Schildkalkulation im Panel | **WEG** — Schildlogik liegt bei Brian/App |
-| 1.14 | MwSt 19 % aus der Preisquelle | MIT — Brutto auf Cent gerundet, nicht auf 5 € |
-| 1.15 | Zahlenwerte vorläufig; Kalibrierung über 10–20 dokumentierte Jobs, danach halbjährliche Runden | MIT |
+| 1.13 | Schildkalkulation im Panel | **WEG** — Kalkulationslogik steht als Schild-Matrix + Formeln + Beispielkalkulation in `claude/BRIEFING_Brian.md` §4; Schild-Rundung 0,50 € bestätigt. **31.10.:** das Panel liefert die Schilddaten (Verfahren, Material, Endmaß und Bohrungen je Schild; Stückzahl kommt aus der App) im XMP, in Stufe 3 nach Supabase (`claude/SPEZ_03_Schild.md` §5) |
+| 1.14 | MwSt 19 % aus der Preisquelle | MIT — Brutto buchhalterisch korrekt gerundet (auf Cent), nicht auf 5 € |
+| 1.15 | Zahlenwerte vorläufig; Kalibrierung über 10–20 dokumentierte Jobs, danach halbjährliche Runden | MIT — Thema 7 (31.10., bis dahin Thema 6); **bis auf weiteres zurückgestellt (Markus 31.10. abends)** |
 
 ## 2. Auftragsarten und Anlegen
 
 | Nr | Punkt | Status |
 |---|---|---|
-| 2.1 | Auftragsarten | **ENTSCHIEDEN:** nach außen getrennt (keine Mischfälle je Datei). Intern gemeinsame Basis: Auftragsart = Konfiguration (Ebenen-Satz, Maßstab, Zeichenflächen-Regel, Kalkulation an/aus, Exportprofil) auf gemeinsamem Gerüst mit gemeinsamem PDF-Exportkern. Acht Arten (inkl. Banner/Roll-up). Die Auftragsart gibt die App vor (department/type über Mapping); nur „ohne Auftrag“ wählt die Art manuell |
-| 2.2 | Nur Fahrzeugbeschriftung und Beschriftung kalkuliert | MIT — erweitert: zusätzlich Textil Flex/Flock nach Aufwand (Preislogik-Erweiterung offen) |
-| 2.3 | Anlegen-Dialog | **ENTSCHIEDEN:** ein modales Fenster, zwei Schritte. 1) Auftrag: Liste offener Produkte aus Supabase mit Kundensuche; daneben „ohne Auftrag“ mit manueller Artwahl. 2) Quelle: geöffnete Datei (Duplikat, Original bleibt unverändert offen), Datei öffnen (nur Kopie) oder leer. Panel erzeugt Arbeitsdatei mit Ebenen-Gerüst und Maßstab, schreibt Auftrags-/Produkt-ID ins XMP, Quellinhalt auf die Sandbox. Quelldatei nur kopieren, nie verändern. Details Stufe 1: SPEZ_01 §8 |
+| 2.1 | Auftragsarten | **ENTSCHIEDEN (30.10.):** nach außen bleiben die Auftragsarten getrennt (striktes Trennen je Datei/Produkt, keine Mischfälle). Intern eine gemeinsame Basis: Auftragsart = Konfiguration (Ebenen-Satz, Maßstab, Zeichenflächen-Regel, Kalkulation an/aus, Exportprofil) auf gemeinsamem Gerüst mit gemeinsamem PDF-Exportkern. Acht Arten (inkl. Banner/Roll-up). **Die Auftragsart gibt die App vor:** abgeleitet aus department/type des Produkts über die Mapping-Tabelle (unten, bestätigt 30.10.); nur „ohne Auftrag“ wählt die Art manuell |
+| 2.2 | Nur Fahrzeugbeschriftung und Beschriftung kalkuliert | MIT — **erweitert (30.10.): zusätzlich Textil Flex/Flock**, nach Aufwand wie Fahrzeugbeschriftung (Schnittlängen usw.), Preise werden in dieselben Preisfelder gemeldet; löst die bisherigen Pauschalen ab. **Ausgestaltung 31.10.:** ein Preis inkl. Pressen („Transfer ohne Pressen“ gibt es nicht), steht in den Feldern „inkl. Montage“, „nur Aufkleber“ bleibt leer; Rechenweg wie Plott (Rüsten/Datei je Farbschlüssel = Serie + Flexfarbe, Entgittern über Teile und Schnittlänge, Trennen, Komplexität) plus Pressen 1 min je Pressvorgang (1 je Exemplar, 2 bei blockout) und Falten 20 s je Textil (Textilzahl = größte Mengensumme einer Position); Material je Serie: `PoliTape Turbo` (Flex), `VelCutPro` (Flock), `vk_m2` = `ek_m2` × 1,9; Mindestbetrag 5,40 € je Exemplar (1.10), Rundung 0,10 € (1.11); DTF, Stick, Namen und das Textil selbst nicht kalkuliert. `claude/PREISLOGIK.md` §13, `claude/SPEZ_03_Textil.md` §10 |
+| 2.3 | Anlegen-Dialog | **ENTSCHIEDEN (30.10.):** ein modales Fenster, zwei Schritte. 1) Auftrag: Liste offener Produkte aus Supabase mit Kundensuche — Auftragsart kommt vom App-Produkt; daneben „ohne Auftrag“ (Schnellauskunft) mit manueller Artwahl. 2) Quelle: geöffnete Datei (Duplikat, Original bleibt unverändert offen), Datei öffnen (nur Kopie) oder leer. Panel erzeugt Arbeitsdatei mit Ebenen-Gerüst und Maßstab der Auftragsart, schreibt Auftrags-/Produkt-ID ins XMP, Quellinhalt landet auf der Sandbox. Grundsatz „Quelldatei nur kopieren, nie verändern“ MIT. Details Stufe 1: SPEZ_01 §8 |
 | 2.4 | Geöffnete Quelle bleibt unverändert offen (Duplikat) | MIT |
-| 2.5 | Neuer Auftrag aus Arbeitsdatei möglich | MIT — gleiche Auftragsart → Inhalte in die gleichnamigen Ebenen, alles andere → Sandbox. Maßstab der Quelle aus deren XMP; Dateien ohne XMP: Abfrage (Standard 1:1, umschaltbar 1:30). Bei Wechsel 1:30 ↔ 1:1 skaliert das Panel automatisch, Ergebnis immer auf die Sandbox |
-| 2.6 | Fahrzeugbeschriftung: CC-Vision-Vorlage per Häkchen, Ebenen Sandbox/Fahrzeugkontur/Plott/Digitaldruck, 1:30 | MIT als Konfiguration |
-| 2.7 | Beschriftung: Sandbox/Cut/Print/Foto, 1:1 | MIT als Konfiguration |
-| 2.8 | Schild: Folie/UV-Vorlagen, Material je Zeichenfläche, Bohrungen | MIT als Konfiguration; Komplexität nur bei Cutanteil |
-| 2.9 | Offset-Daten | **ENTSCHIEDEN:** je Offset-Produkt eine Vorlage; Panel wählt sie über das App-Produkt; Format, Anschnitt, Hilfslinien aus der Vorlage. Export Preset „wmd“ |
-| 2.10 | Lasergravur / Sonstiges | Lasergravur fix 600 × 300; Sonstiges mit Maßabfrage (Größe und Anzahl Zeichenflächen); beide schreiben PDFs über den gemeinsamen Exportkern |
-| 2.11 | Textil-MockUp-Workflow | Manueller Weg nur noch Notweg — Marke, Modell, Textilfarbe, ID in der Regel aus Supabase. Aktueller Textil-Dialog MIT |
-| 2.12 | Grafikzeit bei allen Auftragsarten | MIT — mit Auftrag direkt nach Supabase; ohne Auftrag ins XMP der .ai; bei späterer Zuordnung überträgt das Panel und markiert im XMP als übertragen |
-| 2.13 | Datenspeicher XMP + `IP_*`-Tags | **ENTSCHIEDEN:** Dokumentebene eigener XMP-Namespace mit JSON-Block; Objektebene Illustrator-Tags `IP_*`. Schema: SPEZ_01 §5 |
+| 2.5 | Neuer Auftrag aus Arbeitsdatei möglich | MIT — **Ebenen-Logik ENTSCHIEDEN (30.10.):** gleiche Auftragsart → Inhalte in die gleichnamigen Ebenen, alles andere → Sandbox. Maßstab der Quelle aus deren XMP; Dateien ohne XMP (vor Panel-Zeit): Abfrage im Anlegen-Dialog (Standard 1:1, umschaltbar 1:30). Bei Wechsel 1:30 ↔ 1:1 skaliert das Panel automatisch, Ergebnis immer auf die Sandbox, nie ungefragt in Produktionsebenen |
+| 2.6 | Fahrzeugbeschriftung: CC-Vision-Vorlage per Häkchen, Ebenen Sandbox/Fahrzeugkontur/Plott/Digitaldruck, 1:30 | MIT als Konfiguration der Auftragsart im Rahmen von 2.1/2.3; CC-Vision je Auftrag laden bestätigt (7.6) |
+| 2.7 | Beschriftung: Sandbox/Cut/Print/Foto, 1:1 | MIT als Konfiguration der Auftragsart im Rahmen von 2.1/2.3 |
+| 2.8 | Schild: Folie/UV-Vorlagen, Material je Zeichenfläche, Bohrungen | MIT als Konfiguration der Auftragsart im Rahmen von 2.1/2.3; Schilder mit Cutanteil sind der Sonderfall (~5 %), Komplexität erscheint nur dort (1.8) — **Ausgestaltung 31.10.:** ein Verfahren und ein Material je Arbeitsdatei (ein App-Produkt hat ein Material; gemischte Aufträge je Verfahren eine Datei) — ersetzt „Material je Zeichenfläche“; Materialliste `config/schild_materialien.csv` (pflegt Markus); Bohrungen je Schild: 4 Ecken, 2 mittig oben/unten, 2 mittig links/rechts oder keine, Abstand Lochmitte–Außenkante und Durchmesser frei kombinierbar, Standard 4 Ecken 20/20 mm, Ø 5 mm; Lochmarkierungen Ø 2 mm, Füllung 100 % C, nur in der Druck-PDF bei Folie; Laserdatei für PMMA bis 600 × 300 mm (Umriss der Zeichenfläche 100 % M, Löcher 100 % C, Kontur 0,25 pt, „pam x4“ mit Dokument-Anschnitt, `_laser`), automatisch mit dem Export; Plott über Summa und Druck mit Cutkontur über Druckbögen wie Beschriftung; Druck ohne Cut und UV je Schild als PDF mit dem Anschnitt aus der .ait (5 bzw. 2 mm); Spiegeln UV-Hinten, Weiß und UV-Tischbelegung macht der RIP; Dateien `<Kunde>_<technik>_NN_<Kürzel>-<Stärke>.pdf` nur im Auftragsordner; keine Stückzahl im Panel (Stufe 3 aus der App). Details `claude/SPEZ_03_Schild.md` |
+| 2.9 | Offset-Daten | **ENTSCHIEDEN (30.10.):** je Offset-Produkt eine Vorlage; vorhandene werden übernommen, fehlende legt Markus einmalig an. Das Panel wählt die Vorlage über das App-Produkt (Copyshop-Typ aus Supabase); Format, Anschnitt und Hilfslinien kommen aus der Vorlage und werden nicht generiert. Export (Preset „wmd“) MIT — **Ausgestaltung 31.10.:** Produktliste = `config/produkte.csv` (pflegt Markus; das Panel bildet ausschließlich diese Liste ab, inkl. Visitenkarten 85 × 55 und 90 × 50, je hoch/quer, ein-/beidseitig); je Produkt und Ausrichtung eine Vorlage, alle legt Markus neu an; Linien und alles Übrige im Dokument kommen aus der .ait; „freies Format“ bleibt (auf `Offset.ait`, ohne Hilfslinien); Preset „wmd“ in der Konfiguration des Panels, nicht in der CSV; Anschnitt aus dem Dokument, keine Rundung; Ablage im Auftragsordner und zusätzlich im Sammelordner „= wmd bestellen =“. **Fassung 3 (31.10. abends):** Dateinamen der Vorlagen frei in `produkte.csv` (`vorlage_hoch`, `vorlage_quer`), neues Produkt Einbruchfalz DIN A7; Roll-up-Vorlagen `RollUp_850.ait`, `RollUp_1000.ait`. Details `claude/SPEZ_03_Konfigurationen.md` |
+| 2.10 | Lasergravur / Sonstiges | Lasergravur immer fix 600 × 300, Inhalt 1:1 wie im Dokument angelegt, kein Sammelordner; Sonstiges mit Maßabfrage (Größe und Anzahl Zeichenflächen), **geändert 31.10.:** vorbelegt aus der Quelle (Maß Zeichenfläche 1, Anzahl), ohne Quelle A4 hoch (bisher 600 × 300); beide schreiben PDFs über den gemeinsamen Exportkern |
+| 2.11 | Textil-MockUp-Workflow | Manueller Weg (Marken-/Modell-Buttons, Farbe aus CSV) nur noch Notweg — Marke, Modell, Textilfarbe, ID kommen in der Regel aus Supabase. Der aktuelle Textil-Dialog (Optik/Aufteilung/Funktion) MIT — **Ausgestaltung 31.10.:** gemeint ist das Fenster „Motiv“ (44B); Modell und Textilfarbe laufen als Wahl-Objekt `textil` ins Anlegen (Stufe 3 tauscht die Quelle); Arbeitsdatei `Korrekturabzug_<ID>.ai`, ein Modell je Arbeitsdatei, mehrere Modelle = mehrere Arbeitsdateien im Auftragsordner („Modell hinzufügen“); Textilfarbe änderbar (Fenster, Ebene „Stofffarbe“ umfärben); Verfahren DTF, **Flex, Flock (neu)**, Stick; blockout bei DTF/Flex/Flock; Realmaße in `textil_modelle.csv` sind Herstellerangaben und verbindlich; MockUps kommen erst nach Überarbeitung durch Markus nach `config/mockups` (bis dahin Textil im Dialog gesperrt), Anker-Korrekturen offen; Korrekturabzug-PDF unverändert; Export DTF/Stick je Motiv und Druckgröße, Namen-Bögen; die Skripte M2R/R2M sind Altlast und kommen nicht ins Panel. Details `claude/SPEZ_03_Textil.md` |
+| 2.12 | Grafikzeit bei allen Auftragsarten | MIT — **ENTSCHIEDEN (30.10.):** mit zugeordnetem Auftrag direkt an den Auftrag in Supabase; ohne Auftrag ins XMP der jeweiligen .ai (Grafikzeit entsteht immer in einer geöffneten Datei). Bei späterer Zuordnung überträgt das Panel die aufgelaufenen Minuten nach Supabase und markiert sie im XMP als übertragen. Keine externe Datensammlung, kein Löschkonzept nötig — **geändert Markus 31.10. abends:** Arbeit in Druckbögen (auch Nutzen-, Gitter-, MB-Bögen) läuft nicht in die Arbeitszeit (SPEZ_02 Fassung 8 §12) |
+| 2.13 | Datenspeicher XMP + `IP_*`-Tags | **ENTSCHIEDEN (30.10.):** zwei Ebenen. Dokumentebene: eigener XMP-Namespace in der .ai mit JSON-Block — überlebt Speichern, Duplizieren, Kopieren. Objektebene: Illustrator-Tags am Objekt (`IP_*`) — wandern beim Kopieren zwischen Dokumenten mit. Konkretes Schema: SPEZ_01 §5 |
 
 ## 3. Plott, Digitaldruck, Export
 
@@ -50,96 +58,113 @@ Legende: **MIT** = wird übernommen · **WEG** = entfällt · **ENTSCHIEDEN** = 
 |---|---|---|
 | 3.1 | Cutkontur-Regel (Vollton C0 M100 Y0 K0, Name egal, Vereinheitlichung auf „Cutkontur“, Kundendateien unberührt) | MIT |
 | 3.2 | Plott-Farberkennung über Oracal-ASE am Farbfeldnamen, Schlüssel Serie-Farbnummer | MIT |
-| 3.3 | Plott-Nesting (MaxRects, 90°, 20 mm Abstand, 10 mm Rand, PDF/X-4 je Farbe/Bogen) | MIT — neu: Höhe max. Rollenbreite − 25; Textil-Flex max. 1500 mm Länge |
-| 3.4 | Digitaldruck-Workflow | Exportdateien MIT — Aufbau: Stückzahl statt Kopien (`IP_Anzahl`); Arbeitsdatei hält nur das Original, Kopien entstehen auf dem Druckbogen als Symbol-Instanzen und in der Kalkulation als Multiplikator |
-| 3.5 | Automatischer Beschnitt | bleibt verworfen |
+| 3.3 | Plott-Nesting (MaxRects, 90°, 20 mm Abstand, 10 mm Rand, PDF/X-4 je Farbe/Bogen) | MIT — **neu: Höhe max. Rollenbreite − 25** (bisher − 40); **Textil-Flex max. 1500 mm Länge** — **31.10.:** gilt für Flex und Flock; Streifen Daten bis 470 mm, Zeichenfläche 480 mm, Rollenbreite 500 mm (Verbrauch); das Panel füllt die Streifen automatisch („Motive je Streifen“ entfällt), alle Motive gleicher Farbe zusammen; Nesting-Einheit ist das ganze Exemplar, mehrfarbige Motive mit Passermarken-Blöcken wie 10.1 in SPEZ_02; Datei `<Kunde>_<Serie>-<Farbe>_cut_NN.pdf`; gespiegelt wird am Plotter |
+| 3.4 | Digitaldruck-Workflow (Zuordnen → Kopie/Symbole → Druck → Hand → Export mit Sammelprüfung) | Exportdateien MIT — **Aufbau-Weg ENTSCHIEDEN (30.10.): Stückzahl statt Kopien.** Code-Befund: der Bogen-Aufbau nutzt bereits Symbole; der Engpass war der „+“-Schritt, der echte Duplikate in der Arbeitsdatei erzeugt, die jede Panel-Aktualisierung komplett neu vermisst. Neu: zugeordnete Objekte bekommen ein Anzahl-Attribut (`IP_Anzahl`); die Arbeitsdatei hält nur das Original, Kopien entstehen erst auf dem Druckbogen als Symbol-Instanzen und in der Kalkulation als Multiplikator (stueck, montage_teil usw. × Anzahl). Echte Duplikate bleiben für Varianten möglich, Masse läuft über die Anzahl. **Thema 5 (31.10.):** Nutzen, Gitterscheiben und MB-Nummern gehen denselben Weg — Symbol je Quelle, Instanz je Exemplar, Umwandeln erst beim Export; der alte Nutzen-Kern löste alle Verknüpfungen nach dem Aufbau (100 Stück = 100 Gruppen), das entfällt (`claude/SPEZ_03_Nutzen.md` §2.4) |
+| 3.5 | Automatischer Beschnitt verworfen | MIT (bleibt verworfen) |
 | 3.6 | Eigene OPOS-Marken (XY; XY2 mit Druckrichtungsdreieck ab 100 cm); Rückfall Datei → Summa GoSign | MIT |
-| 3.7 | Druck-Maße (Reserve 10, Anschnitt 3, OPOS-Zugabe 24,353, Markenrand 10, Kantenhalter 15, quer Rollenbreite − 30, Länge 2500/5700, Rollenwahl 10-%-Schwelle) | MIT |
+| 3.7 | Druck-Maße (Reserve 10, Anschnitt 3, OPOS-Zugabe 24,353, Markenrand 10, Kantenhalter 15, quer Rollenbreite − 30, Länge 2500/5700, Rollenwahl 10-%-Schwelle) | MIT — **Ausnahme Gitterscheiben (31.10.):** zulässige Zeichenflächenbreite 1345 mm statt 1340 (12 Streifen längs müssen passen; Produktion mit mehr Aufmerksamkeit möglich), nur dort (`claude/SPEZ_03_Nutzen.md` §2.3) |
 | 3.8 | Messung an Cutkontur, sonst Motivumriss; Tape-Vorschlag daran | MIT |
-| 3.9 | Nutzen, Gitter, MB-Nr als Panel-Funktionen auf gemeinsamem Kern | MIT — Detailprüfung bei der Spezifikation |
+| 3.9 | Nutzen, Gitter, MB-Nr als Panel-Funktionen auf gemeinsamem Kern | MIT — **ENTSCHIEDEN (30.10.):** gemeinsamer Kern bestätigt (Motiv → Raster/Nesting → Bogen mit Marken). **Ausgestaltung 31.10. (Thema 5):** Kern = der gebaute Druckbogen-Kern (Dokument, Symbole/Instanzen, Bogen-XMP, Export mit eigenen OPOS-Marken, Exportkern); je Funktion ein Raster-Planer statt MaxRects (Bogenraster mit 20-mm-Schnittgasse, Bänder/Streifen, Blöcke), Logik 1:1 aus dem alten Projekt. Nutzen-Bögen sind Druckbögen mit `bogen.art` (`nutzen` | `gitter` | `mb`), Rolle `nutzenbogen` entfällt. **Nutzen** mit zwei Einstiegen: aus einer Beschriftung-Arbeitsdatei mit zugeordnetem Druck-Objekt (Medium, Laminat, Stückzahl = `IP_Anzahl`) oder aus jedem Dokument mit Auswahl (Kunde, Produkt, Stückzahl, Medium, Laminat im Dialog — Nutzen muss ohne Arbeitsdatei gehen, Markus 31.10.); Medium wie Beschriftung → Druck, Standard 3551 matt; Bogenformate A4, A3, neu „ohne“ (Materialbreite × benötigte Höhe); über 2500 mm mehrere Bögen statt mehrere Drucke; Produkt (Freitext, Standard „Aufkleber“) im Dateinamen `<Kunde>_<Produkt>_<Medium>-<Laminat>-<Breite>_NN_druck.pdf`; keine Kalkulation (App). **Gitterscheiben/MB-Nr** ohne Arbeitsdatei, Kunde fest Max Bögl, immer 3551 matt 1370; Kundendateien per Dateidialog (Präfix „15x_“ bleibt), Typ-Gedächtnis und `auftrag.txt` im Bögl-Kundenordner auf dem Server (gemeinsam für Markus und MK); beide Gitter-Varianten bleiben, Option „über 2,5 m“ entfällt; keine Schnittmarken. Details `claude/SPEZ_03_Nutzen.md` |
 | 3.10 | OPOS-Barcode-Workflow zurückgestellt bis neues ONYX-RIP | MIT |
 
 ## 4. Oberfläche und Bedienung
 
 | Nr | Punkt | Status |
 |---|---|---|
-| 4.1 | Ein Panel | Name „PAM-Werkzeuge“ |
-| 4.2 | Panel klein und kompakt, Rest in Pop-ups | MIT |
-| 4.3 | Skript-Buttons | Breite und Masken werden Panel-Funktionen; Logo, VK-CC, Alex bleiben Skript-Buttons per `$.evalFile` |
-| 4.4 | Meldungsregeln (Fehler als Popup, keine Erfolgsmeldungen, Illustrator-Farben, Orange nur festgelegte Buttons, nur vorgegebene Texte) | MIT als Grundprinzip |
+| 4.1 | Ein Panel (Werkzeuge im Objektmanager aufgegangen) | Tendenz ein Panel bestätigt sich durch die Block-Entscheidungen (4.3: Breite/Masken im Panel). **Name ENTSCHIEDEN (30.10.): „PAM-Werkzeuge“** — **Thema 6 (31.10.):** Gestaltung des Panels und aller Fenster in `claude/SPEZ_03_Oberflaeche.md` |
+| 4.2 | Panel klein und kompakt, Rest in Pop-ups | MIT — „klein und kompakt“ gilt weiterhin fürs Panel, nur nicht für die Pop-ups — **ENTSCHIEDEN Thema 6 (31.10.):** Panel 320 × 172, sechs Zeilen, Werkzeugzeile Breite · Masken · Nutzen; was es im Zustand nicht gibt, ist ausgeblendet statt gesperrt; Logo, VK-CC, Gitterscheiben, MB-Nummern im Flyout-Menü des Panels (SPEZ_03_Oberflaeche §3) |
+| 4.3 | Skript-Buttons | **ENTSCHIEDEN (30.10., geändert 31.10.):** Breite und Masken wandern als Funktionen ins neue Panel (ständige Nutzung). Logo und VK-CC bleiben Skripte per `$.evalFile`, gestartet als Kopien im Repo (`skripte/`), nicht aus dem Skripte-Ordner von Illustrator; nicht verbessern. **Alex entfällt im Panel (31.10.):** der Ablauf (10–12 PDFs je Lieferung, nur letzte Seite, auf 190 mm mittig auf A4, rote Fläche im Rotton der Randkontur, drucken in Stückzahl, nichts speichern, nichts berechnen) braucht Illustrator nicht und wird ein eigenes Werkzeug außerhalb dieses Projekts. Sichtbarkeit und Funktionsweise: `claude/SPEZ_03_Werkzeuge.md`. Orange wie bisher: „Auftrag“ Schrift orange, „Export“ Button orange — **Thema 6 (31.10.):** Logo und VK-CC im Flyout-Menü; „Export“ orange nur, wenn aktiv (SPEZ_03_Oberflaeche §2, §3) |
+| 4.4 | Meldungsregeln (Fehler als Popup, keine Erfolgsmeldungen, Illustrator-Farben, Orange nur festgelegte Buttons, nur vorgegebene Texte) | MIT als Grundprinzip — keine starre Regel, an sinnvollen Stellen überdenkbar — umgesetzt für alle Fenster in SPEZ_03_Oberflaeche §2 (Thema 6) |
 | 4.5 | „Objekte“ und „Details“ als nicht-modale Fenster | MIT |
-| 4.6 | Zuordnen-Dialog | MIT im Prinzip — Funktionsweise in der MockUp-Phase |
-| 4.7 | Keine Dauerabfragen per evalScript; Aktualisierung bei Maus/Fokus/Aktion | MIT |
+| 4.6 | Zuordnen-Dialog (Serie + Farbraster, Farbnummer, Vorauswahl, Merken, Mehrfachauswahl, Attribute im Dialog) | MIT im Prinzip — Funktionsweise wird in der MockUp-Phase geklärt, wenn alle Funktionen feststehen und MockUps mit echten Inhalten vorliegen (30.10.) — **ENTSCHIEDEN Thema 6 (31.10.):** Aufbau nach `MOCKUP_THEMA6_Zuordnen_2` (Art und Anzahl in einer Zeile, Farb-Nr. groß vor der Serie, Farb-Nr. bei Mouseover), Serie 751C vorgewählt (`serien.json` `standard`), bei Schild kein Tape-Button; Vorauswahl, Merken, Mehrfachauswahl, Attribute wie gebaut (SPEZ_03_Oberflaeche §5) |
+| 4.7 | Keine Dauerabfragen per evalScript (PARM) | MIT — **GEÄNDERT (30.10., nach Stufe 1): Aktualisierung nur bei Maus ins Panel und nach eigener Aktion, nicht bei Fenster-Fokus.** Grund: die Fokus-Abfrage hatte im alten Panel während eines PDF-Imports Inhalt ins falsche Dokument gebracht (Befund Stufe 43) |
 | 4.8 | Grafikzeit sichtbar mit Feld „+ min“ | MIT |
-| 4.9 | „Auftrag anlegen“ als modales Fenster | wie 2.3 |
+| 4.9 | „Auftrag anlegen“ als modales Fenster | **ENTSCHIEDEN (30.10.):** Ausführung wie in 2.3 festgelegt |
 | 4.10 | Hell-/Dunkel folgt Illustrator | MIT |
 
 ## 5. Speicherorte und Dateiablage
 
 | Nr | Punkt | Status |
 |---|---|---|
-| 5.1 | Nur-Desktop-Regel | nur noch Rückfallebene, exklusiv macOS |
-| 5.2 | Server-Ablage beim Export: Dialog nur `/A-Z/<Buchstabe>`, Kundenordner wählt/legt der Mensch, Panel legt „JJJJ-MM-TT_Produkt“ an | MIT — für beide Plattformen |
-| 5.3 | Textil-DTF: Produktions-PDFs zusätzlich als Duplikate in Sammelordner | MIT |
-| 5.4 | Laptop ohne Serververbindung: lokal parken, manuell verschieben und in der App verknüpfen | MIT |
-| 5.5 | Dateitransport per SMB | **ENTSCHIEDEN:** SMB bleibt; Export schreibt erst lokal fertig, verschiebt dann auf den Server und prüft nach (Existenz/Größe). Fehlschlag → lokal geparkt mit Meldung; Ablageort geht erst nach erfolgreichem Transfer an Supabase. Nie halbe Dateien unter Endnamen auf dem Server. Umsetzung: SPEZ_01 §7 |
-| 5.6 | An App/Supabase geht nur der Ablageort, nie die Datei | MIT — Supabase lagert niemals Daten dauerhaft |
-| 5.7 | Keine Überschreibungen, fortlaufende Nummern (`_02`, `_03`) | MIT |
-| 5.8 | Hilfsdateien (Messprotokoll-/Grafikzeit-JSON) | **WEG** — Daten liegen in der .ai oder in Supabase |
-| 5.9 | Dateinamenskonventionen (`<Kunde>_<Medium>-<Laminat>-<Breite>_NN_druck/_cut.pdf` usw.) | MIT |
-| 5.10 | Einstellungen | `rechner.json` je Rechner (SPEZ_01 §4); lokale Preiskopien übernimmt Brians SDK |
+| 5.1 | Nur-Desktop-Regel mit zentraler Prüfung | MIT — aber nur noch als **Rückfallebene, exklusiv macOS** |
+| 5.2 | Server-Ablage beim Export: Dialog nur `/A-Z/<Buchstabe>`, Kundenordner wählt/legt der Mensch, Panel legt „JJJJ-MM-TT_Produkt“ an | MIT — **für beide Plattformen** (gemeinsame Basis), nicht nur Windows. **Ausnahme Gitterscheiben/MB-Nr (31.10.):** Kundenordner fest `M/01_Max Bögl`, Auftragsordner `JJJJ-MM_Gitterscheiben` bzw. `JJJJ-MM_Nummern`, bei Kollision ` 2`, ` 3` … (`claude/SPEZ_03_Nutzen.md` §6.5) |
+| 5.3 | Textil-DTF: Produktions-PDFs zusätzlich als Duplikate in Sammelordner für die Bestellung | MIT — **31.10.:** alle DTF-Dateien einschließlich Namen-Bögen; Stick und Flex-/Flock-Streifen nur im Auftragsordner |
+| 5.4 | Laptop ohne Serververbindung: lokal parken, manuell verschieben und in der App verknüpfen | MIT (im Rahmen von 5.1/5.2) |
+| 5.5 | Dateitransport vom Laptop per SMB | **ENTSCHIEDEN (30.10.): SMB bleibt**, Zustand „stabiler, aber nicht 100 %, wird nicht mehr besser“ wird im Panel abgefangen: Export schreibt immer erst lokal fertig, dann verschiebt das Panel auf den Server und prüft nach (Existenz/Größe). Schlägt der Transfer fehl, bleibt die Datei lokal geparkt (5.4) mit Meldung; der Ablageort (Ordnerpfad plus Dateinamen) geht erst nach erfolgreichem Transfer an Supabase. Es landen nie halbe Dateien unter Endnamen auf dem Server. Umsetzung: SPEZ_01 §7 |
+| 5.6 | An App/Supabase geht nur der Ablageort, nie die Datei | MIT — Grundsatz: **Supabase lagert niemals Daten dauerhaft** |
+| 5.7 | Keine Überschreibungen, fortlaufende Nummern (`_02`, `_03`) | MIT — Ausnahmen: Produktionsdateien aus dem Panel ersetzen (SPEZ_02 §11.3); Ordner der Gitterscheiben/MB-Nr ` 2`, ` 3` … (5.2) |
+| 5.8 | Messprotokoll-/Grafikzeit-JSON als Hilfsdateien | **Entscheidung: keine Hilfsdateien als Informationsspeicher.** Daten liegen entweder IN der jeweiligen .ai oder in Supabase |
+| 5.9 | Dateinamenskonventionen (`<Kunde>_<Medium>-<Laminat>-<Breite>_NN_druck/_cut.pdf` usw.) | MIT — Nutzen mit Produkt (`<Kunde>_<Produkt>_<Medium>-<Laminat>-<Breite>_NN_…`); Gitterscheiben/MB-Nr `Nutzen NN_druck.pdf`, `Nutzen NN_cut.pdf`, `Nutzen NN.ai` (31.10.) |
+| 5.10 | Einstellungen + lokale Kopie der Preisdaten als Fallback | MIT — lokale Preiskopien übernimmt künftig Brians SDK (siehe 6.8); Panel-Einstellungen: `rechner.json` je Rechner (SPEZ_01 §4); `"rechner"`: „MacBook“, „MacMini“, „MK-PC“ |
 
 ## 6. Datenflüsse Panel ↔ App/Supabase
 
 | Nr | Punkt | Status |
 |---|---|---|
-| 6.1 | Supabase als gemeinsame Basis | MIT — über Brians SDK (6.8) |
-| 6.2 | Aufträge entstehen in der Regel zuerst in der App; Schnellauskunft ohne Auftrag kommt vor | MIT |
-| 6.3 | Kein „Parkplatz“/Push to Illustrator | MIT |
-| 6.4 | Alle Preise zentral in der App; komplette Preisliste versioniert in Supabase | MIT |
-| 6.5 | Panel liefert beide Preise (VK + Mindest-VK, je netto/brutto, je „nur Aufkleber“/„inkl. Montage“) | MIT |
-| 6.6 | Neu berechneter Preis erkennbar schreiben; App-Benutzer entscheidet | ENTSCHIEDEN |
-| 6.7 | Aus Supabase kommt die komplette Preisliste | MIT |
-| 6.8 | Zugriffsweg | **GEÄNDERT (Brian): alle Datenbankzugriffe über Brians SDK.** Login mit bestehenden Mitarbeiter-App-Konten; Grafikminuten gehören dem angemeldeten Benutzer. Offline: SDK hält lokale Kopien. Offen: Schreib-Warteschlange im SDK, Lauffähigkeit in CEP (Node 17, CommonJS). Tests nur gegen lokale Supabase-Instanz |
-| 6.9 | Grafikminuten an die App, gehören dem angemeldeten Mitarbeiter | MIT |
-| 6.10 | Materialbedarf an die App (je Folie Schlüssel, m², lfm, Rollenbreite) | MIT |
-| 6.11 | Export setzt Produkt auf „production“ (außer Kundenfreigabe steht aus) | MIT |
-| 6.12 | Korrekturabzug-Export startet Kundenfreigabe; Schildberechnung baut Brian | MIT |
-| 6.13 | Stückliste | **WEG** — stattdessen Kalkulationsdatensatz als JSONB am Produkt |
-| 6.14 | Gemeinsame versionierte Preisdatenbasis; gemeinsames JS-Rechenmodul Option bei Brian | MIT |
-| 6.15 | Realtime | Teil von Brians SDK |
-| 6.16 | Produktionsdaten außerhalb von Illustrator | **NEIN** — Produktionsdaten entstehen in Illustrator |
-| 6.17 | Auftragsübergreifendes Nesting | ZURÜCKGESTELLT |
-| 6.18 | Bewusst ohne: Status je Bogen, Online-Kundenfreigabe im Panel, Offline-Kopie der Datenbank, Selbstkalibrierung | MIT |
+| 6.1 | Supabase als gemeinsame Basis: Panel liest direkt, meldet direkt zurück | MIT — „direkt“ heißt seit 30.10. abends: über Brians SDK (6.8) |
+| 6.2 | Aufträge entstehen in der Regel zuerst in der App; Schnellauskunft im Panel ohne Auftrag kommt vor | MIT |
+| 6.3 | Kein „Parkplatz“/Push to Illustrator — direkter Zugriff auf Auftragsdaten in Supabase | MIT |
+| 6.4 | Alle Preise zentral in der App; App ergänzt Nebenkosten | MIT — die komplette Preisliste (inkl. Zeitschlüssel, Komplexität, Rundung, Tape-VK) liegt versioniert in Supabase, gepflegt in der App; keine Kopien je Rechner (ersetzt 7.5). Entwicklungsquelle in Stufe 2: `Infos/Stammdaten/preisliste.csv` über die Preisquellen-Schnittstelle |
+| 6.5 | Panel liefert beide Preise (VK + Mindest-VK, je netto/brutto, je „nur Aufkleber“/„inkl. Montage“) nach Supabase, finale Preisentscheidung in der App | MIT (ersetzt „genau ein Preis“) |
+| 6.6 | Neu berechneter Preis | **Entscheidung:** erkennbar in Supabase schreiben; App erzeugt Meldung und Vorschau; der App-Benutzer entscheidet, ob der bisherige Preis überschrieben wird. Modellierung: Brians Sache (Briefing Q6) |
+| 6.7 | Aus Supabase kommen EK/VK Folien, Stundensätze, Mindestbeträge, Aufschläge | MIT — erweitert auf die komplette Preisliste (6.4) |
+| 6.8 | Zugriffsweg Panel ↔ Supabase | **GEÄNDERT (30.10. abends, Brian): alle Datenbankzugriffe laufen über Brians SDK** — eine oder mehrere importierbare, dokumentierte Bibliotheken, die Brian baut und pflegt. Das Panel nutzt ausschließlich diese Bibliotheken; CC baut keine eigenen Datenbankwege (ersetzt „direkt per supabase-js“). Login weiterhin mit den bestehenden Mitarbeiter-App-Konten (Supabase Auth); Grafikminuten gehören dem angemeldeten Benutzer. Offline: das SDK hält lokale Kopien der Daten und aktualisiert sie regelmäßig; die lokale Version wird nur genutzt, wenn der Server nicht erreichbar ist. **Offline-Randfall (online geänderte Preise, offline alter Stand): hinnehmbar — bestätigt Markus 30.10.** (Preisentscheidung fällt ohnehin in der App, der Kalkulationsdatensatz dokumentiert die verwendete Preislistenversion). Offen: ob das SDK auch die Warteschlange für Schreibvorgänge übernimmt, und die Lauffähigkeit des SDK in der CEP-Umgebung des Panels (Node 17, CommonJS) — beides mit Brian zu klären. Tests weiterhin nur gegen lokale Supabase-Instanz, nie gegen das Produktivsystem |
+| 6.9 | Grafikminuten an die App, gehören dem angemeldeten Mitarbeiter | MIT — ohne „Kalkulationszeiten gehen in der Pauschale auf“. Die App dokumentiert Zeiten; der Mitarbeiter entscheidet in der App je Auftrag, ob und wie Arbeitszeiten abgerechnet werden |
+| 6.10 | Materialbedarf an die App | **Panel meldet Materialbedarf** als eigene Angabe am Produkt (zusätzlich zum JSONB): je Folie Schlüssel, Verbrauch in m² (lfm × genutzte Rollenbreite), lfm und Rollenbreite. Zweck Bestand/Bestellung; aktuell keine Nutzung in der App geplant |
+| 6.11 | Export setzt Produkt auf „production“ | MIT — außer die Kundenfreigabe steht noch aus (Sache der App). Produktionsdaten dürfen vor der Freigabe erzeugt werden, der Auftrag geht erst nach Freigabe in Produktion |
+| 6.12 | Korrekturabzug | MIT — der Export des Korrekturabzugs startet die Kundenfreigabe in der App automatisch. Schildberechnung baut Brian (Matrix, Formeln und Beispielkalkulation in BRIEFING_Brian §4; Rundung 0,50 € bestätigt) |
+| 6.13 | Produkt als Stückliste in Supabase | **ENTSCHIEDEN (30.10.): keine Stückliste.** Das Panel schreibt neben den beiden Preisen einen strukturierten Kalkulationsdatensatz als JSONB-Spalte am Produkt (Folien, Flächen, Minuten, Materialbedarf, Stundensätze, verwendete Preislistenversion) — Dokumentation und Kalibrierungsgrundlage, nicht Rechengrundlage der App. Wenige KB je Produkt, keine Datei |
+| 6.14 | Eine gemeinsame Rechenmaschine für Panel und App, Preise versioniert („gültig ab“) | MIT — gesetzt ist die gemeinsame versionierte Preisdatenbasis; ein gemeinsames JS-Rechenmodul steht als Option bei Brian (Briefing Q3) |
+| 6.15 | Live-Abgleich per Realtime | MIT — technische Umsetzung Teil von Brians SDK |
+| 6.16 | Produktionsdaten außerhalb von Illustrator | **ENTSCHIEDEN (30.10.): NEIN** — Produktionsdaten entstehen in Illustrator, kein externer Dienst. Das Performance-Problem (3.4) wird über den Aufbauweg gelöst (Stückzahl statt Kopien), nicht über den Ort |
+| 6.17 | Auftragsübergreifendes Nesting | **ZURÜCKGESTELLT (30.10.):** kommt im Betrieb zu selten vor — separates, späteres Thema |
+| 6.18 | Bewusst ohne: Status je Druck-/Plottbogen, Online-Kundenfreigabe im Panel, Offline-Kopie der Datenbank, Selbstkalibrierung | MIT — die SDK-eigenen lokalen Datenkopien (6.8) sind ein technischer Fallback, keine bewusste Offline-Kopie zum Arbeiten |
 
 ## 7. Plattform, Entwicklung, Betrieb
 
 | Nr | Punkt | Status |
 |---|---|---|
 | 7.1 | Einsatzrechner MacBook, MacMini, MKs Windows-PC; kein Plotter angeschlossen | MIT |
-| 7.2 | Windows-Weg | **ENTSCHIEDEN:** eine Codebasis im GitHub-Repo für beide Plattformen; alle Plattformunterschiede in `rechner.json` je Rechner; im übrigen Code existiert Windows/Mac nicht. MKs PC: Updates per Clone/Pull |
-| 7.3 | Entwicklung im Projektordner | Projektordner `~/tools/Illustrator Panel` = Clone von `arbeitsdenkmal/IlluPanel`. Während der Entwicklung lädt Illustrator direkt aus dem Projektordner; `bereitstellen.sh` und `/Applications/interne Tools` erst am Ende |
+| 7.2 | Windows-Weg | **ENTSCHIEDEN (30.10.): eine Codebasis im GitHub-Repo für beide Plattformen** — keine getrennte Windows-Kopie. Alle Plattformunterschiede (Pfade, Server-Root, Schreibtisch-Fallback nur macOS) liegen in genau einer Konfigurationsdatei je Rechner (`rechner.json`, SPEZ_01 §4); im übrigen Code existiert Windows/Mac nicht. MKs PC bekommt Updates per Clone/Pull aus dem Repo |
+| 7.3 | Entwicklung im Projektordner, Betrieb als Spiegel, nie im Ziel ändern | MIT im Prinzip — **Projektordner `~/tools/Illustrator Panel`** (geändert 30.10. mit SPEZ_01); **das Panel liegt auf GitHub unter `arbeitsdenkmal/IlluPanel`** (Wunsch Brian), der Projektordner ist der Clone. Während der Entwicklung lädt Illustrator direkt aus dem Projektordner; `bereitstellen.sh` und das Ziel `/Applications/interne Tools` kommen erst am Ende (SPEZ_01 §2) |
 | 7.4 | Original-Skripte tabu, nur Projektkopien änderbar; ASE und .jsx bleiben am Ort | MIT |
-| 7.5 | Preisliste als Kopie je Rechner | **WEG** |
-| 7.6 | CC-Vision-Vorlagen je Auftrag einzeln laden, keine Sammlung, kein Cache | ENTSCHIEDEN |
-| 7.7 | Claude auf MKs PC nur für einmalige Implementierung | MIT |
-| 7.8 | Doku | während der Entwicklung nur für Claude/CC im Repo — README aktueller Architektur- und Funktionsstand, CHANGELOG knapp, Testbericht minimal. Anleitungen einmalig ganz am Ende |
-| 7.9 | Testregeln | so viel wie nötig, so wenig wie möglich |
-| 7.10 | MockUps vor UI-Umbauten; Bereitstellung nach Prüfung durch Markus | MIT — Ausnahme Stufe 1: Anlegen „ohne Auftrag“ ohne MockUp |
-| 7.11 | Altes Panel parallel | **WEG** — ab Stufe 1 lädt Illustrator nur das neue Panel |
+| 7.5 | Preisliste als Kopie je Rechner | **WEG** — komplette Preisliste versioniert in Supabase (6.4) |
+| 7.6 | CC-Vision-Vorlagen je Auftrag einzeln laden, keine Sammlung | **ENTSCHIEDEN (30.10.): bleibt beim Laden je Auftrag, keine Sammlung, kein Cache.** Grund: die Zuordnung (Transporter, H1–H3/L1–L3, Schiebetür(en), Heckklappe/Türen, Fenster/Blech, Baujahr …) kann eine eigene Ablage nicht besser als die CC-Vision-Suche |
+| 7.7 | Claude auf MKs PC nur für einmalige Implementierung, danach runter; MK nutzt Claude nicht | MIT |
+| 7.8 | Doku | **ENTSCHIEDEN (30.10.):** während der Entwicklung nur Doku für Claude/CC im Repo — README als aktueller Architektur- und Funktionsstand, CHANGELOG knapp, Testbericht minimal nach Testprinzip; nichts für Menschen aufbereitet. Arbeitsanweisungen für die Bedienung entstehen einmalig ganz am Ende, im Stil der bisherigen Anweisungen, knapp, bei Bedarf mit Screenshots |
+| 7.9 | Testregeln | Prinzip: **so viel wie nötig, so wenig wie möglich** |
+| 7.10 | MockUps mit echten Inhalten vor UI-Umbauten; Bereitstellung als eigener Schritt nach Prüfung durch Markus | MIT — Ausnahme Stufe 1: Anlegen-Dialog „ohne Auftrag“ als reine Funktionsprüfung ohne vorheriges MockUp (SPEZ_01 §10 Nr. 8); Gestaltung mit dem Supabase-Zweig in Stufe 3. **Ab 31.10.:** vorläufige Platzierung neuer Funktionen ohne MockUp; die große MockUp-Runde ist Thema 6 „Oberfläche“ (nach Thema 5, vor Thema 7 Kalibrierung) — **Thema 6 spezifiziert 31.10.:** `claude/SPEZ_03_Oberflaeche.md`, verbindliche MockUps `Infos/mockups/MOCKUP_THEMA6_Panel_2`, `_Auftrag_2`, `_Zuordnen_2`, `_Fenster_2` |
+| 7.11 | Altes Panel parallel weiterbetreiben | **WEG — kein Parallelbetrieb.** Ab Stufe 1 lädt Illustrator das neue Panel aus dem Projektordner, das alte ist nicht mehr geladen; bis zur Fertigstellung wird wie früher händisch gearbeitet |
 
-## Mapping App-Produkttyp → Auftragsart
+## Mapping App-Produkttyp → Auftragsart (bestätigt 30.10.2026)
+
+Die App führt je Produkt department und type (aus dem App-Repo gelesen). Festgelegt:
 
 | App department/type | Auftragsart im Panel |
 |---|---|
 | LFP / VEHICLE_LETTERING | Fahrzeugbeschriftung |
 | LFP / STICKER, FOIL_PLOTTER | Beschriftung |
 | LFP / SIGN_UV, SIGN_FOIL | Schild |
-| LFP / BANNER, ROLLUP | Banner/Roll-up: nicht kalkuliert, immer flache Druckdatei, Zeichenfläche aus den App-Maßen |
+| LFP / BANNER, ROLLUP | Banner/Roll-up: eigene Konfiguration — nicht kalkuliert, immer flache Druckdatei (kein UV, kein Plott, keine Cutkontur), Zeichenfläche aus den App-Maßen; Roll-up in zwei festen Größen (in der App hinterlegt bzw. noch zu hinterlegen) — **31.10.:** 850 × 2200 und 1000 × 2200 mm inkl. Zugabe = Zeichenfläche 850 bzw. 1000 × 2000 plus 200 mm Dokument-Anschnitt unten, je eine Vorlage von Markus; Zeichenfläche immer aus der Vorlage, Quelle mittig, Export „pam x4“; Banner ohne Anschnitt (SPEZ_03_Konfigurationen §4) |
 | LFP / OTHER_LFP | Sonstiges |
-| LASER_ENGRAVING (alle), STAMP | Lasergravur |
-| TEXTILE (alle) | Textil |
-| COPYSHOP | Offset-Daten |
-| OTHER | Sonstiges — Datei optional |
+| LASER_ENGRAVING (alle Typen) und STAMP (Stempel werden immer Laserdateien) | Lasergravur |
+| TEXTILE (alle Typen) | Textil |
+| COPYSHOP (Flyer, Broschüre, Visitenkarten usw.) | Offset-Daten |
+| OTHER | Sonstiges — Datei optional, nicht jedes Produkt bekommt eine |
 
-Das Mapping lebt im Panel (`config/mapping.json`).
+Brian-seitig ist dafür nichts zu implementieren, das Mapping lebt im Panel (`config/mapping.json`).
+
+## Offene Punkte
+
+Stufe 1 ist abgenommen, Stufe 2 (2a–2d) gebaut. Offen:
+
+1. ~~Stufe 2 spezifizieren und bauen~~ — gebaut (2a–2d); die Illustrator-Proben 2b–2d durch Markus entfallen — ersetzt durch den Gesamtlauf von CC (Nachtrag 31.10. abends)
+2. SDK-Klärung mit Brian: übernimmt das SDK auch die Schreib-Warteschlange für den Offline-Fall, oder baut das Panel sie um das SDK herum?
+3. SDK-Klärung mit Brian: Lauffähigkeit des SDK in der CEP-Umgebung (Node 17, CommonJS) sicherstellen
+4. Stufe 3 (alles mit Supabase über das SDK) beginnt, wenn das SDK vorliegt; Brians Antworten auf Q1–Q17 kommen dort zum Tragen
+5. ~~Preislogik-Erweiterung Textil Flex/Flock~~ — erledigt 31.10.: `claude/PREISLOGIK.md` §13 (2.2); `ek_m2` für PoliTape Turbo und VelCutPro 16,00 €, `vk_m2` 30,40 € (Markus 31.10. abends, gebaut 3.7.1)
+6. ~~Detailprüfung Funktionsweisen Nutzen/Gitter/MB bei der Spezifikation (3.9)~~ — erledigt 31.10.: `claude/SPEZ_03_Nutzen.md` §2.6 (bleibt/ändert sich je Funktion)
+7. ~~Alex-Skript-Fehler beheben~~ — erledigt 31.10.: Alex wird aus dem Panel ausgelagert und als eigenes Werkzeug außerhalb von Illustrator gebaut (4.3); Startunterlage `Infos/Musterdateien/Alex/START_Alex.md`
+8. Repo: Ergebnis der Illustrator-Probe Stufe 1 („erfolgreich, 30.10.“) mit dem nächsten CC-Commit in TESTBERICHT.md nachtragen
+9. SDK-unabhängige Reste Themen 1–7 (Nachtrag 31.10.): **Thema 1 „Werkzeuge“ abgenommen 31.10.** (3.2.0, Festlegungen bestätigt in SPEZ_03_Werkzeuge §8, Illustrator-Probe durch Markus ohne Beanstandung — Eintrag in TESTBERICHT.md mit dem nächsten CC-Auftrag). **Thema 2 „Konfigurationen“ spezifiziert 31.10.** (`claude/SPEZ_03_Konfigurationen.md`; Offset- und Roll-up-Vorlagen legt Markus an). **Thema 2 „Konfigurationen“ abgenommen 31.10.** (3.3.0). **Thema 3 „Schild“ gebaut 31.10.** (3.4.0, `claude/SPEZ_03_Schild.md`, Festlegungen bestätigt in §12; Illustrator-Probe durch Markus steht aus; `schild_materialien.csv` pflegt Markus). **Thema 3 „Schild“ abgenommen 31.10.** **Thema 4 „Textil“ gebaut 31.10.** (3.5.0, `claude/SPEZ_03_Textil.md` Fassung 2, PREISLOGIK §13; Festlegungen geprüft in §14, Korrekturauftrag für drei Punkte unterwegs; Illustrator-Probe erst mit MockUps in `config/mockups`; `ek_m2` der Flex-/Flock-Serien trägt Markus ein). **Thema 5 „Nutzen/Gitter/MB-Nr“ gebaut 31.10.** (3.6.0, `claude/SPEZ_03_Nutzen.md` Fassung 2, Festlegungen bestätigt §11, Korrektur Punkt 6 Materiallänge beauftragt; Test unter Realbedingungen durch Markus steht aus). **Thema 5 freigegeben 31.10.** (Korrektur Maximalmaß einer Zeichenfläche läuft). **Thema 6 „Oberfläche“ gebaut 31.10.** (3.7.0, `claude/SPEZ_03_Oberflaeche.md` Fassung 2, verbindliche MockUps `Infos/mockups/MOCKUP_THEMA6_*_2.html`, Festlegungen bestätigt §18; Illustrator-Probe durch Markus steht aus). **Thema 7 Kalibrierung zurückgestellt (31.10. abends).** **3.7.1 gebaut 31.10.:** Vorlagen-Dateinamen Offset/Roll-up nach `claude/SPEZ_03_Konfigurationen.md` Fassung 3, EK/VK Flex/Flock. Danach Gesamtlauf, Fehlerbehebung, Commit und Push (3.7.2)
+10. ~~Zuarbeiten Markus~~ — erledigt 31.10. abends: 32 Textil-MockUps in `config/mockups`, 21 Offset-Vorlagen in `config/vorlagen/offset`, 2 Roll-up-Vorlagen in `config/vorlagen/rollup`, `ek_m2` Flex/Flock

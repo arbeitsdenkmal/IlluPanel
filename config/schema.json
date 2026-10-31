@@ -5,9 +5,9 @@
     "eigenschaft": "Dokument",
     "schema": 1
   },
-  "rollen": ["arbeitsdatei", "druckbogen", "nutzenbogen", "hilfsdokument"],
+  "rollen": ["arbeitsdatei", "druckbogen", "hilfsdokument"],
   "rollenfelder": {
-    "druckbogen": { "bogen": ["aufbau", "medium", "laminat", "breite_mm", "nr", "gesamt", "arbeitsdatei"] }
+    "druckbogen": { "bogen": ["aufbau", "art", "produkt", "medium", "laminat", "breite_mm", "nr", "gesamt", "auflage", "arbeitsdatei"] }
   },
   "tags": {
     "id": "IP_Id",

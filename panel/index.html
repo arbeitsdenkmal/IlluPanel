@@ -6,14 +6,17 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- SPEZ_02 §13, MockUp A5/A7 (320 × 142, Inhalt 122 px): Kunde · Auftragsart | Grafik + „+m“; Objektzeile; add/edit · berechnen;
-       Werkzeugzeile Summa · Druck · Export · Auftrag; Preiszeile „Material …“ links, „inkl. Mont. …“ rechts -->
+  <!-- SPEZ_03_Oberflaeche §3, MOCKUP_THEMA6_Panel_2 (320 × 172, Inhalt 152 px): sechs Zeilen, Buttons 22 px hoch
+       1 Kunde · Auftragsart bzw. Bogenzeile | Grafik + „+m“; 2 Objektzeile; 3 add/edit · berechnen · Schilder · Farbe · Modell (je nach Zustand);
+       4 Linie, Summa · Druck · Export · Auftrag; 5 Preiszeile; 6 Linie, Breite · Masken · Nutzen (immer vollständig).
+       Was es im Zustand nicht gibt, ist ausgeblendet; Logo, VK-CC, Gitterscheiben, MB-Nummern im Flyout-Menü (§3.3) -->
   <div id="inhalt">
     <div class="z"><span id="kopf" class="wachsen"></span><span id="grafik" class="grafik muted" hidden><span id="grafikMin"></span> <input id="plusMin" class="min" placeholder="+m"></span></div>
     <div class="z"><span id="objName" class="wachsen name"></span><span id="objFolie" class="muted"></span><span id="objAnzahl" class="marke" hidden></span></div>
-    <div class="z"><button id="btnZuordnen" disabled>add</button><button id="btnBerechnen" disabled>berechnen</button></div>
-    <div class="z wz"><button id="btnSumma" disabled>Summa</button><button id="btnDruck" disabled>Druck</button><button id="btnExport" class="akzent" disabled>Export</button><button id="btnAuftrag" class="akzent-schrift" disabled>Auftrag</button></div>
+    <div class="z knoepfe"><button id="btnZuordnen" hidden disabled>add</button><button id="btnBerechnen" hidden disabled>berechnen</button><button id="btnSchilder" hidden disabled>Schilder</button><button id="btnFarbe" hidden disabled>Farbe</button><button id="btnModell" hidden disabled>Modell</button></div>
+    <div class="z wz"><button id="btnSumma" hidden disabled>Summa</button><button id="btnDruck" hidden disabled>Druck</button><button id="btnExport" disabled>Export</button><button id="btnAuftrag" class="akzent-schrift" disabled>Auftrag</button></div>
     <div class="z preis"><span id="preisMaterial" class="p1"></span><span id="preisMontage" class="p1"></span></div>
+    <div class="z wz"><button id="btnBreite" disabled>Breite</button><button id="btnMasken" disabled>Masken</button><button id="btnNutzen" disabled>Nutzen</button></div>
   </div>
   <script src="gemeinsam.js"></script>
   <script src="main.js"></script>

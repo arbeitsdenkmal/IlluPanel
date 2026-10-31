@@ -13,7 +13,7 @@
 - `~/tools/folienkalkulation` nur lesen.
 
 ## c) Ende jeder Stufe
-- `README.md` (aktueller Architektur- und Funktionsstand, keine Historie), `CHANGELOG.md` (knapp), `TESTBERICHT.md` (minimal); dann `git commit` und `git push`.
+- `README.md` (aktueller Stand), `CHANGELOG.md` (knapp), `TESTBERICHT.md` (minimal) am Ende jeder Stufe. Keine Commits und Pushes aus eigenem Antrieb: `git commit` und `git push` nur, wenn der Auftrag es ausdrücklich nennt; Nachfragen und Korrekturen werden ohne Commit in der Arbeitskopie erledigt.
 - FESTLEGUNGEN.md pflegen (eigene Festlegungen, nummeriert); README erst nach Bestätigung.
 
 ## d) Festlegungen

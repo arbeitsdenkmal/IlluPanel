@@ -1,5 +1,7 @@
 /* Plott-Schneidedaten „Summa“ (SPEZ_02 §10), aus dem alten Projekt (auftrag.js schneidedaten) übernommen: Bögen aus dem Nesting je Farbschlüssel,
  * Dateinamen <Kunde>_<Serie>-<Farbe>_cut_NN.pdf (NN = Bogen), je Exemplar eine Gruppe „<Anzeigename> <k>“, bei Blöcken mit beiden Passermarken.
+ * Textil-Streifen Flex/Flock (SPEZ_03_Textil §9.2): Gruppen „textil“, Serie und Farbe im Dateinamen umgeschrieben wie der Kundenname (g.datei), k zählt
+ * über alle Druckgrößen eines Motivs (t.versatz), je Exemplar der Faktor Dokument -> Realmaß (t.skala).
  * Erzeugen und Speichern macht der JSX-Kern (IP.schneidebogenSpeichern), Ablage und Transfer der Exportkern (ersetzen: true). */
 "use strict";
 const fs = require("fs");
@@ -11,21 +13,21 @@ const dateiStamm = (kunde, schluessel) => `${A.dateiname(kunde)}_${schluessel}_c
 /**
  * @param analyse  teile.aufbauen (ohne Fehler)
  * @param nest     kalkulation.nestingAlle(…, "plott")
- * @returns [{ name, schluessel, farbfeld, breite_mm, hoehe_mm, teile: [{ name, ref, blaetter, x_mm, y_mm, gedreht, marken, soll }] }]
+ * @returns [{ name, schluessel, farbfeld, breite_mm, hoehe_mm, teile: [{ name, ref, blaetter, x_mm, y_mm, gedreht, marken, skala, soll }] }]
  */
 function boegen(analyse, nest, kunde) {
   const out = [];
   for (const key of Object.keys(nest).sort()) {
     const g = analyse.gruppen[key];
-    if (!g || g.verfahren !== "plott") continue;
-    const teil = {};
+    if (!g || (g.verfahren !== "plott" && g.verfahren !== "textil")) continue;
+    const teil = {}, schluessel = g.datei || g.schluessel;
     g.teile.forEach(t => { teil[t.id] = t; });
     nest[key].n.bogen.forEach((b, i) => out.push({
-      name: `${dateiStamm(kunde, g.schluessel)}${nn(i + 1)}.pdf`, schluessel: g.schluessel, farbfeld: g.farbfeld, breite_mm: b.breite_mm, hoehe_mm: b.hoehe_mm,
+      name: `${dateiStamm(kunde, schluessel)}${nn(i + 1)}.pdf`, schluessel, farbfeld: g.farbfeld, breite_mm: b.breite_mm, hoehe_mm: b.hoehe_mm,
       teile: b.teile.map(p => {
         const t = teil[p.id], o = analyse.objekte[t.objekt];
-        return { name: `${o.name} ${p.exemplar}${t.stueck ? " " + t.stueck : ""}`, ref: o.ref, blaetter: t.blaetter, x_mm: p.x_mm, y_mm: p.y_mm, gedreht: p.gedreht,
-          marken: t.marken || null, soll: { x_mm: p.x_mm, y_mm: p.y_mm, b_mm: p.b_mm, h_mm: p.h_mm } };
+        return { name: `${o.name} ${p.exemplar + (t.versatz || 0)}${t.stueck ? " " + t.stueck : ""}`, ref: o.ref, blaetter: t.blaetter, x_mm: p.x_mm, y_mm: p.y_mm, gedreht: p.gedreht,
+          marken: t.marken || null, skala: t.skala || null, soll: { x_mm: p.x_mm, y_mm: p.y_mm, b_mm: p.b_mm, h_mm: p.h_mm } };
       })
     }));
   }

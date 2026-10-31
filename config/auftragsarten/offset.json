@@ -13,23 +13,26 @@
   "quelle": {
     "sandbox": null
   },
+  "produkte": "config/produkte.csv",
+  "vorlagen": "config/vorlagen/offset",
+  "frei": {
+    "name": "freies Format",
+    "vorlage": "config/vorlagen/Offset.ait"
+  },
+  "hilfslinien": {
+    "ebenen": ["Hilfslinien", "Sicherheitsabstand"]
+  },
+  "zeichenflaechen_abstand_mm": 10,
   "export": {
     "profil": "offset",
     "preset": "wmd",
     "dateiname": "druck",
-    "anschnitt": "dokument"
+    "anschnitt": "dokument",
+    "sammelordner": "wmd_bestellen"
   },
-  "vorlage": {
-    "datei": "config/vorlagen/Offset.ait"
-  },
-  "werkzeuge": [],
-  "arten": [],
   "dateien": {
     "arbeitsdatei": "Arbeitsdatei.ai"
   },
-  "zeichenflaechen_abstand_mm": 10,
-  "hilfslinien": {
-    "ebene": "Hilfslinien",
-    "kontur_pt": 0.25
-  }
+  "werkzeuge": [],
+  "arten": []
 }

@@ -2,11 +2,17 @@
  * Alle Exporte aller Auftragsarten laufen hier durch; die Profile (export_flach.js …) liefern nur Dateien und ihr speichern().
  *
  * exportieren(auftrag, umgebung)
- *   auftrag  = { xmp, dateien: [{ name, speichern(lokalerPfad), ersetzen }], dtf: [name …] }
+ *   auftrag  = { xmp, dateien: [{ name, speichern(lokalerPfad), ersetzen }], dtf: [name …], wmd: [name …] }
+ *              dtf bzw. wmd: Dateien, die zusätzlich als Kopie in server.dtf_bestellen bzw. server.wmd_bestellen gehen (Schritt 7);
+ *              sammelordner (optional, export.sammelordner der Auftragsart, SPEZ_03_Textil §11): Pfadfeld server.* für die Liste dtf statt dtf_bestellen
  *              ersetzen: true (Produktionsdateien aus dem Panel, SPEZ_02 §11.3): gleicher Name ohne Hochzählen, eine bestehende Datei lokal und auf dem
  *              Server wird ersetzt (Transfer weiterhin über .<name>.teil und Umbenennen)
+ *              ordnerregel(kundenPfad, xmp) -> Auftragsordner (optional, SPEZ_03_Nutzen §6.5 Bögl-Ordnerregel) statt Schritt 2 „_02“;
+ *              serverPflicht (optional, Bögl): Server nicht erreichbar bei arbeitsdateien „server“ -> Abbruch wie Schritt 1
  *   umgebung = { rechner (konfiguration.rechnerLaden), ordnerWaehlen(start) -> pfad|null, meldung(text), xmpSchreiben(obj),
- *                arbeitsdatei: { pfad, speichern() } | null, jetzt() (Test), zeitlimit_ms (Test) }
+ *                arbeitsdatei: { pfad, speichern(), kopie (false: keine Kopie in Schritt 8) } | null (Bögen ohne Arbeitsdatei: keine Kopie, Schritt 8 entfällt),
+ *                exporteVorab (SPEZ_03_Nutzen §2.5: der Eintrag in exporte[] wird schon vor dem Schreiben der Dateien ins XMP geschrieben – mit
+ *                uebertragen false – und in Schritt 9 durch den endgültigen ersetzt), jetzt() (Test), zeitlimit_ms (Test) }
  *   -> { ok, ordner, dateien[], geparkt[], fehler[], meldung, xmp }   meldung nur bei Fehlern (Popup); kein Erfolgs-Popup
  * Abbruch durch den Menschen (Ordnerdialog abgebrochen) -> Fehler der Klasse Abbruch (ohne Popup). */
 "use strict";
@@ -16,6 +22,8 @@ const A = require("./ablage");
 const D = require("./dokument");
 
 const ZEITLIMIT_MS = 3000;
+// Schritt 7: Sammelordner je Liste im Auftrag (Feld in rechner.json server.*, Name in den Meldungen)
+const SAMMELORDNER = [{ liste: "dtf", feld: "dtf_bestellen", name: "DTF" }, { liste: "wmd", feld: "wmd_bestellen", name: "wmd" }];
 class Abbruch extends Error { constructor() { super("abgebrochen"); this.abgebrochen = true; } }
 
 /**
@@ -54,6 +62,16 @@ function auftragsordnerFrei(kundenPfad, xmp, arbeitsdateiPfad) {
   throw new Error(`Kein freier Auftragsordner für ${basis}`);
 }
 
+/** Schritt 7 für ein Ziel: Kopie jeder Datei in den Sammelordner ziel; Fehler -> fehler (nur für die Kopie) */
+async function sammelKopie(dateien, ziel, name, ms, fehler) {
+  if (!dateien.length) return;
+  if (!(await A.erreichbar(ziel, ms))) { fehler.push(`${name}-Sammelordner nicht erreichbar, keine ${name}-Kopie: ${ziel}`); return; }
+  for (const d of dateien) {
+    try { await A.sicherKopieren(d.lokal, ziel, A.freierName(d.name, [ziel])); }
+    catch (e) { fehler.push(`${d.name}: ${name}-Kopie fehlgeschlagen (${e.code || e.message})`); }
+  }
+}
+
 /** Meldungstext Schritt 10 (nur bei Fehlern) */
 function meldungstext(geparkt, fehler) {
   const t = [];
@@ -77,10 +95,11 @@ async function exportieren(auftrag, u) {
   if (xmp.ablage.kundenordner) {
     const ok = k.erreichbar === true || await A.erreichbar(R.server.kunden, ms);
     const kundenPfad = A.unter(R.server.kunden, xmp.ablage.kundenordner);
+    if (!ok && auftrag.serverPflicht && R.arbeitsdateienServer) throw new Error(`Server nicht erreichbar:\n${R.server.kunden}`);
     if (!ok) fehler.push(`Server nicht erreichbar: ${R.server.kunden}`);
     else if (!fs.existsSync(kundenPfad)) fehler.push(`Kundenordner fehlt auf dem Server: ${kundenPfad}`);
     else {
-      const ao = auftragsordnerFrei(kundenPfad, xmp, u.arbeitsdatei && u.arbeitsdatei.pfad);
+      const ao = auftrag.ordnerregel ? auftrag.ordnerregel(kundenPfad, xmp) : auftragsordnerFrei(kundenPfad, xmp, u.arbeitsdatei && u.arbeitsdatei.pfad);
       if (ao !== xmp.ablage.auftragsordner) await xmpAendern({ "ablage.auftragsordner": ao });
       const p = path.join(kundenPfad, ao);
       try { if (!fs.existsSync(p)) fs.mkdirSync(p); serverOrdner = p; }
@@ -100,6 +119,11 @@ async function exportieren(auftrag, u) {
     return { quelle: d, name, lokal: path.join(lokalOrdner, name), uebertragen: false, ziel: null };
   });
 
+  const zeitText = jetzt.toISOString().replace(/\.\d{3}Z$/, "Z"), ordnerRel = serverOrdner ? `${xmp.ablage.kundenordner}/${xmp.ablage.auftragsordner}` : null;
+  const eintrag = () => ({ zeit: zeitText, ordner: ordnerRel, dateien: dateien.map(d => ({ name: d.name, uebertragen: d.uebertragen })),
+    uebertragen: dateien.every(d => d.uebertragen) });
+  if (u.exporteVorab) { xmp = D.exportAnhaengen(xmp, eintrag()); await u.xmpSchreiben(xmp); }
+
   // 5. Schreiben und prüfen (Fehler -> Abbruch vor dem Transfer); ersetzen: eine lokal liegende alte Fassung vorher entfernen
   for (const d of dateien) {
     if (d.quelle.ersetzen) { try { fs.unlinkSync(d.lokal); } catch (e) { /* keine */ } }
@@ -116,15 +140,10 @@ async function exportieren(auftrag, u) {
     catch (e) { geparkt.push(d.lokal); fehler.push(`${d.name}: Übertragung fehlgeschlagen (${e.code || e.message})`); }
   }
 
-  // 7. DTF-Sammelordner: zusätzliche Kopie, Nummerierung gegen den Sammelordner; Fehler gilt nur für die DTF-Kopie
-  const dtf = dateien.filter(d => (auftrag.dtf || []).includes(d.quelle.name));
-  if (dtf.length) {
-    const z = R.server.dtf_bestellen;
-    if (!(await A.erreichbar(z, ms))) fehler.push(`DTF-Sammelordner nicht erreichbar, keine DTF-Kopie: ${z}`);
-    else for (const d of dtf) {
-      try { await A.sicherKopieren(d.lokal, z, A.freierName(d.name, [z])); }
-      catch (e) { fehler.push(`${d.name}: DTF-Kopie fehlgeschlagen (${e.code || e.message})`); }
-    }
+  // 7. Sammelordner (DTF, wmd): zusätzliche Kopie, Nummerierung gegen den Sammelordner; Fehler gilt nur für die Kopie
+  for (const s of SAMMELORDNER) {
+    const feld = s.liste === "dtf" && auftrag.sammelordner ? auftrag.sammelordner : s.feld;
+    await sammelKopie(dateien.filter(d => (auftrag[s.liste] || []).includes(d.quelle.name)), R.server[feld], s.name, ms, fehler);
   }
 
   // übertragene Dateien lokal löschen (Verschieben), leere lokale Ordner entfernen
@@ -133,16 +152,12 @@ async function exportieren(auftrag, u) {
 
   // 9. XMP: Eintrag in exporte[] (vor der Arbeitsdatei-Kopie, damit die Kopie ihn enthält)
   const alle = dateien.every(d => d.uebertragen);
-  xmp =D.exportAnhaengen(xmp, {
-    zeit: jetzt.toISOString().replace(/\.\d{3}Z$/, "Z"),
-    ordner: serverOrdner ? `${xmp.ablage.kundenordner}/${xmp.ablage.auftragsordner}` : null,
-    dateien: dateien.map(d => ({ name: d.name, uebertragen: d.uebertragen })),
-    uebertragen: alle
-  });
+  if (u.exporteVorab) { xmp = D.aendern(xmp, {}); xmp.exporte.pop(); }
+  xmp = D.exportAnhaengen(xmp, eintrag());
   await u.xmpSchreiben(xmp);
 
   // 8. Arbeitsdatei: bei lokalem Arbeitsort nach erfolgreichem Transfer als Kopie in den Server-Auftragsordner (fortlaufend nummeriert)
-  if (!R.arbeitsdateienServer && serverOrdner && alle && u.arbeitsdatei && u.arbeitsdatei.pfad) {
+  if (!R.arbeitsdateienServer && serverOrdner && alle && u.arbeitsdatei && u.arbeitsdatei.pfad && u.arbeitsdatei.kopie !== false) {
     try {
       if (u.arbeitsdatei.speichern) await u.arbeitsdatei.speichern();
       await A.sicherKopieren(u.arbeitsdatei.pfad, serverOrdner, A.freierName(path.basename(u.arbeitsdatei.pfad), [serverOrdner]));

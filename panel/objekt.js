@@ -1,10 +1,14 @@
-/* Fenster „Objekt“ (Extension de.pamnm.illupanels.objekt, ModalDialog, SPEZ_02 §6, MockUp B3/B4): Zuordnen eines oder mehrerer oberster Objekte.
- * Art Digitaldruck | Plott, Anzahl; Digitaldruck: Medium (Preisliste), Laminat; Plott: Farben im Objekt (markierte Zeile bekommt die nächste Wahl), Serie,
- * Farb-Nr. als Filter, Kachelraster aus den ASE; Komplexität (Plott, Druck mit Cutkontur), Aufschläge, bei Druck Tape (auto → Tape → kein Tape).
- * Vorauswahl und Farbzuordnung aus dem XMP; Mehrfachauswahl: gleiche Werte für alle, unterschiedliche gestrichelt bzw. leer, ändern nur bei neuer Wahl.
+/* Fenster „Objekt“ (Extension de.pamnm.illupanels.objekt, ModalDialog, SPEZ_02 §6, Aufbau SPEZ_03_Oberflaeche §5): Zuordnen eines oder mehrerer oberster Objekte.
+ * Art Digitaldruck | Plott, Anzahl; Digitaldruck: Medium (Preisliste), Laminat; Plott: Farben im Objekt (markierte Zeile bekommt die nächste Wahl), Farb-Nr. als
+ * Filter, Serie, Kachelraster aus den ASE; Komplexität (Plott, Druck mit Cutkontur), Aufschläge, bei Druck Tape (auto → Tape → kein Tape, nicht bei Schild).
+ * Vorauswahl und Farbzuordnung aus dem XMP, Serie ohne gemerkte aus serien.json „standard“; Mehrfachauswahl: gleiche Werte für alle, unterschiedliche
+ * gestrichelt bzw. leer, ändern nur bei neuer Wahl.
  * Übergabe vom Panel über die Datei G.uebergabe (Tape-Vorschläge je IP_Id), Rückmeldung per CSEvent EVENT_OBJEKT_FERTIG.
  * OK: Varianten-Erkennung, IP_Id vergeben, Tags schreiben, Umfärben (Originalfarben in IP_Originalfarbe) bzw. Zurückfärben, Objekte positionsgleich auf
- * die Ebene der Rolle, vorauswahl/farbzuordnung ins XMP. Enter = OK, Esc = Abbrechen; Fuß zeigt die erste offene Warnung, OK ist dann gesperrt. */
+ * die Ebene der Rolle, vorauswahl/farbzuordnung ins XMP. Enter = OK, Esc = Abbrechen; Fuß zeigt die erste offene Warnung, OK ist dann gesperrt.
+ * Schild (SPEZ_03_Schild §8.1): Arten der Ebenen des Verfahrens (Folie: Digitaldruck, Plott; UV-Druck: Plott, UV-Vorn, UV-Hinten); UV ohne Anzahl, Folie,
+ * Laminat, Komplexität, Aufschläge und Tape (nur IP_Id und Ebene); ohne Tape-Button, OK schreibt keinen Tape-Zustand (SPEZ_03_Oberflaeche §5); Medien aus
+ * medien.json, Preisliste ohne Auftragsart; ragt ein Objekt über mehrere Zeichenflächen, ist OK gesperrt. */
 (function () {
   "use strict";
   const G = window.PAM;
@@ -14,11 +18,13 @@
   const TG = G.lib("tags.js");
   const PC = G.lib("preisquelle_csv.js");
   const Z = G.lib("zuordnen.js");
+  const S = G.lib("schild.js");
   const U = Z.UNTERSCHIEDLICH;
   const $ = id => document.getElementById(id);
   const X = D.xmpZugriff(G.host);
 
   let konf = null, aa = null, xmp = null, pq = null, medienListe = [], objs = [], ueb = {}, vor = null, bereit = false, laeuft = false;
+  let artenListe = ["digitaldruck", "plott"], rects = null, istSchild = false; // Schild: Arten des Verfahrens, Zeichenflächen-Rechtecke
   // init: gemeinsame Werte der Auswahl; w: neue Wahl im Dialog (null/undefined = nicht gewählt)
   let init = {}, w = { art: null, medium: null, laminat: null, komplexitaet: null, attribute: {}, tape: null };
   let farben = [], markiert = 0, serie = null, letzteSerie = null;
@@ -44,12 +50,14 @@
   function artenZeichnen() {
     const sperren = Z.plottSperren(objs);
     const bez = k => ((aa.arten || []).find(x => x.schluessel === k) || {}).bezeichnung || k;
-    $("arten").replaceChildren(...["digitaldruck", "plott"].map(k => knopf(bez(k), w.art ? w.art === k : init.art === U ? U : init.art === k, bez(k),
-      () => { w.art = k; zeichnen(); }, k === "plott" && sperren.length > 0 && art() !== "plott")));
+    // gesperrtes Plott: Tooltip nennt den Sperrgrund (die Fußzeile zeigt Warnungen nur zur gewählten Art)
+    const gesperrt = k => k === "plott" && sperren.length > 0 && art() !== "plott";
+    $("arten").replaceChildren(...artenListe.map(k => knopf(bez(k), w.art ? w.art === k : init.art === U ? U : init.art === k,
+      gesperrt(k) ? sperren.join("\n") : bez(k), () => { w.art = k; zeichnen(); }, gesperrt(k))));
   }
   function druckZeichnen() {
     const d = art() === "digitaldruck";
-    ["mediumL", "medium", "laminatL", "laminat"].forEach(id => { $(id).hidden = !d; });
+    $("druck").hidden = !d;
     if (!d) return;
     const mG = w.medium || Z.gemeinsam(objs.map(mediumVon)), lG = w.laminat || Z.gemeinsam(objs.map(laminatVon));
     $("medium").replaceChildren(...medienListe.map(m => knopf(m, mG === U || !medienListe.includes(mG) ? U : mG === m, m, () => {
@@ -125,6 +133,9 @@
   const TAPE_TEXT = { auto: "Tape auto", tape: "Tape", kein_tape: "kein Tape" }, TAPE_WEITER = { auto: "tape", tape: "kein_tape", kein_tape: "auto" };
   function zusatzZeichnen() {
     const a = art(), gilt = objs.filter(o => Z.komplexitaetGilt(o, a));
+    const uv = Z.UV.includes(a);
+    $("anzahlL").hidden = $("anzahlZ").hidden = uv; // UV: keine Anzahl
+    if (uv) { $("zusatz").hidden = true; return; }  // UV: keine Komplexität, Aufschläge, Tape
     const stufen = pq.komplexitaet();
     $("komplexL").hidden = $("komplex").hidden = !gilt.length || !stufen.length;
     if (gilt.length) {
@@ -137,7 +148,7 @@
       const titel = x.prozent !== undefined ? `${kurz(x.bezeichnung)}: +${Z.zahl(x.prozent, 0)} % auf die Montage des Stücks` : `${kurz(x.bezeichnung)}: +${Z.zahl(x.minuten, 0)} min je m² Stückfläche`;
       return knopf(kurz(x.bezeichnung), g, titel, () => { w.attribute[x.schluessel] = g !== true; zeichnen(); });
     });
-    if (a === "digitaldruck") {
+    if (a === "digitaldruck" && !istSchild) {
       // Tape [§6]: drei Zustände, Klick schaltet weiter „Tape auto“ (Vorschlag gilt) → „Tape“ (tape) → „kein Tape“ (kein_tape); unterschiedlich: gestrichelt,
       // Klick beginnt bei „Tape auto“. Gedrückt = Tape wirkt (manuell an oder auto mit Vorschlag Tape). Tooltip nennt den Vorschlag.
       const z = w.tape || Z.gemeinsam(objs.map(Z.tapeZustand)), vs = objs.map(tapeVorschlag), vg = Z.gemeinsam(vs);
@@ -158,9 +169,10 @@
     return /^\d+$/.test(v) && Number(v) >= 1 ? { wert: Number(v), ok: true } : { wert: null, ok: false, text: `Anzahl „${v}“ ungültig – ganze Zahl ≥ 1 erforderlich` };
   }
   function warnungen() {
-    const a = art(), p = [], an = anzahlWahl();
+    const a = art(), p = [], an = Z.UV.includes(a) ? { ok: true } : anzahlWahl();
     if (!a && objs.some(o => !Z.artNachTag(o, konf.farben))) p.push("Art wählen");
     if (!an.ok) p.push(an.text);
+    if (rects && objs.some(o => S.zeichenflaecheVon(o.vb || o.gb, rects) === "mehrere")) p.push("Objekt ragt über mehrere Zeichenflächen");
     if (a === "plott") {
       p.push(...Z.plottSperren(objs));
       if (objs.some(o => !Z.farbenDerAuswahl([o]).length)) p.push("Objekt hat keine Füllfarbe");
@@ -202,15 +214,16 @@
       const umfaerben = {};
       if (a === "plott") farben.forEach(f => { const c = wirksam(f); if (c && (f.wahl || f.quelle === "zuordnung")) umfaerben[f.key] = { name: c.name, lab: c.lab }; });
 
-      const wahl = { art: w.art, medium: w.medium, laminat: w.laminat, anzahl: anzahlWahl().wert, komplexitaet: w.komplexitaet, attribute: w.attribute, tape: w.tape };
+      // Art = neue Wahl oder gemeinsame Vorauswahl (nach Tag, Sandbox, Ebene); nur bei gemischter Art ohne neue Wahl null
+      const wahl = { art: a, medium: w.medium, laminat: w.laminat, anzahl: Z.UV.includes(a) ? null : anzahlWahl().wert, komplexitaet: w.komplexitaet, attribute: w.attribute, tape: w.tape };
       const ziele = objs.map(o => {
         const id = idVon[schl(o)] !== undefined ? idVon[schl(o)] : o.tags.id || null;
         const r = Z.tagsFuer(Object.assign({}, o, { tags: Object.assign({}, o.tags, { id }) }), wahl, { farben: konf.farben, medien: konf.medien, vorauswahl: vor, plottFolie });
         if (!id) r.tags.id = T.neueId(); // IP_Id vergeben, falls fehlend
         return { ref: o.ref, id, tags: TG.tagsPruefen(konf.schema, r.tags) };
       });
-      const zielEbene = w.art ? ((aa.arten || []).find(x => x.schluessel === w.art) || {}).ebene || null : null;
-      await G.host("objekteZuordnen", { ziele, art: w.art, farben: umfaerben, zielEbene });
+      const zielEbene = a ? ((aa.arten || []).find(x => x.schluessel === a) || {}).ebene || null : null;
+      await G.host("objekteZuordnen", { ziele, art: a, farben: umfaerben, zielEbene });
 
       // zuletzt gewählte Werte und Farbzuordnung (Nicht-Oracal-Farbe -> Folienschlüssel) je Auftrag ins XMP
       const x = (await X.xmpLesen()) || xmp;
@@ -235,17 +248,27 @@
       xmp = await X.xmpLesen();
       aa = xmp && xmp.rolle === "arbeitsdatei" ? konf.arten[xmp.auftragsart] : null;
       if (!aa) throw new Error("Dokument ist kein Auftrag. Bitte zuerst „Auftrag anlegen“.");
-      if (!aa.kalkulation || !aa.preis) throw new Error(`Für die Auftragsart „${aa.name}“ gibt es keine Kalkulation`);
+      const schild = istSchild = aa.export.profil === "schild";
+      if (!schild && (!aa.kalkulation || !aa.preis)) throw new Error(`Für die Auftragsart „${aa.name}“ gibt es keine Kalkulation`);
       pq = PC.erstellen(konf.ext, { medien: konf.medien });
-      const pl = await pq.laden(aa.preis);
-      if (!pl.ok) throw new Error("Preisliste ungültig:\n• " + pl.fehler.join("\n• "));
-      medienListe = Z.medienListe(pl.zeilen, aa.preis);
+      if (schild) {
+        // Schild: Arten des Verfahrens, Medien aus medien.json, Preisliste ohne Auftragsart (fehlerhaft: ohne Stufen und Aufschläge), Zeichenflächen
+        artenListe = S.arten(aa, xmp.schild);
+        if (!artenListe.length) throw new Error("Schild: Verfahren oder Material fehlt");
+        medienListe = Z.medienAusKonfig(konf.medien, konf.farben);
+        pq = await S.preisquelleOhneArt(pq);
+        rects = (await G.host("dokumentInfo")).zeichenflaechen.map(z => z.rect);
+      } else {
+        const pl = await pq.laden(aa.preis);
+        if (!pl.ok) throw new Error("Preisliste ungültig:\n• " + pl.fehler.join("\n• "));
+        medienListe = Z.medienListe(pl.zeilen, aa.preis);
+      }
       objs = (await G.host("auswahlLesen", { rollen: rollenVon(aa), blaetter: true })).objekte;
       if (!objs.length) { G.schliessen(); return; }
       ueb = G.uebergabe.lesen();
-      vor = Z.vorauswahl(xmp);
+      vor = Z.vorauswahl(xmp, konf.farben.standard);
 
-      const arten = objs.map(o => Z.artVorauswahl(o, konf.farben));
+      const arten = objs.map(o => Z.artVorauswahl(o, konf.farben, schild ? artenListe : null));
       init.art = arten.some(x => !x) ? U : Z.gemeinsam(arten);
       const anz = Z.gemeinsam(objs.map(o => Z.anzahlVon(o.tags.anzahl)));
       init.anzahl = anz === U || anz === null ? U : anz;

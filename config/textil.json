@@ -1,0 +1,9 @@
+{
+  "mockup_ordner": "config/mockups",
+  "marken": ["B&C", "Promodoro", "Neutral", "Sonstige", "Kundenware"],
+  "rand_mm": 2,
+  "hoehen_hinweis_mm": { "brust_klein": 120, "ruecken": 380 },
+  "kinder_faktor": 1.5,
+  "namen": { "max_breite_mm": 560, "max_hoehe_mm": 1000, "abstand_mm": 10, "zeilenabstand_mm": 10 },
+  "streifen": { "daten_breite_max_mm": 470, "zeichenflaeche_breite_mm": 480, "laenge_max_mm": 1500, "rand_mm": 5, "abstand_mm": 10, "rollenbreite_mm": 500 }
+}

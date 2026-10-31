@@ -86,10 +86,11 @@ async function dokumentAusDatei(pfad) {
   } catch (e) { return null; }
 }
 
-/** Schlüssel der Grafikzeit [M 11, B-14]: Druckbogen -> bogen.arbeitsdatei; jede andere Rolle -> der eigene Pfad; ohne Panel-XMP null */
+/** Schlüssel der Grafikzeit [M 11, B-14]: Druckbogen (alle bogen.art) -> null, wird nicht gezählt (SPEZ_02 Fassung 8 §12); jede andere Rolle -> der
+ *  eigene Pfad; ohne Panel-XMP null */
 function arbeitsdateiVon(pfad, o) {
   if (!pfad || !o) return null;
-  if (o.rolle === "druckbogen") return o.bogen && typeof o.bogen.arbeitsdatei === "string" && o.bogen.arbeitsdatei ? o.bogen.arbeitsdatei : null;
+  if (o.rolle === "druckbogen") return null;
   return pfad;
 }
 /** Pfad der Arbeitsdatei, der die Zeit im Dokument pfad gutgeschrieben wird, oder null. Wirft nie. */

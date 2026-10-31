@@ -1,0 +1,127 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>PAM-Werkzeuge Thema 6 – Dialog „Auftrag“, 1. Fassung</title>
+<style>
+:root { --bg:#2b2b2b; --fg:#d9d9d9; --muted:#9a9a9a; --panel:#535353; --panel-fg:#e6e6e6; --panel-muted:#b0b0b0;
+  --feld:#3c3c3c; --feldrand:#2e2e2e; --line:#666; --accent:#e8a33d; --accent-fg:#1e1e1e; --warn:#f0b24a; --ok:#8fd18f;
+  --plott:#7aa7d9; --druck:#e8a33d; --zebra:rgba(255,255,255,.04); --kopf-bg:rgba(255,255,255,.07); --warn-bg:rgba(240,178,74,.16); --an:#a4ccfe; --an-fg:#1a1a1a;
+  --font:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif; color-scheme:dark; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 var(--font); padding:24px 20px 60px; }
+h1 { font-size:20px; font-weight:600; margin:0 0 4px; }
+h2 { font-size:16px; font-weight:600; margin:40px 0 8px; padding-top:14px; border-top:1px solid #555; }
+h3 { font-size:14px; font-weight:600; margin:22px 0 6px; color:var(--fg); }
+p.lead { color:var(--muted); margin:0 0 10px; max-width:100ch; }
+code { font-size:12px; }
+.reihe { display:flex; flex-wrap:wrap; gap:22px 26px; align-items:flex-start; }
+.fall { display:flex; flex-direction:column; gap:6px; }
+.fall>.titel { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.notizen { max-width:100ch; color:var(--muted); font-size:13px; padding-left:18px; margin:0 0 12px; }
+.notizen li { margin:0 0 5px; } .notizen b { color:var(--fg); font-weight:600; }
+.chip { display:inline-block; width:10px; height:10px; border:1px solid #222; border-radius:1px; margin-right:4px; vertical-align:-1px; }
+.mass { font-size:11px; color:var(--panel-muted); margin-top:2px; max-width:640px; }
+/* Fenster (wie panel/fenster.css) */
+.fenster { background:var(--panel); color:var(--panel-fg); border:1px solid #1f1f1f; border-radius:6px; box-shadow:0 6px 24px rgba(0,0,0,.5); overflow:hidden; font:12px/1.3 var(--font); display:flex; flex-direction:column; box-sizing:border-box; }
+.fenster .kopf { height:24px; flex:none; background:#3d3d3d; border-bottom:1px solid #2a2a2a; display:flex; align-items:center; padding:0 10px; font-weight:600; }
+.fenster .kopf .ampel { width:11px; height:11px; border-radius:50%; background:#ff5f57; margin-right:10px; }
+.fenster main { flex:1 1 auto; padding:10px 12px 8px; display:flex; flex-direction:column; gap:9px; min-height:0; }
+.fenster .fuss { flex:none; display:flex; align-items:center; gap:6px; padding:7px 12px; border-top:1px solid var(--line); }
+.fenster .fuss .hinweis { flex:1 1 0; min-width:0; color:var(--warn); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fenster .fuss button { height:26px; min-width:84px; }
+.fenster button,.fenster select,.fenster input,.fenster textarea { font:inherit; font-size:12px; color:var(--panel-fg); background:var(--feld); border:1px solid var(--feldrand); border-radius:3px; height:24px; padding:0 8px; white-space:nowrap; box-sizing:border-box; }
+.fenster textarea { height:auto; padding:4px 8px; white-space:pre; resize:none; }
+.fenster button.primaer { background:var(--accent); border-color:var(--accent); color:var(--accent-fg); font-weight:600; }
+.fenster button.an { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:#6b5634; font-weight:600; }
+.fenster button.mixed, .fenster input.mixed { border-style:dashed; border-color:#aaa; }
+.fenster button:disabled { opacity:.45; }
+.fenster .muted { color:var(--panel-muted); } .fenster .warn { color:var(--warn); } .fenster .ok { color:var(--ok); }
+.lbl { color:var(--panel-muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+.feldz { display:grid; grid-template-columns:84px 1fr; column-gap:10px; row-gap:8px; align-items:center; }
+.seg { display:flex; gap:4px; flex-wrap:wrap; align-items:center; } .seg button { min-width:52px; }
+.seg.eng button { min-width:0; padding:0 9px; }
+.seg.voll { flex-wrap:nowrap; } .seg.voll button { flex:1 1 0; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.block { border-top:1px solid var(--line); padding-top:8px; }
+.zeile { display:flex; align-items:center; gap:6px; }
+.pre { white-space:pre; font:11px/1.45 ui-monospace, Menlo, monospace; color:var(--panel-fg); }
+table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; }
+th,td { padding:3px 6px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+th { font-weight:600; color:var(--panel-muted); font-size:11px; }
+td.l,th.l { text-align:left; } td.n { font-weight:600; }
+tr.zebra td { background:var(--zebra); }
+tr.sel td { background:var(--an); color:var(--an-fg); } tr.sel td .min { color:var(--an-fg); }
+tr.grp td { background:var(--kopf-bg); font-weight:600; text-align:left; } tr.grp.ohne td { color:var(--warn); }
+tr.ohne td { color:var(--panel-muted); }
+.min { color:var(--panel-muted); }
+.ueber { font-weight:600; font-size:12px; color:var(--panel-muted); text-transform:uppercase; letter-spacing:.04em; margin:4px 0 2px; }
+.summen td { border-bottom:none; padding:2px 6px; }
+tr.preis td { font-size:15px; font-weight:700; padding-top:6px; } tr.preis td .brutto { font-size:13px; font-weight:400; margin-left:12px; color:var(--panel-fg); }
+tr.preis.akzent td.w { color:var(--accent); }
+tr.mvk td { color:var(--panel-muted); font-size:12px; padding-top:0; }
+.hinweiszeile { padding:3px 8px; border-radius:2px; background:var(--warn-bg); color:var(--warn); display:inline-block; }
+
+.art { height:26px !important; font-size:12px; overflow:hidden; text-overflow:ellipsis; }
+.art.an { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:#6b5634; font-weight:600; }
+.arten3 { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; } .arten3 .art { padding:0 3px; font-size:11.5px; }
+.arten2 { display:grid; grid-template-columns:repeat(2,1fr); gap:4px; }
+.artenL { display:flex; flex-direction:column; gap:3px; width:164px; flex:none; padding-right:12px; border-right:1px solid var(--line); }
+.artenL .art { text-align:left; padding:0 10px; }
+.cap { color:var(--panel-muted); font-size:11px; margin-bottom:2px; }
+.feld input { width:100%; }
+.haken { display:flex; align-items:center; gap:6px; } .haken input { height:auto; }
+.reiheF { display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; }
+.reiheF .feld input { width:80px; text-align:right; }
+.tw-reihe { display:flex; flex-wrap:wrap; gap:4px; }
+.tw-modelle { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; }
+.tw-raster { display:grid; grid-template-columns:repeat(auto-fill,minmax(58px,1fr)); gap:4px; max-height:150px; overflow-y:auto; padding:2px; border:1px solid var(--line); border-radius:3px; }
+.tw-kachel { display:flex; flex-direction:column; gap:2px; padding:3px; border:1px solid transparent; border-radius:3px; font-size:11px; text-align:center; }
+.tw-kachel.an { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:rgba(232,163,61,.22); font-weight:600; }
+.tw-kachel i { display:block; height:22px; border:1px solid #999; border-radius:2px; }
+.tw-kachel span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.split { display:flex; gap:12px; min-height:0; }
+.split > .rechts { flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:9px; }
+</style></head><body>
+<h1>PAM-Werkzeuge – Thema 6, Dialog „Auftrag“ (2. Fassung, freigegeben 31.10.)</h1>
+<p class="lead">Zweig „ohne Auftrag“ in allen acht Arten (Reihenfolge nach <code>reihenfolge</code> der Auftragsarten). Inhalte aus <code>anlegen.html/.js</code>, <code>config/auftragsarten</code>, <code>produkte.csv</code>, <code>schild_materialien.csv</code>, <code>textil.json</code>, <code>textil_modelle.csv</code>, <code>textil_farben.csv</code>. Überschriften nur aus vorhandenen Texten (Auftragsart, Kundenname, Fahrzeugvorlage, Material, Breite, Höhe, Anzahl Zeichenflächen, Marke, Modell, Farbe); Gruppen ohne vorhandenen Text (Quelle, Verfahren, Ausrichtung, Banner/Roll-up, Maßstab) stehen ohne Überschrift wie gebaut. Textil mit MockUps in <code>config/mockups</code> angenommen (heute leer → Textil gesperrt). Kunde „Streifen“ ist Beispiel.</p>
+<ul class="notizen">
+<li>In allen Varianten gleich: Quelle, Verfahren, Ausrichtung, Banner/Roll-up und Maßstab als Segment-Buttons statt Radiobuttons (gleicher Text, gleiche Funktion); Fuß mit „Let's go“ rechts wie gebaut; Enter = Let's go, Esc = Abbrechen.</li>
+<li>Höhe: das Fenster ist modal mit fester Größe aus dem Manifest. Maß unter jedem Fenster = Höhe des Inhalts; im Manifest gilt die größte (Textil).</li>
+</ul>
+
+<h2>Freigegeben: Arten links als Liste, rechts Kunde, Quelle, Felder der Art · 560 breit</h2>
+<div class="reihe" id="v2"></div>
+<script>
+const ARTEN = ["Fahrzeugbeschriftung","Beschriftung","Schild","Banner/Roll-up","Lasergravur","Offset-Daten","Textil","Sonstiges"];
+const seg = (texte, an, voll = true) => `<div class="seg eng${voll ? " voll" : ""}">${texte.map(t => `<button class="${t === an ? "an" : ""}">${t}</button>`).join("")}</div>`;
+const sel = t => `<select style="width:100%"><option>${t}</option></select>`;
+const masse = (b, h, n) => `<div class="reiheF"><div class="feld"><div class="cap">Breite</div><input value="${b}"></div><span style="padding-bottom:4px">×</span><div class="feld"><div class="cap">Höhe</div><input value="${h}"></div><span class="muted" style="padding-bottom:4px">mm</span><div class="feld"><div class="cap">Anzahl Zeichenflächen</div><input value="${n}" style="width:60px"></div></div>`;
+const anzahl = n => `<div class="reiheF"><div class="feld"><div class="cap">Anzahl Zeichenflächen</div><input value="${n}" style="width:60px"></div></div>`;
+const MOD = ["E190","Polo","Hoodie","Zip Hoodie","E190 Women","Sweatshirt"];
+const FARB = [["Natural","#F4F1E8"],["Sand","#E8DFCB"],["Solar Yellow","#FBEA60"],["Gold","#F3C85D"],["Apricot","#EAAA3D"],["Orange","#D45B2F"],["Urban Orange","#BB5726"],["Sunset Orange","#D45740"],["Fire Red","#CE2E28"],["Orchid Pink","#F6E0E3"],["Sorbet","#B9275C"],["Burgundy","#552C3F"],["Swimming Pool","#59AAC0"],["Atoll","#438EBD"],["Diva Blue","#346E84"],["Sky Blue","#85AFD7"],["Stone Blue","#4F7294"],["Navy Blue","#171744"],["Cobalt Blue","#415780"],["Millennial Lilac","#696195"],["Radiant Purple","#392262"],["Urban Purple","#2A104C"],["Pixel Lime","#DEFF53"],["Orchid Green","#A1C24D"]];
+const textil = () => `<div><div class="cap">Marke</div><div class="tw-reihe"><button class="an">B&amp;C</button><button disabled>Promodoro</button><button disabled>Neutral</button><button disabled>Sonstige</button><button disabled>Kundenware</button></div></div>
+ <div><div class="cap">Modell</div><div class="tw-modelle">${MOD.map(m => `<button class="${m === "E190" ? "an" : ""}">${m}</button>`).join("")}</div></div>
+ <div><div class="cap">Farbe</div><div class="tw-raster">${FARB.map(([n, h]) => `<div class="tw-kachel${n === "Natural" ? " an" : ""}"><i style="background:${h}"></i><span>${n}</span></div>`).join("")}</div></div>`;
+// je Art: Quelle, Felder, Inhaltshöhe-Hinweis
+const FALL = {
+  "Fahrzeugbeschriftung": { q: "geöffnete Datei", f: `<label class="haken"><input type="checkbox" checked> Fahrzeugvorlage</label>` , t: "Fahrzeugvorlage gewählt (Maßstab entfällt)" },
+  "Beschriftung": { q: "geöffnete Datei", f: seg(["1:1","1:30"], "1:1", false), t: "Quelle ohne Panel-XMP → Maßstab der Quelle" },
+  "Schild": { q: "leer", f: seg(["Folie","UV-Druck"], "Folie") + `<div><div class="cap">Material</div>${sel("Dibond 3 mm")}</div>`, t: "" },
+  "Banner/Roll-up": { q: "geöffnete Datei", f: seg(["Banner","Roll-up 850 × 2000","Roll-up 1000 × 2000"], "Banner", false) + masse(3000, 1000, 1), t: "Banner: Maße; bei Roll-up entfallen sie" },
+  "Lasergravur": { q: "geöffnete Datei", f: "", t: "keine weiteren Felder (600 × 300 fest)" },
+  "Offset-Daten": { q: "leer", f: sel("Visitenkarte 85 × 55") + seg(["hoch","quer"], "quer") + anzahl(2), t: "Produkt mit 1/2 Zeichenflächen und hoch/quer" },
+  "Textil": { q: "leer", f: textil(), t: "keine Maßstabsabfrage" },
+  "Sonstiges": { q: "leer", f: masse(210, 297, 1), t: "ohne Quelle A4 hoch vorbelegt" },
+};
+const kunde = `<div class="feld"><div class="cap">Kundenname</div><input value="Streifen"></div>`;
+const quelle = q => seg(["geöffnete Datei","Datei öffnen","leer"], q);
+const fuss = `<footer class="fuss"><span class="hinweis"></span><button class="primaer">Let's go</button></footer>`;
+const artKn = (a, an) => `<button class="art${a === an ? " an" : ""}">${a}</button>`;
+function fenster(v, a) {
+  const F = FALL[a], felder = F.f ? `<div class="block" style="display:flex;flex-direction:column;gap:8px">${F.f}</div>` : "";
+  let main;
+  if (v === 1) main = `<main><div><div class="cap">Auftragsart</div><div class="arten3">${ARTEN.map(x => artKn(x, a)).join("")}</div></div>${kunde}${quelle(F.q)}${felder}</main>`;
+  if (v === 2) main = `<main><div class="split"><div class="artenL"><div class="cap">Auftragsart</div>${ARTEN.map(x => artKn(x, a)).join("")}</div><div class="rechts">${kunde}${quelle(F.q)}${felder}</div></div></main>`;
+  if (v === 3) main = `<main>${kunde}${quelle(F.q)}<div class="block"><div class="cap">Auftragsart</div><div class="arten2">${ARTEN.map(x => artKn(x, a)).join("")}</div></div>${felder}</main>`;
+  return `<div class="fall"><div class="titel">${a}${F.t ? " – " + F.t : ""}</div><div class="fenster" style="width:${v === 2 ? 560 : 420}px"><div class="kopf"><span class="ampel"></span>Auftrag anlegen</div>${main}${fuss}</div><div class="mass" data-h></div></div>`;
+}
+[2].forEach(v => { document.getElementById("v" + v).innerHTML = ARTEN.map(a => fenster(v, a)).join(""); });
+document.querySelectorAll(".fall").forEach(f => { const w = f.querySelector(".fenster"); if (w) f.querySelector("[data-h]").textContent = `Höhe ${Math.round(w.getBoundingClientRect().height)} px`; });
+</script>
+</body></html>

@@ -1,0 +1,213 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>PAM-Werkzeuge Thema 6 – Zuordnen „Objekt“ und „Motiv“, 1. Fassung</title>
+<style>
+:root { --bg:#2b2b2b; --fg:#d9d9d9; --muted:#9a9a9a; --panel:#535353; --panel-fg:#e6e6e6; --panel-muted:#b0b0b0;
+  --feld:#3c3c3c; --feldrand:#2e2e2e; --line:#666; --accent:#e8a33d; --accent-fg:#1e1e1e; --warn:#f0b24a; --ok:#8fd18f;
+  --plott:#7aa7d9; --druck:#e8a33d; --zebra:rgba(255,255,255,.04); --kopf-bg:rgba(255,255,255,.07); --warn-bg:rgba(240,178,74,.16); --an:#a4ccfe; --an-fg:#1a1a1a;
+  --font:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif; color-scheme:dark; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 var(--font); padding:24px 20px 60px; }
+h1 { font-size:20px; font-weight:600; margin:0 0 4px; }
+h2 { font-size:16px; font-weight:600; margin:40px 0 8px; padding-top:14px; border-top:1px solid #555; }
+h3 { font-size:14px; font-weight:600; margin:22px 0 6px; color:var(--fg); }
+p.lead { color:var(--muted); margin:0 0 10px; max-width:100ch; }
+code { font-size:12px; }
+.reihe { display:flex; flex-wrap:wrap; gap:22px 26px; align-items:flex-start; }
+.fall { display:flex; flex-direction:column; gap:6px; }
+.fall>.titel { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.notizen { max-width:100ch; color:var(--muted); font-size:13px; padding-left:18px; margin:0 0 12px; }
+.notizen li { margin:0 0 5px; } .notizen b { color:var(--fg); font-weight:600; }
+.chip { display:inline-block; width:10px; height:10px; border:1px solid #222; border-radius:1px; margin-right:4px; vertical-align:-1px; }
+.mass { font-size:11px; color:var(--panel-muted); margin-top:2px; max-width:640px; }
+/* Fenster (wie panel/fenster.css) */
+.fenster { background:var(--panel); color:var(--panel-fg); border:1px solid #1f1f1f; border-radius:6px; box-shadow:0 6px 24px rgba(0,0,0,.5); overflow:hidden; font:12px/1.3 var(--font); display:flex; flex-direction:column; box-sizing:border-box; }
+.fenster .kopf { height:24px; flex:none; background:#3d3d3d; border-bottom:1px solid #2a2a2a; display:flex; align-items:center; padding:0 10px; font-weight:600; }
+.fenster .kopf .ampel { width:11px; height:11px; border-radius:50%; background:#ff5f57; margin-right:10px; }
+.fenster main { flex:1 1 auto; padding:10px 12px 8px; display:flex; flex-direction:column; gap:9px; min-height:0; }
+.fenster .fuss { flex:none; display:flex; align-items:center; gap:6px; padding:7px 12px; border-top:1px solid var(--line); }
+.fenster .fuss .hinweis { flex:1 1 0; min-width:0; color:var(--warn); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fenster .fuss button { height:26px; min-width:84px; }
+.fenster button,.fenster select,.fenster input,.fenster textarea { font:inherit; font-size:12px; color:var(--panel-fg); background:var(--feld); border:1px solid var(--feldrand); border-radius:3px; height:24px; padding:0 8px; white-space:nowrap; box-sizing:border-box; }
+.fenster textarea { height:auto; padding:4px 8px; white-space:pre; resize:none; }
+.fenster button.primaer { background:var(--accent); border-color:var(--accent); color:var(--accent-fg); font-weight:600; }
+.fenster button.an { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:#6b5634; font-weight:600; }
+.fenster button.mixed, .fenster input.mixed { border-style:dashed; border-color:#aaa; }
+.fenster button:disabled { opacity:.45; }
+.fenster .muted { color:var(--panel-muted); } .fenster .warn { color:var(--warn); } .fenster .ok { color:var(--ok); }
+.lbl { color:var(--panel-muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+.feldz { display:grid; grid-template-columns:84px 1fr; column-gap:10px; row-gap:8px; align-items:center; }
+.seg { display:flex; gap:4px; flex-wrap:wrap; align-items:center; } .seg button { min-width:52px; }
+.seg.eng button { min-width:0; padding:0 9px; }
+.seg.voll { flex-wrap:nowrap; } .seg.voll button { flex:1 1 0; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.block { border-top:1px solid var(--line); padding-top:8px; }
+.zeile { display:flex; align-items:center; gap:6px; }
+.pre { white-space:pre; font:11px/1.45 ui-monospace, Menlo, monospace; color:var(--panel-fg); }
+table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; }
+th,td { padding:3px 6px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+th { font-weight:600; color:var(--panel-muted); font-size:11px; }
+td.l,th.l { text-align:left; } td.n { font-weight:600; }
+tr.zebra td { background:var(--zebra); }
+tr.sel td { background:var(--an); color:var(--an-fg); } tr.sel td .min { color:var(--an-fg); }
+tr.grp td { background:var(--kopf-bg); font-weight:600; text-align:left; } tr.grp.ohne td { color:var(--warn); }
+tr.ohne td { color:var(--panel-muted); }
+.min { color:var(--panel-muted); }
+.ueber { font-weight:600; font-size:12px; color:var(--panel-muted); text-transform:uppercase; letter-spacing:.04em; margin:4px 0 2px; }
+.summen td { border-bottom:none; padding:2px 6px; }
+tr.preis td { font-size:15px; font-weight:700; padding-top:6px; } tr.preis td .brutto { font-size:13px; font-weight:400; margin-left:12px; color:var(--panel-fg); }
+tr.preis.akzent td.w { color:var(--accent); }
+tr.mvk td { color:var(--panel-muted); font-size:12px; padding-top:0; }
+.hinweiszeile { padding:3px 8px; border-radius:2px; background:var(--warn-bg); color:var(--warn); display:inline-block; }
+
+.farben { display:flex; flex-direction:column; gap:4px; }
+.farbe { display:flex; align-items:center; gap:8px; padding:4px 6px; border-radius:3px; background:var(--zebra); }
+.farbe.an { background:#5d4a2c; box-shadow:inset 0 0 0 1px var(--accent); }
+.farbe .big { width:16px; height:16px; border:1px solid #222; border-radius:2px; flex:none; }
+.farbe .was { flex:1 1 0; }
+.raster { display:grid; grid-template-columns:repeat(24,16px); gap:3px; }
+.raster.r16 { grid-template-columns:repeat(16,17px); }
+.raster span { width:16px; height:16px; border:1px solid #222; border-radius:2px; display:block; position:relative; }
+.raster.r16 span { width:17px; height:17px; }
+.raster span.an { outline:2px solid var(--accent); outline-offset:1px; }
+.raster span.hv { outline:1px solid #ddd; outline-offset:1px; }
+.raster span.an::after, .raster span.hv::after { content:attr(data-n); position:absolute; left:20px; top:-3px; font-size:11px; color:var(--panel-fg); background:#333; padding:0 4px; border-radius:2px; white-space:nowrap; z-index:1; }
+.fnr { width:64px; height:28px !important; font-size:15px !important; text-align:center; letter-spacing:.06em; }
+.zwei { display:flex; gap:14px; } .zwei > div { display:flex; flex-direction:column; gap:9px; min-width:0; }
+.zwei > .r { border-left:1px solid var(--line); padding-left:14px; }
+/* Motiv */
+.oben { display:flex; gap:12px; align-items:stretch; }
+.shirt { position:relative; width:210px; height:196px; flex:none; }
+.shirt svg { position:absolute; inset:0; width:100%; height:100%; }
+.shirt .seite { position:absolute; left:0; right:0; bottom:0; text-align:center; color:var(--panel-muted); font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
+.pille { position:absolute; transform:translate(-50%,-50%); height:20px !important; line-height:18px; padding:0 9px !important; font-size:11px !important; border-radius:10px !important; }
+.pille.an { background:var(--accent) !important; border-color:var(--accent) !important; color:var(--accent-fg) !important; font-weight:600; box-shadow:none !important; }
+.rechts { flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:4px; padding-left:12px; border-left:1px solid var(--line); }
+.rechts .ab { margin-top:auto; }
+.senk { display:flex; flex-direction:column; gap:4px; } .senk button { width:100%; }
+.flexblock { display:flex; flex-direction:column; gap:4px; height:82px; }
+.flexblock.weg { visibility:hidden; }
+.flexblock .fl { overflow-y:auto; max-height:46px; display:flex; flex-direction:column; gap:2px; }
+.dgbox { flex:1 1 auto; min-height:0; overflow-y:auto; }
+.v4 { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.fxreihe { display:flex; flex-wrap:wrap; gap:4px 18px; }
+.fxreihe .fx input { width:150px !important; }
+.blocktitel { display:flex; align-items:baseline; gap:10px; margin-bottom:4px; }
+.blocktitel .sub { color:var(--panel-muted); font-size:11px; flex:1 1 0; }
+.plus { height:20px !important; font-size:11px !important; padding:0 8px !important; background:transparent !important; border:1px dashed var(--line) !important; color:var(--panel-muted) !important; }
+table.dg { table-layout:fixed; font-size:12px; }
+table.dg th { font-weight:normal; color:var(--panel-muted); font-size:11px; text-align:left; padding:0 6px 2px 0; border:0; }
+table.dg td { padding:2px 6px 2px 0; text-align:left; border:0; }
+table.dg tr.z2 td { background:var(--zebra); }
+table.dg input[type=radio], table.dg input[type=checkbox] { height:auto; margin:0; }
+table.dg select, table.dg input { padding:0 4px; }
+.summe { color:var(--panel-muted); font-size:11px; margin-top:3px; } .summe b { color:var(--panel-fg); }
+.fx { display:flex; align-items:center; gap:6px; font-size:12px; }
+.fx .big { width:14px; height:14px; border:1px solid #222; border-radius:2px; }
+</style></head><body>
+<h1>PAM-Werkzeuge – Thema 6, Zuordnen (1. Fassung)</h1>
+<p class="lead">Fenster „Objekt“ (Register 4.6) und Fenster „Motiv“ (Textil). Inhalte aus <code>objekt.html/.js</code>, <code>motiv.html/.js</code>, <code>textil.js</code>, <code>textil_stufen.csv</code>, <code>serien.json</code>, den ASE (751 C wie MOCKUP_STUFE2), Preisliste (Komplexität K0–K3, Sicke, Wölbung, Medien, Flex-/Flock-Serien). Objektnamen, Farben im Objekt und Mengen sind Beispiele.</p>
+
+<h2>A. Fenster „Objekt“</h2>
+<ul class="notizen">
+<li><b>In allen Varianten:</b> Farb-Nr. bei Mouseover an der Kachel (Beispiel: Maus auf 070), wie heute an der gewählten Kachel. Die Farb-Nr. hat beim Öffnen im Plott den Fokus (wie gebaut). Mehrfachauswahl gestrichelt wie gebaut.</li>
+<li><b>Vorschlag Serie:</b> ohne gemerkte Serie im Auftrag ist 751C vorgewählt (heute: keine Serie, Suche über alle). Neue Festlegung, nur wenn du sie willst.</li>
+</ul>
+<h3>V1. Aufbau wie gebaut (B3/B4), aufgeräumt · 480 breit</h3>
+<ul class="notizen"><li>Reihenfolge Art · Anzahl · Farben im Objekt · Serie mit Farb-Nr. · Raster · Komplexität · Aufschläge wie gebaut.</li></ul>
+<div class="reihe" id="o1"></div>
+<h3>V2. Farb-Nr. zuerst · 480 breit</h3>
+<ul class="notizen"><li>Art und Anzahl in einer Zeile. Im Plott steht die Farb-Nr. groß über der Serie, das Raster darunter filtert beim Tippen wie gebaut. Komplexität und Aufschläge unverändert unten.</li></ul>
+<div class="reihe" id="o2"></div>
+<h3>V3. Zwei Spalten: links Objekt, rechts Farbwahl · 720 breit</h3>
+<ul class="notizen"><li>Links Art, Anzahl, Medium/Laminat bzw. Farben im Objekt, Komplexität, Aufschläge; rechts Farb-Nr., Serie, Raster (16 Spalten, größere Kacheln). Digitaldruck und UV ohne rechte Spalte, Fenster dann schmal wie V1.</li></ul>
+<div class="reihe" id="o3"></div>
+
+<h2>B. Fenster „Motiv“ (Textil) · 640 × 470</h2>
+<ul class="notizen"><li>Aufbau 44B bleibt; verschönert: Silhouette heller mit Kontur, Positionen als Pillen, Druckgrößen mit Zebrastreifen, „+ Druckgröße“ in der Titelzeile, Summenzeile wie gebaut.</li></ul>
+<h3>V1. Flex/Flock-Block zwischen Silhouetten und Druckgrößen (wie gebaut, sonst unsichtbar mit Platz)</h3>
+<div class="reihe" id="m1"></div>
+<h3>V2. Verfahren 2 × 2, Serie und Komplexität in der rechten Spalte, Farben im Objekt nur bei Flex/Flock über den Druckgrößen</h3>
+<ul class="notizen"><li>Bei DTF und Stick kein reservierter Leerraum; die Druckgrößen bekommen die Höhe. Bei Flex/Flock erscheinen die Farben im Objekt nebeneinander mit Feld „Flexfarbe“. Die Serie steht ohne Überschrift (Tooltip „Serie“), damit die Spalte in die Höhe der Silhouetten passt.</li></ul>
+<div class="reihe" id="m2"></div>
+
+<script>
+const f751=[["020",[255,172,0]],["219",[255,178,0]],["203",[255,188,0]],["211",[255,192,0]],["019",[248,172,0]],["208",[226,166,0]],["209",[255,194,0]],["021",[255,197,0]],["216",[255,203,0]],["022",[255,208,0]],["025",[255,233,14]],["026",[104,9,26]],["361",[143,0,18]],["030",[147,14,25]],["348",[163,0,23]],["306",[189,0,0]],["031",[191,10,15]],["027",[198,9,10]],["028",[209,0,12]],["325",[218,9,0]],["324",[225,0,0]],["032",[213,23,0]],["326",[222,28,0]],["047",[223,52,0]],["033",[227,55,0]],["335",[243,60,0]],["333",[255,88,5]],["034",[250,87,0]],["332",[250,98,0]],["035",[255,102,0]],["340",[80,18,32]],["048",[111,0,45]],["415",[98,37,85]],["040",[87,49,102]],["403",[81,49,133]],["043",[115,99,164]],["042",[179,145,187]],["041",[195,26,95]],["077",[198,48,108]],["044",[211,84,127]],["045",[237,129,178]],["532",[14,24,35]],["588",[0,25,55]],["590",[0,23,54]],["518",[0,24,61]],["591",[0,36,88]],["050",[0,47,91]],["058",[0,45,110]],["537",[0,24,91]],["065",[0,35,109]],["049",[0,51,124]],["592",[0,39,125]],["593",[0,39,125]],["150",[0,55,172]],["536",[0,42,120]],["510",[0,52,136]],["067",[0,63,125]],["595",[0,76,119]],["057",[0,67,147]],["051",[0,82,162]],["509",[0,73,153]],["508",[0,85,169]],["052",[0,104,188]],["507",[0,101,177]],["555",[34,123,190]],["594",[0,119,180]],["517",[0,127,190]],["053",[0,136,207]],["056",[0,162,212]],["549",[112,143,162]],["608",[0,88,110]],["054",[0,153,154]],["055",[67,204,188]],["599",[117,208,216]],["060",[0,68,41]],["661",[0,72,47]],["078",[4,83,30]],["617",[0,94,46]],["607",[0,99,83]],["604",[0,111,71]],["066",[0,124,143]],["061",[0,114,74]],["068",[0,120,73]],["619",[0,136,86]],["062",[0,140,62]],["064",[0,163,27]],["063",[109,193,67]],["080",[71,41,30]],["803",[70,35,19]],["828",[80,51,33]],["079",[102,33,18]],["083",[190,90,27]],["801",[132,79,33]],["811",[179,135,79]],["081",[174,134,94]],["818",[229,187,145]],["804",[230,201,149]],["023",[248,216,158]],["813",[236,214,184]],["018",[231,210,187]],["070",[14,13,13]],["720",[45,48,50]],["073",[76,78,79]],["713",[87,95,98]],["071",[102,107,104]],["721",[114,130,137]],["076",[134,138,141]],["074",[138,143,140]],["724",[164,164,162]],["072",[198,200,198]],["109",[214,221,222]],["010",[239,242,242]],["090",[128,132,135]],["930",[151,111,67]],["093",[66,68,63]],["918",[98,98,96]],["932",[68,70,72]]];
+const raster = (cls = "") => `<div class="raster ${cls}">${f751.map(([n, c]) => `<span style="background:rgb(${c})" title="${n} (751 C)" data-n="751C-${n}" class="${n === "031" ? "an" : n === "070" ? "hv" : ""}"></span>`).join("")}</div>`;
+const seg = (t, an, cls = "eng") => `<div class="seg ${cls}">${t.map(x => `<button class="${x === an ? "an" : x === "~" ? "" : ""}">${x}</button>`).join("")}</div>`;
+const segM = (t, mixed) => `<div class="seg eng">${t.map(x => `<button class="${mixed.includes(x) ? "mixed" : ""}">${x}</button>`).join("")}</div>`;
+const serien = `<div class="seg eng">${["651","751C","951","970G","970M"].map(s => `<button class="${s === "751C" ? "an" : ""}" style="padding:0 7px">${s}</button>`).join("")}</div>`;
+const farbenListe = `<div class="farben"><div class="farbe"><span class="big" style="background:rgb(191,10,15)"></span><span class="was">Rot</span><span class="ok">✓ 751C-031</span></div><div class="farbe an"><span class="big" style="background:#fff"></span><span class="was">Weiß</span><span class="warn">→ zuordnen</span></div></div>`;
+const kompl = `<div class="seg eng"><button class="an" title="normal, +0 % auf die Produktion">K0</button><button>K1</button><button>K2</button><button>K3</button></div>`;
+const aufs = (tape) => `<div class="seg eng"><button>Sicke</button><button>Wölbung</button>${tape ? `<button class="an">Tape auto</button>` : ""}</div>`;
+const anzahl = (v, m) => `<input value="${v}" class="${m ? "mixed" : ""}" style="width:56px;text-align:right">`;
+const fuss = (h, ok) => `<footer class="fuss"><span class="hinweis">${h || ""}</span><button>Abbrechen</button><button class="primaer"${ok ? "" : " disabled"}>OK</button></footer>`;
+const win = (w, titel, inhalt, fusz, unter) => `<div class="fall"><div class="titel">${titel}</div><div class="fenster" style="width:${w}px"><div class="kopf"><span class="ampel"></span>Objekt</div>${inhalt}${fusz}</div><div class="mass" data-h>${unter || ""}</div></div>`;
+const medien = ["3162","3551","3951","3676","UltraTack","MonsterTack"];
+const mediumSeg = `<div class="seg eng">${medien.map(m => `<button class="${m === "3551" ? "an" : ""}">${m}</button>`).join("")}</div>`;
+const OHINWEIS = "Weiß: keine Oracal-Farbe – bitte zuordnen";
+
+function objekt(v) {
+  const plott = v === 1
+    ? `<main><div class="feldz"><span class="lbl">Art</span>${seg(["Digitaldruck","Plott"], "Plott", "")}<span class="lbl">Anzahl</span><div>${anzahl(2)}</div></div>
+       <div class="block"><div class="lbl" style="margin-bottom:5px">Farben im Objekt</div>${farbenListe}</div>
+       <div class="feldz"><span class="lbl">Serie</span><div class="zeile">${serien}<span class="lbl" style="margin-left:6px">Farb-Nr.</span><input style="width:44px;padding:0 5px"></div></div>
+       ${raster()}
+       <div class="block feldz"><span class="lbl">Komplexität</span>${kompl}<span class="lbl">Aufschläge</span>${aufs(false)}</div></main>`
+    : v === 2
+    ? `<main><div class="zeile">${seg(["Digitaldruck","Plott"], "Plott", "")}<span style="flex:1"></span><span class="lbl">Anzahl</span>${anzahl(2)}</div>
+       <div class="block"><div class="lbl" style="margin-bottom:5px">Farben im Objekt</div>${farbenListe}</div>
+       <div class="zeile"><span class="lbl">Farb-Nr.</span><input class="fnr"><span style="flex:1"></span>${serien}</div>
+       ${raster()}
+       <div class="block feldz"><span class="lbl">Komplexität</span>${kompl}<span class="lbl">Aufschläge</span>${aufs(false)}</div></main>`
+    : `<main><div class="zwei"><div style="width:300px"><div class="feldz"><span class="lbl">Art</span>${seg(["Digitaldruck","Plott"], "Plott", "")}<span class="lbl">Anzahl</span><div>${anzahl(2)}</div></div>
+         <div class="block"><div class="lbl" style="margin-bottom:5px">Farben im Objekt</div>${farbenListe}</div>
+         <div class="block feldz"><span class="lbl">Komplexität</span>${kompl}<span class="lbl">Aufschläge</span>${aufs(false)}</div></div>
+       <div class="r"><div class="zeile"><span class="lbl">Farb-Nr.</span><input class="fnr"></div><div>${serien}</div>${raster("r16")}</div></div></main>`;
+  const w = v === 3 ? 720 : 480;
+  const druckFeld = `<span class="lbl">Medium</span>${mediumSeg}<span class="lbl">Laminat</span>${segM(["matt","glänzend"], ["matt","glänzend"])}`;
+  const druck = v === 2
+    ? `<main><div class="zeile">${seg(["Digitaldruck","Plott"], "Digitaldruck", "")}<span style="flex:1"></span><span class="lbl">Anzahl</span>${anzahl(1)}</div><div class="feldz">${druckFeld}</div><div class="block feldz"><span class="lbl">Aufschläge</span>${aufs(true)}</div></main>`
+    : `<main><div class="feldz"><span class="lbl">Art</span>${seg(["Digitaldruck","Plott"], "Digitaldruck", "")}<span class="lbl">Anzahl</span><div>${anzahl(1)}</div>${druckFeld}</div><div class="block feldz"><span class="lbl">Aufschläge</span>${aufs(true)}</div></main>`;
+  const uv = v === 2
+    ? `<main><div class="zeile">${seg(["Plott","UV-Vorn","UV-Hinten"], "UV-Vorn", "")}</div></main>`
+    : `<main><div class="feldz"><span class="lbl">Art</span>${seg(["Plott","UV-Vorn","UV-Hinten"], "UV-Vorn", "")}</div></main>`;
+  return win(w, "Plott, zwei Farben, Weiß offen, Maus auf 070", plott, fuss(OHINWEIS, false))
+    + win(480, "Digitaldruck, drei Objekte, Laminat unterschiedlich", druck, fuss("", true))
+    + win(480, "Schild UV-Druck, Art UV-Vorn", uv, fuss("", true));
+}
+// ---------- Motiv ----------
+const VORN = `<svg viewBox="0 0 160 150"><path d="M44 12 L12 30 L22 56 L40 50 L40 134 L120 134 L120 50 L138 56 L148 30 L116 12 C104 26 56 26 44 12 Z" fill="#6a6a6a" stroke="#8a8a8a" stroke-width="1.5" stroke-linejoin="round"/><path d="M44 12 C56 26 104 26 116 12" fill="none" stroke="#8a8a8a" stroke-width="1.5"/></svg>`;
+const HINTEN = `<svg viewBox="0 0 160 150"><path d="M44 12 L12 30 L22 56 L40 50 L40 134 L120 134 L120 50 L138 56 L148 30 L116 12 C104 18 56 18 44 12 Z" fill="#6a6a6a" stroke="#8a8a8a" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+const P = (x, y, t, an, ti) => `<button class="pille${an ? " an" : ""}" style="left:${x}px;top:${y}px" title="${ti}">${t}</button>`;
+const shirts = `<div class="shirt">${VORN}${P(36,56,"Ärmel",0,"Ärmel rechts")}${P(174,56,"Ärmel",0,"Ärmel links")}${P(68,84,"rechts",0,"Brust rechts")}${P(142,84,"links",0,"Brust links")}${P(105,106,"mittig",0,"Brust mittig")}${P(105,132,"Front",1,"Front")}${P(105,160,"unten",0,"vorne unten")}<span class="seite">Vorn</span></div>
+ <div class="shirt">${HINTEN}${P(105,42,"Nacken",0,"Nacken")}${P(105,78,"oben",0,"Rücken oben")}${P(105,114,"Mitte",0,"Rücken")}${P(105,154,"unten",0,"Rücken unten")}<span class="seite">Hinten</span></div>`;
+const verf = v => `<div class="senk">${["DTF","Flex","Flock","Stick"].map(x => `<button class="${x === v ? "an" : ""}">${x}</button>`).join("")}</div>`;
+const ohne = `<span class="lbl ab">Ohne Position</span><div class="senk"><button>Sponsor</button><button>Namen</button></div>`;
+const serieSel = `<select style="min-width:140px"><option>PoliTape Turbo</option></select>`;
+const farbenFlex = `<div class="fx"><span class="big" style="background:#fff"></span><span style="width:70px">Weiß</span><input placeholder="Flexfarbe" style="width:160px"></div><div class="fx"><span class="big" style="background:rgb(191,10,15)"></span><span style="width:70px">Rot</span><input value="rot" style="width:160px"></div>`;
+const dgTabelle = (v, zwei) => `<div class="blocktitel"><span class="lbl">Druckgrößen</span><span class="sub">Front · Standard 280 mm Breite</span><button class="plus">+ Druckgröße</button></div>
+ <table class="dg"><colgroup><col style="width:44px"><col style="width:120px"><col style="width:82px"><col style="width:58px"><col><col style="width:60px"><col style="width:26px"></colgroup>
+ <tr><th style="text-align:center">zeigen</th><th>Maß mm</th><th>Bezug</th><th>Menge</th><th>Textilgrößen</th><th>blockout</th><th></th></tr>
+ <tr><td style="text-align:center"><input type="radio" checked></td><td><select style="width:70px"><option>280</option></select></td><td><select style="width:76px"><option>Breite</option></select></td><td><input value="10" style="width:50px"></td><td><input value="S, M, L, XL" style="width:100%"></td><td style="text-align:center"><input type="checkbox"></td><td>${zwei ? `<button style="width:22px;height:22px;padding:0" class="muted">×</button>` : ""}</td></tr>
+ ${zwei ? `<tr class="z2"><td style="text-align:center"><input type="radio"></td><td><select style="width:70px"><option>260</option></select></td><td><select style="width:76px"><option>Breite</option></select></td><td><input value="4" style="width:50px"></td><td><input value="XS, S" style="width:100%"></td><td style="text-align:center"><input type="checkbox" checked></td><td><button style="width:22px;height:22px;padding:0" class="muted">×</button></td></tr>` : ""}
+ </table><div class="summe">Gesamt <b>${zwei ? 14 : 10} Stück</b> in ${zwei ? "2 Druckgrößen" : "1 Druckgröße"} · ${v} · Anker Brust_Mitte_Oben</div>`;
+function motiv(variante, v) {
+  const flex = v === "Flex";
+  let rechts, mitte;
+  if (variante === 1) {
+    rechts = `<span class="lbl">Verfahren</span>${verf(v)}${ohne}`;
+    mitte = `<div class="flexblock${flex ? "" : " weg"}"><div class="zeile"><span class="lbl">Serie</span>${serieSel}<span class="lbl" style="margin-left:auto">Komplexität</span>${kompl}</div><div class="lbl">Farben im Objekt</div><div class="fl">${farbenFlex}</div></div>`;
+  } else {
+    const v4 = `<div class="v4">${["DTF","Flex","Flock","Stick"].map(x => `<button class="${x === v ? "an" : ""}">${x}</button>`).join("")}</div>`;
+    const ohne2 = `<span class="lbl ab">Ohne Position</span><div class="v4"><button>Sponsor</button><button>Namen</button></div>`;
+    rechts = `<span class="lbl">Verfahren</span>${v4}${flex ? `<div style="margin-top:4px" title="Serie">${serieSel.replace("min-width:140px", "width:100%")}</div><span class="lbl">Komplexität</span>${kompl}` : ""}${ohne2}`;
+    mitte = flex ? `<div style="display:flex;flex-direction:column;gap:3px"><div class="lbl">Farben im Objekt</div><div class="fxreihe">${farbenFlex}</div></div>` : "";
+  }
+  const hinweis = flex ? "Flexfarbe fehlt" : "";
+  return `<div class="fall"><div class="titel">${v}${flex ? ", eine Flexfarbe offen" : ", zwei Druckgrößen"}</div><div class="fenster" style="width:640px;height:470px"><div class="kopf"><span class="ampel"></span>Motiv</div>
+    <main style="gap:6px;padding:8px 12px 6px;overflow:hidden"><div class="oben">${shirts}<div class="rechts">${rechts}</div></div>${mitte}
+    <div class="block dgbox" style="padding-top:6px">${dgTabelle(v, !flex)}</div></main>${fuss(hinweis, !flex)}</div></div>`;
+}
+[1, 2, 3].forEach(v => { document.getElementById("o" + v).innerHTML = objekt(v); });
+[1, 2].forEach(v => { document.getElementById("m" + v).innerHTML = motiv(v, "DTF") + motiv(v, "Flex"); });
+document.querySelectorAll(".fall").forEach(f => { const w = f.querySelector(".fenster"), m = f.querySelector("[data-h]"); if (w && m) m.textContent = `Höhe ${Math.round(w.getBoundingClientRect().height)} px`; });
+</script>
+</body></html>

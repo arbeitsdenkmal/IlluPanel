@@ -1,0 +1,123 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>PAM-Werkzeuge Thema 6 – Panel, 1. Fassung</title>
+<style>
+:root { --bg:#2b2b2b; --fg:#d9d9d9; --muted:#9a9a9a; --panel:#535353; --panel-fg:#e6e6e6; --panel-muted:#b0b0b0;
+  --feld:#3c3c3c; --feldrand:#2e2e2e; --line:#666; --accent:#e8a33d; --accent-fg:#1e1e1e; --kopf-bg:rgba(255,255,255,.07);
+  --font:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif; color-scheme:dark; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 var(--font); padding:24px 20px 60px; }
+h1 { font-size:20px; font-weight:600; margin:0 0 4px; }
+h2 { font-size:15px; font-weight:600; margin:36px 0 8px; padding-top:14px; border-top:1px solid #444; }
+p.lead { color:var(--muted); margin:0 0 10px; max-width:90ch; }
+.reihe { display:flex; flex-wrap:wrap; gap:22px 26px; align-items:flex-start; }
+.fall { display:flex; flex-direction:column; gap:6px; }
+.fall>.titel { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.notizen { max-width:90ch; color:var(--muted); font-size:13px; padding-left:18px; margin:0 0 14px; }
+.notizen li { margin:0 0 5px; } .notizen b { color:var(--fg); font-weight:600; }
+.chip { display:inline-block; width:10px; height:10px; border:1px solid #222; border-radius:1px; margin-right:4px; vertical-align:-1px; }
+/* Panel wie panel/style.css (Abstände 3 px, Buttons 22 px) */
+.cep { position:relative; background:var(--panel); color:var(--panel-fg); border:1px solid #1f1f1f; border-radius:4px; box-shadow:0 4px 18px rgba(0,0,0,.45); font:11px/1.3 var(--font); width:320px; }
+.cep .tab { background:#3d3d3d; border-bottom:1px solid #2a2a2a; padding:0 8px; height:20px; line-height:20px; font-weight:600; display:flex; border-radius:4px 4px 0 0; }
+.cep .tab .fly { margin-left:auto; color:var(--panel-muted); font-weight:400; letter-spacing:-1px; }
+.cep .inhalt { height:152px; padding:4px 5px 3px; box-sizing:border-box; display:flex; flex-direction:column; gap:3px; }
+.cep .z { display:flex; align-items:center; gap:4px; min-height:18px; }
+.cep .wachsen { flex:1 1 0; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cep .name { font-size:12px; font-weight:600; }
+.cep button { font:inherit; font-size:12px; color:var(--panel-fg); background:var(--feld); border:1px solid var(--feldrand); border-radius:2px; height:22px; padding:0 2px; white-space:nowrap; box-sizing:border-box; flex:1 1 0; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.cep button.primaer { background:var(--accent); border-color:var(--accent); color:var(--accent-fg); font-weight:600; }
+.cep button.akzent-schrift { color:var(--accent); }
+.cep button:disabled { opacity:.45; }
+.cep .muted { color:var(--panel-muted); }
+.cep input.min { width:28px; height:18px; font:inherit; font-size:11px; padding:0 3px; color:var(--panel-fg); background:var(--feld); border:1px solid var(--feldrand); border-radius:2px; box-sizing:border-box; }
+.cep .grafik { display:flex; align-items:center; gap:3px; flex:none; }
+.cep .z.wz { border-top:1px solid var(--line); padding-top:4px; }
+.cep .z.preis { justify-content:space-between; font-variant-numeric:tabular-nums; }
+.cep .p1 { white-space:nowrap; } .cep .p1 .netto { margin-left:4px; } .cep .p1 b { font-weight:700; }
+.marke { display:inline-block; flex:none; min-width:16px; padding:0 4px; border-radius:3px; background:var(--kopf-bg); color:var(--panel-muted); font-size:10px; font-weight:600; text-align:center; }
+.mass { font-size:11px; color:var(--panel-muted); margin-top:2px; max-width:320px; }
+/* Flyout-Menü */
+.menu { position:absolute; right:4px; top:20px; z-index:2; min-width:120px; background:#3a3a3a; border:1px solid #1f1f1f; border-radius:4px; box-shadow:0 6px 18px rgba(0,0,0,.55); padding:4px 0; font-size:12px; }
+.menu div { padding:3px 14px; } .menu div.aus { color:#7d7d7d; } .menu hr { border:0; border-top:1px solid #555; margin:4px 0; }
+</style></head><body>
+<h1>PAM-Werkzeuge – Thema 6, Panel (2. Fassung, freigegeben 31.10.)</h1>
+<p class="lead">Freigegeben: Variante 2, Untermenü mit den Einträgen Logo, VK-CC, Gitterscheiben, MB-Nummern. Breite 320 px, angedockt. Inhalte aus <code>panel/index.html</code>, <code>main.js</code> und <code>config/</code>; Beispielwerte (Kunde „Streifen“, 751C-031, Preise, Grafik 12 min) aus MOCKUP_STUFE2, Textil aus <code>textil_stufen.csv</code>/<code>textil_farben.csv</code>, Textil-Preis = Mindestbetrag 5,40 × 10. Logo, VK-CC, Gitter und MB-Nr liegen in allen drei Varianten im Untermenü (Abschnitt U).</p>
+
+<h2>U. Untermenü (alle Varianten)</h2>
+<div class="reihe"><div class="fall"><div class="titel">Flyout-Menü des Panels (≡ rechts im Reiter)</div>
+<div class="cep"><div class="tab">PAM-Werkzeuge<span class="fly">≡</span></div>
+<div class="menu"><div>Logo</div><div>VK-CC</div><hr><div>Gitterscheiben</div><div>MB-Nummern</div></div>
+<div class="inhalt" id="u"></div></div>
+<div class="mass">Illustrator-eigenes Panel-Menü, kein zusätzlicher Button im Panel. Einträge Logo, VK-CC, Gitterscheiben, MB-Nummern; nicht freigegebene Einträge grau (Freigabe wie bisher: Logo/VK-CC nach Werkzeuge §2, Gitter/MB-Nr außer bei Druckbogen vorn).</div></div></div>
+
+<h2>Variante 2 (freigegeben): Zeilen fest, Nichtzutreffendes ausgeblendet · 320 × 172</h2>
+<ul class="notizen">
+<li>Zeilen wie V1. Was es in der Auftragsart nicht gibt, ist weg; die übrigen Buttons der Zeile werden breiter (Schild: <b>edit · Schilder</b>; Textil: <b>Summa · Export · Auftrag</b>).</li>
+<li>Gesperrt bleibt nur, was gleich wieder gilt (add ohne Auswahl, Nutzen ohne Auswahl, Werkzeuge ohne Dokument).</li>
+<li>Zeile Breite · Masken · Nutzen bleibt in jedem Zustand vollständig, damit nichts springt.</li>
+<li>Export orange nur, wenn aktiv; gesperrt wie die übrigen Buttons.</li>
+</ul>
+<div class="reihe" id="v2"></div>
+
+<script>
+// Zustände: b = Buttonzustand je Taste: a aktiv, p aktiv+orange, g gesperrt (gilt gleich wieder), x gibt es in diesem Zustand nicht, - nie sichtbar
+const S = [
+ { t:"Kein Dokument", kopf:"", obj:null,
+   b:{ zu:"x", be:"x", sch:"-", fa:"-", mo:"-", su:"x", dr:"x", ex:"x", br:"g", ma:"g", nu:"g" }, preis:null },
+ { t:"Fremddokument, Auswahl", kopf:"", obj:null,
+   b:{ zu:"x", be:"x", sch:"-", fa:"-", mo:"-", su:"x", dr:"x", ex:"x", br:"a", ma:"a", nu:"a" }, preis:null },
+ { t:"Sonstiges", kopf:"<b>Streifen</b> · Sonstiges", grafik:true, obj:null,
+   b:{ zu:"x", be:"x", sch:"-", fa:"-", mo:"-", su:"x", dr:"x", ex:"p", br:"a", ma:"a", nu:"a" }, preis:null },
+ { t:"Offset-Daten", kopf:"<b>Streifen</b> · Offset-Daten", grafik:true, obj:null,
+   b:{ zu:"x", be:"x", sch:"-", fa:"-", mo:"-", su:"x", dr:"x", ex:"p", br:"a", ma:"a", nu:"a" }, preis:null },
+ { t:"Fahrzeugbeschriftung, zugeordnet", kopf:"<b>Streifen</b> · Fahrzeugbeschriftung", grafik:true,
+   obj:{ name:"Streifen", folie:'<span class="chip" style="background:rgb(191,10,15)"></span>751C-031', n:"×2" },
+   zu:"edit", b:{ zu:"a", be:"p", sch:"-", fa:"-", mo:"-", su:"a", dr:"a", ex:"p", br:"g", ma:"a", nu:"a" },
+   preis:{ l:'Material <span class="netto">60,00</span> <b>71,40</b>', r:'inkl. Mont. <span class="netto">105,00</span> <b>124,95</b>' } },
+ { t:"Beschriftung, keine Auswahl", kopf:"<b>Streifen</b> · Beschriftung", grafik:true,
+   obj:{ name:"Keine Auswahl", leer:true },
+   zu:"add", b:{ zu:"g", be:"p", sch:"-", fa:"-", mo:"-", su:"a", dr:"a", ex:"p", br:"a", ma:"a", nu:"g" },
+   preis:{ l:'Material <span class="netto">60,00</span> <b>71,40</b>', r:'inkl. Mont. <span class="netto">105,00</span> <b>124,95</b>' } },
+ { t:"Schild, zugeordnet", kopf:"<b>Streifen</b> · Schild", grafik:true,
+   obj:{ name:"Objekt", folie:"3551 matt", n:"×1" },
+   zu:"edit", b:{ zu:"a", be:"x", sch:"a", fa:"-", mo:"-", su:"a", dr:"a", ex:"p", br:"a", ma:"a", nu:"a" }, preis:"x" },
+ { t:"Textil, zugeordnet", kopf:"<b>Streifen</b> · Textil", grafik:true,
+   obj:{ name:"Objekt", folie:"Front · DTF", n:"×10" },
+   zu:"edit", b:{ zu:"a", be:"p", sch:"-", fa:"a", mo:"a", su:"a", dr:"x", ex:"p", br:"a", ma:"a", nu:"a" },
+   preis:{ l:"", r:'Preis <span class="netto">54,00</span> <b>64,26</b>' } },
+ { t:"Druckbogen vorn", kopf:"<b>Streifen</b> · Druckbogen 3551 matt 1370 · 1/1", obj:null,
+   b:{ zu:"x", be:"x", sch:"-", fa:"-", mo:"-", su:"x", dr:"x", ex:"p", br:"g", ma:"g", nu:"g" }, preis:null },
+ { t:"Nutzen-Bogen vorn (Gitter)", kopf:"<b>Max Bögl</b> · Gitterscheiben · 1/2", obj:null,
+   b:{ zu:"x", be:"x", sch:"-", fa:"-", mo:"-", su:"x", dr:"x", ex:"p", br:"g", ma:"g", nu:"g" }, preis:null },
+];
+const TXT = { be:"berechnen", sch:"Schilder", su:"Summa", dr:"Druck", ex:"Export", br:"Breite", ma:"Masken", nu:"Nutzen" };
+
+function knopf(k, s, v, text) {
+  const z = s.b[k];
+  if (z === "-") return "";
+  if (z === "x" && v === 2 && k !== "ex") return "";
+  let cls = "", dis = z === "g" || z === "x";
+  if (k === "ex") { if (v !== 2 || !dis) cls = "primaer"; }
+  else if (z === "p") cls = "primaer";
+  if (k === "fa") return `<button><span class="chip" style="background:#F4F1E8"></span>Natural</button>`;
+  return `<button class="${cls}"${dis ? " disabled" : ""}>${text || TXT[k]}</button>`;
+}
+function zeilenVon(s, v) {
+  const kopf = `<div class="z"><span class="wachsen">${s.kopf}</span>${s.grafik ? '<span class="grafik muted">Grafik 12 min <input class="min" placeholder="+m"></span>' : ""}</div>`;
+  const o = s.obj;
+  const obj = `<div class="z"><span class="wachsen name${o && o.leer ? " muted" : ""}">${o ? o.name : ""}</span>${o && o.folie ? `<span class="muted">${o.folie}</span>` : ""}${o && o.n ? `<span class="marke">${o.n}</span>` : ""}</div>`;
+  const z3 = `<div class="z">${knopf("zu", s, v, s.zu || "add")}${knopf("be", s, v)}${knopf("sch", s, v)}${knopf("fa", s, v)}${s.b.mo === "a" ? "<button>Modell</button>" : ""}</div>`;
+  const wz = `<div class="z wz">${knopf("su", s, v)}${knopf("dr", s, v)}${knopf("ex", s, v)}<button class="akzent-schrift">Auftrag</button></div>`;
+  const p = s.preis && s.preis !== "x" ? s.preis : null;
+  const preis = `<div class="z preis"><span class="p1">${p ? p.l : ""}</span><span class="p1">${p ? p.r : ""}</span></div>`;
+  const werk = cls => `<div class="z ${cls}">${knopf("br", s, v)}${knopf("ma", s, v)}${knopf("nu", s, v)}</div>`;
+  return (v === 3 ? [kopf, werk("oben"), obj, z3, wz, preis] : [kopf, obj, z3, wz, preis, werk("wz")]).join("");
+}
+function panel(s, v) {
+  return `<div class="fall"><div class="titel">${s.t}</div><div class="cep"><div class="tab">PAM-Werkzeuge<span class="fly">≡</span></div><div class="inhalt">${zeilenVon(s, v)}</div></div></div>`;
+}
+const css = document.createElement("style");
+css.textContent = ".cep .z.oben { border-bottom:1px solid var(--line); padding-bottom:4px; }";
+document.head.appendChild(css);
+[2].forEach(v => { document.getElementById("v" + v).innerHTML = S.map(s => panel(s, v)).join(""); });
+document.getElementById("u").innerHTML = zeilenVon(S[1], 1);
+</script>
+</body></html>

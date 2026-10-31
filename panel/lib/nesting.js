@@ -184,4 +184,23 @@ function nestenDruck(teile, o) {
   return { laenge_mm: bogen.reduce((s, b) => s + b.laenge_mm, 0), ordnung: best.ordnung, bogen };
 }
 
-module.exports = { nesten, nestenDruck, exemplare };
+/**
+ * Textil-Streifen Flex/Flock (SPEZ_03_Textil §9.2): derselbe Kern wie Plott, Länge senkrecht. Nutzbreite (quer) daten_breite_max_mm, Streifenlänge
+ * (Inhalt + 2 × rand) ≤ laenge_max_mm, sonst weitere Streifen; Zeichenfläche zeichenflaeche_breite_mm × Länge, Inhalt waagrecht mittig.
+ * @param teile  [{ id, b_mm (waagrecht), h_mm (senkrecht), anzahl }] – Exemplare bzw. Blöcke 1:1
+ * @param o      { daten_breite_max_mm, zeichenflaeche_breite_mm, laenge_max_mm, rand_mm, abstand_mm }
+ * @returns { laenge_mm (Σ Streifenlänge), bogen: [{ breite_mm, hoehe_mm (Länge), teile: [{ id, exemplar, x_mm, y_mm, b_mm, h_mm, gedreht }] }], ordnung }
+ */
+function nestenStreifen(teile, o) {
+  const r = o.rand_mm;
+  const n = nesten(teile.map(t => ({ id: t.id, b_mm: t.h_mm, h_mm: t.b_mm, anzahl: t.anzahl })),
+    { hoehe_mm: o.daten_breite_max_mm + 2 * r, max_breite_mm: o.laenge_max_mm, abstand_mm: o.abstand_mm, rand_mm: r });
+  const bogen = n.bogen.map(b => {
+    const dx = (o.zeichenflaeche_breite_mm - (b.hoehe_mm - 2 * r)) / 2 - r; // Packfläche x = Länge, y = quer
+    return { breite_mm: o.zeichenflaeche_breite_mm, hoehe_mm: b.breite_mm,
+      teile: b.teile.map(p => ({ id: p.id, exemplar: p.exemplar, x_mm: p.y_mm + dx, y_mm: p.x_mm, b_mm: p.h_mm, h_mm: p.b_mm, gedreht: p.gedreht })) };
+  });
+  return { laenge_mm: bogen.reduce((s, b) => s + b.hoehe_mm, 0), ordnung: n.ordnung, bogen };
+}
+
+module.exports = { nesten, nestenDruck, nestenStreifen, exemplare };

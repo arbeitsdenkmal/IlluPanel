@@ -2,7 +2,12 @@
   "id": "textil",
   "name": "Textil",
   "reihenfolge": 7,
-  "kalkulation": false,
+  "kalkulation": true,
+  "preis": "textil",
+  "kalkuliert_verfahren": [
+    "Flex",
+    "Flock"
+  ],
   "ebenen": [
     {
       "name": "Design",
@@ -19,10 +24,12 @@
   "quelle": {
     "sandbox": "Design"
   },
+  "textil": "config/textil.json",
   "export": {
     "profil": "textil",
     "preset": "pam x4",
-    "dateiname": null
+    "dateiname": null,
+    "sammelordner": "dtf_bestellen"
   },
   "komplexitaet": {
     "flex": "immer",
@@ -31,15 +38,8 @@
   "werkzeuge": [
     "summa"
   ],
-  "arten": [
-    {
-      "schluessel": "textil",
-      "bezeichnung": "Textil",
-      "ebene": "Design"
-    }
-  ],
   "dateien": {
-    "arbeitsdatei": "Korrekturabzug.ai"
+    "arbeitsdatei": "Korrekturabzug"
   },
   "summa": {
     "preset": "[PDF/X-4:2008]"

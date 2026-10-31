@@ -1,0 +1,23 @@
+{
+  "nutzen": {
+    "stueckzahl": 100, "medium": "3551", "laminat": "matt", "produkt": "Aufkleber",
+    "abstand_motive_mm": 5, "abstand_boegen_mm": 20, "toleranz": 0.25,
+    "formate": [ { "id": "a4", "name": "A4", "breite_mm": 210, "hoehe_mm": 297 },
+                 { "id": "a3", "name": "A3", "breite_mm": 297, "hoehe_mm": 420 },
+                 { "id": "ohne", "name": "ohne" } ],
+    "dateiname": "Nutzen"
+  },
+  "boegl": {
+    "kunde": "Max Bögl", "kundenordner": "M/01_Max Bögl", "medium": "3551", "laminat": "matt",
+    "typgedaechtnis": "typzuordnung.txt", "auftrag": "auftrag.txt", "dateiname": "Nutzen"
+  },
+  "gitter": {
+    "ordner": "Gitterscheiben", "vorlage": "config/vorlagen/Etikett.ait",
+    "etikett_mm": [90, 36], "teilung_etikett_mm": 40, "teilung_streifen_mm": 110,
+    "zulaessig_mm": 1345, "schrift_schritt_pt": 0.5, "schrift_min_pt": 4, "praefix_trenner": "x"
+  },
+  "mb": {
+    "ordner": "Nummern", "vorlage": "config/vorlagen/Bögl Nummern Masterdatei.ait",
+    "schild_mm": 35, "abstand_mm": 10, "spalten": 5, "block_abstand_mm": 20, "nummern": 10
+  }
+}

@@ -74,3 +74,14 @@ zeit;m2;schild;Schild Digitaldruck kaschiert je m²;druck;;;;12;;
 zeit;laser_auftrag;schild;Acryl Laser Rüsten + Datei je Auftrag;alle;;;;10;;
 zeit;kante_m;schild;Acryl Kantennacharbeit je Laufmeter (Säge);alle;;;;5;;
 zeit;bohrung;schild;Bohrung je Loch;alle;;;;2;;
+parameter;textil.mindest;textil;Mindestbetrag Textil je Motiv je Textil;;;;;;;5,40
+parameter;textil.rundung;textil;Rundung Textil (immer aufrunden);;;;;;;0,10
+serie;PoliTape Turbo;textil;PoliTape Turbo;flex;16,00;30,40;;;;
+serie;VelCutPro;textil;VelCutPro;flock;16,00;30,40;;;;
+zeit;ruesten;textil;Rüsten je Farbe;alle;;;;3,00;;
+zeit;datei_cut;textil;Datei Cut je Farbe;alle;;;;3,00;;
+zeit;teil;textil;Entgittern je Einzelteil;alle;;;;0,03;;
+zeit;schnitt_m;textil;Entgittern je Meter Schnitt;alle;;;;0,12;;
+zeit;trennen;textil;Trennen je Exemplar;alle;;;;0,17;;
+zeit;pressen;textil;Pressen je Pressvorgang;alle;;;;1,00;;
+zeit;falten;textil;Falten je Textil;alle;;;;0,33;;

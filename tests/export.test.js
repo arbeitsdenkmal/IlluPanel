@@ -15,7 +15,7 @@ function umgebung() {
   fs.mkdirSync(path.join(kunden, "M", "Mustermann"), { recursive: true });
   fs.mkdirSync(dtf, { recursive: true });
   fs.mkdirSync(lokal);
-  const rechner = K.rechnerAusDaten({ rechner: "Test", server: { kunden, dtf_bestellen: dtf }, lokal: { arbeitsdateien: lokal, ausgang: lokal } }, "test");
+  const rechner = K.rechnerAusDaten({ rechner: "Test", server: { kunden, dtf_bestellen: dtf, wmd_bestellen: dtf }, lokal: { arbeitsdateien: lokal, ausgang: lokal } }, "test");
   const ad = path.join(lokal, "Mustermann", "2026-10-30_Sonstiges", "Arbeitsdatei.ai");
   fs.mkdirSync(path.dirname(ad), { recursive: true });
   fs.writeFileSync(ad, "ai");

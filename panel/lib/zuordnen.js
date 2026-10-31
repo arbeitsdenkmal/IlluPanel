@@ -1,6 +1,8 @@
 /* Zuordnen (Fenster „Objekt“, SPEZ_02 §6) ohne Oberfläche: Vorauswahl, gemeinsame Werte bei Mehrfachauswahl, Farben der Auswahl, Medienliste aus der
  * Preisliste, Tags je Objekt beim OK. Regeln aus dem alten Objektmanager übernommen und auf IP_Folie/IP_Anzahl/IP_Attribute umgestellt.
- * Dazu Anzeigehilfen für Panel und „Zusammenfassung“ (Art und Folie eines Objekts, Zahlen deutsch). */
+ * Dazu Anzeigehilfen für Panel und „Zusammenfassung“ (Art und Folie eines Objekts, Zahlen deutsch).
+ * Schild (SPEZ_03_Schild §8.1): Arten UV-Vorn/UV-Hinten ohne Folie, Laminat, Komplexität, Aufschläge, Tape und Anzahl; ein Objekt auf einer UV-Ebene mit
+ * IP_Id gilt als zugeordnet. */
 "use strict";
 
 // ---------- Mehrfachauswahl: gemeinsamer Wert oder „unterschiedlich“ ----------
@@ -12,11 +14,11 @@ function gemeinsam(werte) {
   return werte.every(w => JSON.stringify(w) === a) ? werte[0] : UNTERSCHIEDLICH;
 }
 
-// ---------- Vorauswahl je Auftrag (XMP vorauswahl), Preset wie bisher: 3551 matt, Serie 751C ----------
-const PRESET = { medium: "3551", laminat: "matt", serie: "751C" };
-function vorauswahl(xmp) {
+// ---------- Vorauswahl je Auftrag (XMP vorauswahl), Preset wie bisher: 3551 matt; Serie ohne gemerkte aus serien.json „standard“ (SPEZ_03_Oberflaeche §5) ----------
+const PRESET = { medium: "3551", laminat: "matt" };
+function vorauswahl(xmp, standardSerie) {
   const v = (xmp && xmp.vorauswahl) || {};
-  return { medium: v.medium || PRESET.medium, laminat: v.laminat || PRESET.laminat, serie: v.serie || PRESET.serie };
+  return { medium: v.medium || PRESET.medium, laminat: v.laminat || PRESET.laminat, serie: v.serie || standardSerie || null };
 }
 /** neue Werte übernehmen (nur gesetzte) */
 function vorauswahlMerken(xmp, neu) {
@@ -44,13 +46,17 @@ function artNachTag(o, farben) {
   if (!f) return null;
   return farben.istPlottSchluessel(f) ? "plott" : "digitaldruck";
 }
-/** Vorauswahl der Art [§6]: nach Tag, sonst Sandbox -> Digitaldruck, sonst nach Ebene (Rolle plott/digitaldruck); sonst null */
-function artVorauswahl(o, farben) {
-  const t = artNachTag(o, farben);
-  if (t) return t;
-  if (o.rolle === "sandbox") return "digitaldruck";
-  if (o.rolle === "plott" || o.rolle === "digitaldruck") return o.rolle;
-  return null;
+const UV = ["uv-vorn", "uv-hinten"];
+/** UV-Objekt (Schild): auf einer UV-Ebene ohne IP_Folie; zugeordnet, wenn es eine IP_Id trägt */
+const istUv = o => UV.includes(o.rolle) && !(o.tags && o.tags.folie);
+const zugeordnet = o => !!(o.tags && (o.tags.folie || (istUv(o) && o.tags.id)));
+/** Vorauswahl der Art [§6]: nach Tag, sonst Sandbox -> Digitaldruck, sonst nach Ebene (Rolle plott/digitaldruck, Schild uv-vorn/uv-hinten); sonst null.
+ *  erlaubt (Schild): nur diese Arten, eine andere Vorauswahl gilt als keine */
+function artVorauswahl(o, farben, erlaubt) {
+  let a = artNachTag(o, farben);
+  if (!a && o.rolle === "sandbox") a = "digitaldruck";
+  if (!a && ["plott", "digitaldruck"].concat(UV).includes(o.rolle)) a = o.rolle;
+  return a && (!erlaubt || erlaubt.includes(a)) ? a : null;
 }
 const medium = (o, medien) => { const f = o.tags && o.tags.folie; return f ? ((medien && medien.alias) || {})[f] || f : null; };
 /** Komplexität aus IP_Komplexitaet: fehlt -> 0 */
@@ -91,6 +97,11 @@ function oracalImDruck(objekte, farben) {
 }
 
 // ---------- Medien und Laminate ----------
+/** Druckmedien aus medien.json ohne die Plott-Serien aus serien.json, Reihenfolge wie dort (Schild: keine Preisprüfung, SPEZ_03_Schild §8.3) */
+function medienAusKonfig(medien, farben) {
+  const plott = new Set(farben.serien.map(s => s.preisserie));
+  return Object.keys((medien && medien.medien) || {}).filter(k => !plott.has(k));
+}
 /** Druckmedien aus der Preisliste (serie, verfahren druck; gilt_fuer = Auftragsart oder alle), Reihenfolge wie dort */
 function medienListe(zeilen, A) {
   const l = [];
@@ -114,6 +125,8 @@ const laminatName = (aa, k) => { const l = (aa.laminate || []).find(x => x.schlu
 function tagsFuer(o, w, kx) {
   const art = w.art || artNachTag(o, kx.farben), t = {};
   if (!art) return { art: null, tags: t };
+  // UV (Schild): nur IP_Id; Folie, Laminat, Anzahl, Komplexität und Aufschläge entfallen
+  if (UV.includes(art)) return { art, tags: { folie: null, laminat: null, anzahl: null, komplexitaet: null, attribute: null } };
   if (!w.art) { /* gemischte Art ohne neue Wahl: Folie und Laminat bleiben je Objekt */ }
   else if (art === "plott") { t.folie = kx.plottFolie(o); t.laminat = null; }
   else {
@@ -141,11 +154,13 @@ function zahl(n, d) {
 }
 /** Folie eines zugeordneten Objekts für Panel und Tabellen: Plott Schlüssel mit Chip-Farbe, Druck „Medium Laminat“ (ohne Chip, wie MockUp C3) */
 function folieAnzeige(o, kx) {
+  if (istUv(o)) return { text: o.ebene, rgb: null }; // Schild: Ebenenname statt Folie
   const art = artNachTag(o, kx.farben);
   if (art === "plott") { const c = kx.farben.nachSchluessel(o.tags.folie); return { text: o.tags.folie, rgb: c && c.rgb ? c.rgb : null }; }
   if (art === "digitaldruck") return { text: `${medium(o, kx.medien)} ${laminatName(kx.aa, o.tags.laminat)}`.trim(), rgb: null };
   return { text: "", rgb: null };
 }
 
-module.exports = { UNTERSCHIEDLICH, gemeinsam, PRESET, vorauswahl, vorauswahlMerken, attributeVon, tapeZustand, anzahlVon, artNachTag, artVorauswahl, medium, komplexitaetVon,
-  komplexitaetGilt, farbenDerAuswahl, farbeErkannt, plottSperren, oracalImDruck, medienListe, laminateFuer, laminatName, tagsFuer, zahl, folieAnzeige };
+module.exports = { UNTERSCHIEDLICH, gemeinsam, PRESET, vorauswahl, vorauswahlMerken, attributeVon, tapeZustand, anzahlVon, artNachTag, UV, istUv, zugeordnet,
+  artVorauswahl, medium, komplexitaetVon, komplexitaetGilt, farbenDerAuswahl, farbeErkannt, plottSperren, oracalImDruck, medienAusKonfig, medienListe, laminateFuer,
+  laminatName, tagsFuer, zahl, folieAnzeige };

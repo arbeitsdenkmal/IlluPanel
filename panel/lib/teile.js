@@ -2,11 +2,19 @@
  * Eingabe: Rohdaten aus IP.objekteLesen (pt, Dokumentmaßstab), Auftragsart, geladene Preisquelle, Farbverzeichnis, medien.json, XMP.
  * Ausgabe: Stücke und Teile in mm 1:1, Teile gruppiert nach Folie (Plott je Farbschlüssel, Druck je Medium + Laminat), Hinweise und Fehler.
  * Messwerte je Stück gelten für ein Exemplar; Nesting und Kalkulation multiplizieren mit der Anzahl.
+ * Preisprüfungen („Serie/Medium ohne Preis“, Tape ohne tape_vk_m2) nur bei Auftragsarten mit Kalkulation; ohne (Schild, SPEZ_03_Schild §8.3) müssen Serie
+ * bzw. Medium nur in serien.json bzw. medien.json bekannt sein.
  * Rohdaten je Blatt: laenge_pt (Schnittlänge, alle Teilpfade inkl. Punzen), teile (geschlossener bzw. zusammengesetzter Pfad = 1, Text = Anzahl der
- * Glyphenformen; Punzen zählen nicht), gb (Begrenzung). Näherung: Bei Schnittmasken zählt die volle Pfadlänge, die Fläche ist die sichtbare Begrenzung. */
+ * Glyphenformen; Punzen zählen nicht), gb (Begrenzung). Näherung: Bei Schnittmasken zählt die volle Pfadlänge, die Fläche ist die sichtbare Begrenzung.
+ * Textil Flex/Flock (SPEZ_03_Textil §9.1, aufbauenTextil): je Motiv und Druckgröße ein Stück; gemessen einmal im MockUp-Maß, je Druckgröße mit
+ * f = mass_mm / mass_mm(zeigen) × Faktor des Modells auf Realmaß umgerechnet (Ersatzweg nur ohne Realmaß, Faktor null: mass_mm / Ist-Maß des Motivs, sichtbare
+ * Grenzen, Bezug Breite bzw. Höhe); Nesting-Einheit ist das ganze Exemplar bzw. bei
+ * mehrfarbigen Motiven der Block je Farbschlüssel (<Serie>-<Flexfarbe>) mit beiden Passermarken. */
 "use strict";
 const R = require("./rollen");
 const PM = require("./passermarken");
+const TX = require("./textil");
+const A = require("./ablage");
 const PT_MM = 25.4 / 72;
 
 // Illustrator-Bounds [l, t, r, b] (y nach oben) -> mm 1:1 mit y nach unten.
@@ -98,7 +106,8 @@ const SAMMEL = {
   geteilt: n => `${n} Objekte an Lücken geteilt`,
   bild: n => `${n} Plott-Objekte mit Bild`,
   verlauf: n => `${n} Plott-Objekte mit Verlauf/Muster`,
-  komplexitaet: n => `${n} Hinweise zur Komplexität`
+  komplexitaet: n => `${n} Hinweise zur Komplexität`,
+  kontur_textil: n => `${n} Flex-/Flock-Motive mit Kontur`
 };
 /** je Gruppe gleichartiger Hinweise eine Sammelzeile (ein einzelner mit vollem Text); „ohne Zuordnung“ als „n Objekte ohne Zuordnung“ */
 function hinweisZeilen(details, ohneZuordnung) {
@@ -135,7 +144,7 @@ function aufbauen(daten, kx) {
   if (!(massstab > 0)) { fehler.push("Kein gültiger Maßstab im Dokument gespeichert."); return leer; }
   const k = PT_MM * massstab;
   const MK = medien || {}, alias = MK.alias || {}, farbzuordnung = (xmp && xmp.farbzuordnung) || {};
-  const A = aa.preis;
+  const A = aa.preis, preise = !!aa.kalkulation;
   const rolleVon = {};
   aa.ebenen.forEach(e => { rolleVon[e.name] = e.rolle; });
   const rand = aa.nesting.rand_mm, maxLang = aa.nesting.max_breite_mm - 2 * rand; // 5680 mm
@@ -193,8 +202,8 @@ function aufbauen(daten, kx) {
       o.blaetter.forEach(b => (b.farben || []).forEach(f => { const c = farben.erkennen(f.spot || f.label); if (c && !voll.includes(c.schluessel)) voll.push(c.schluessel); }));
       if (voll.length) { warn(`Konflikt: ${wo} hat Digitaldruck-Tags und eine Oracal-Füllung (${voll.join(", ")}) – wird nicht berechnet`, "konflikt", kurz); continue; }
       const bekannt = !!(MK.medien || {})[medium] && !plottSerien.has(medium);
-      if (!(serie(medium, "druck") || bekannt) || !laminateFuer(medium).includes(tags.laminat)) { warn(`Konflikt: ${wo} hat ungültiges Medium/Laminat (${medium}/${tags.laminat}) – wird nicht berechnet`, "konflikt", kurz); continue; }
-      if (!serie(medium, "druck")) { fehler.push(`Medium „${medium}“ hat keinen Preis (serie, verfahren druck) für „${A}“ und keinen für „alle“ (verwendet von ${wo})`); continue; }
+      if (!((preise && serie(medium, "druck")) || bekannt) || !laminateFuer(medium).includes(tags.laminat)) { warn(`Konflikt: ${wo} hat ungültiges Medium/Laminat (${medium}/${tags.laminat}) – wird nicht berechnet`, "konflikt", kurz); continue; }
+      if (preise && !serie(medium, "druck")) { fehler.push(`Medium „${medium}“ hat keinen Preis (serie, verfahren druck) für „${A}“ und keinen für „alle“ (verwendet von ${wo})`); continue; }
     }
     const attr = attributeVon(tags.attribute);
     const unbekannt = attr.filter(x => !aufschlaege[x] && x !== "tape" && x !== "kein_tape");
@@ -217,7 +226,7 @@ function aufbauen(daten, kx) {
         for (const f of b.farben || []) {
           const c = farbeVon(f);
           if (!c) { fehler.push(`${wo}: Farbe „${f.label}“ gehört zu keiner bekannten Oracal-Serie`); farbFehler = true; continue; }
-          if (!serie(c.preisserie, "plott")) { fehler.push(`Serie „${c.preisserie}“ hat keinen Preis (verfahren plott) für „${A}“ und keinen für „alle“ (Farbe ${c.schluessel}, ${wo})`); farbFehler = true; continue; }
+          if (preise && !serie(c.preisserie, "plott")) { fehler.push(`Serie „${c.preisserie}“ hat keinen Preis (verfahren plott) für „${A}“ und keinen für „alle“ (Farbe ${c.schluessel}, ${wo})`); farbFehler = true; continue; }
           (jeFolie[c.schluessel] = jeFolie[c.schluessel] || { farbe: c, blaetter: [] }).blaetter.push({ path: b.path, clips: b.clips, text: !!b.text, box: box(b.gb, k), gb: b.gb, laenge_pt: b.laenge_pt, teile: b.teile });
         }
       }
@@ -291,9 +300,10 @@ function aufbauen(daten, kx) {
       obj.teile_je_folie[medium] = cm.teile;
       // Tape-Vorschlag [R 1.9]: Dichten bezogen auf die Begrenzung der Messung; in IP_Attribute „kein_tape“ = aus (schlägt den Vorschlag),
       // „tape“ = an, sonst gilt der Vorschlag [§3.1]
-      const vorschlag = cm.schnittdichte >= pq.parameter("tape.min_schnittdichte") || cm.teiledichte >= pq.parameter("tape.min_teiledichte");
+      const grenze = n => { const v = pq.parameter(n); return v === null ? Infinity : v; }; // ohne Parameter (Preisliste fehlerhaft, Schild) kein Vorschlag
+      const vorschlag = cm.schnittdichte >= grenze("tape.min_schnittdichte") || cm.teiledichte >= grenze("tape.min_teiledichte");
       obj.tape = { vorschlag, gesetzt: attr.includes("kein_tape") ? false : attr.includes("tape") || vorschlag };
-      if (obj.tape.gesetzt && serie(medium, "druck").tape_vk_m2 === null) fehler.push(`${wo}: Tape gesetzt, aber Serie „${medium}“ hat keinen tape_vk_m2`);
+      if (preise && obj.tape.gesetzt && serie(medium, "druck").tape_vk_m2 === null) fehler.push(`${wo}: Tape gesetzt, aber Serie „${medium}“ hat keinen tape_vk_m2`);
       // ein Teil je Objekt (Nesting-Maß), keine Teilung; b_mm = längs (vertikal im Dokument), h_mm = quer (horizontal)
       const g = gruppe(`druck|${medium}|${tags.laminat}`, { verfahren, schluessel: medium, serie: medium, laminat: tags.laminat });
       teilNeu(g, obj, { b_mm: r2(hoehe(teilBox)), h_mm: r2(breite(teilBox)), box: teilBox, objBox, cutBox,
@@ -317,4 +327,126 @@ function aufbauen(daten, kx) {
   return { objekte, gruppen, teile, details, fehler, ohneZuordnung, massstab };
 }
 
-module.exports = { aufbauen, messen, anLueckenTeilen, variantenErkennen, neueId, hinweisZeilen, anzahlVon, SAMMEL, PT_MM };
+/**
+ * Textil (SPEZ_03_Textil §9.1): Motive = oberste Objekte der Ebene mit Rolle textil („Design“) mit IP_Position. DTF/Stick je Druckgröße ohne Messung
+ * (kalkuliert false, für Datensatz und Zusammenfassung); Flex/Flock gemessen, je Druckgröße ein Stück mit Teilen je Farbschlüssel.
+ * @param daten  IP.objekteLesen (messen: true)
+ * @param kx     { aa, pq (geladen oder null: Summa bei fehlerhafter Preisliste ohne Serienprüfung), xmp, medien (passermarken), streifen (textil.json),
+ *                 berechnen (zusätzlich Serie ohne Preis) }
+ * @returns wie aufbauen, objekte je Motiv und Druckgröße; gruppen „textil|<Farbschlüssel>“ mit serie, farbe, datei
+ */
+function aufbauenTextil(daten, kx) {
+  const { aa, pq, medien, streifen: sc } = kx;
+  const details = [], fehler = [];
+  const warn = (text, typ, objekt) => { if (!details.some(d => d.text === text)) details.push({ typ: typ || "sonstige", objekt: objekt || "", text }); };
+  const rolleVon = {};
+  aa.ebenen.forEach(e => { rolleVon[e.name] = e.rolle; });
+  const B = sc.daten_breite_max_mm, L = sc.laenge_max_mm - 2 * sc.rand_mm;
+  const stufenK = pq ? pq.komplexitaet() : [];
+  const gruppen = {}, teile = [], objekte = [];
+  let tid = 0, ohneZuordnung = 0, motivNr = 0;
+  const gruppe = (key, init) => (gruppen[key] = gruppen[key] || Object.assign({ key, teile: [] }, init));
+  const mm = v => Math.round(v) + " mm";
+
+  for (const o of daten.objekte) {
+    if ((rolleVon[o.ebene] || o.rolle) !== "textil") continue;
+    const tags = o.tags || {}, wo0 = o.name ? `„${o.name}“` : `unbenanntes Objekt (${o.typ})`;
+    if (!tags.position) { ohneZuordnung++; warn(`${wo0} auf Ebene „${o.ebene}“ ist nicht zugeordnet – wird nicht berechnet`, "unzugeordnet", o.name || wo0); continue; }
+    motivNr++;
+    const name = o.name || `Objekt ${motivNr}`, wo = `„${name}“`, v = tags.verfahren;
+    if (!TX.VERFAHREN.includes(v)) { warn(`${wo}: Verfahren „${v || ""}“ unbekannt – wird nicht berechnet`, "konflikt", name); continue; }
+    const st = TX.stufenVon(tags);
+    if (!st.length) { fehler.push(`${wo}: keine Druckgröße`); continue; }
+    let stufenOk = true;
+    st.forEach((s, i) => {
+      if (!(Number(s.mass_mm) > 0)) { fehler.push(`${wo}, Druckgröße ${i + 1}: Maß fehlt`); stufenOk = false; }
+      if (!(Number.isInteger(Number(s.menge)) && Number(s.menge) > 0)) { fehler.push(`${wo}, Druckgröße ${i + 1}: Menge fehlt`); stufenOk = false; }
+    });
+    if (!stufenOk) continue;
+    const basis = { id: tags.id || null, original: tags.original || null, ref: o.ref, illustratorName: o.name || "", name, ebene: o.ebene, verfahren: v,
+      position: tags.position, kalkuliert: TX.istGeschnitten(v), teile: [], folien: [], flaeche_je_folie: {}, teile_je_folie: {}, farben: {}, serie: null };
+    const dg = (s, i) => ({ nr: i + 1, mass_mm: Number(s.mass_mm), bezug: s.bezug === "Höhe" ? "Höhe" : "Breite", groessen: s.groessen || "", blockout: !!s.blockout, zeigen: !!s.zeigen });
+    if (!TX.istGeschnitten(v)) {
+      st.forEach((s, i) => objekte.push(Object.assign({}, basis, { nr: objekte.length, druckgroesse: dg(s, i), anzahl: Number(s.menge), messung: null, komplexitaet: null })));
+      continue;
+    }
+    // Serie aus IP_Folie: muss in der Preisliste mit verfahren flex bzw. flock stehen; bei berechnen mit Preis
+    const serie = tags.folie || "", vk = v.toLowerCase(), se = pq ? pq.serie(serie) : null;
+    if (pq && (!se || se.verfahren !== vk)) { fehler.push(`${wo}: Serie „${serie}“ steht nicht in der Preisliste (verfahren ${vk})`); continue; }
+    if (kx.berechnen && (se.ek_m2 === null || se.vk_m2 === null)) {
+      const t = `Serie „${serie}“ hat keinen Preis (ek_m2, vk_m2) für „${aa.preis}“`;
+      if (!fehler.includes(t)) fehler.push(t);
+      continue;
+    }
+    // Füllfarben -> Farbschlüssel <Serie>-<Flexfarbe> über IP_Farbe (colorKey exakt)
+    const fz = TX.farbenVon(tags), jeFarbe = {};
+    let kontur = false, ohneFlex = false;
+    for (const b of o.blaetter || []) {
+      if (b.kontur) kontur = true;
+      if (b.bild) warn(`${wo} enthält ein Bild – wird nicht geplottet`, "bild", name);
+      if (b.verlauf) warn(`${wo} enthält einen Verlauf/ein Muster – wird nicht geplottet`, "verlauf", name);
+      for (const f of b.farben || []) {
+        const ff = Object.prototype.hasOwnProperty.call(fz, f.key) ? String(fz[f.key] || "").trim() : "";
+        if (!ff) { ohneFlex = true; continue; }
+        const key = TX.farbschluessel(serie, ff);
+        (jeFarbe[key] = jeFarbe[key] || { farbe: ff, keys: new Set(), blaetter: [] });
+        jeFarbe[key].keys.add(f.key);
+        if (!jeFarbe[key].blaetter.includes(b)) jeFarbe[key].blaetter.push(b);
+      }
+    }
+    if (kontur) warn(`${wo}: Kontur auf Flex-/Flock-Motiv`, "kontur_textil", name);
+    if (ohneFlex) { fehler.push(`${wo}: Füllfarbe ohne Flexfarbe`); continue; }
+    const fk = Object.keys(jeFarbe).sort();
+    if (!fk.length) { warn(`${wo} enthält keine Füllfarbe – wird nicht berechnet`, "sonstige", name); continue; }
+    // Faktor des Modells (XMP textil.modell.faktor); ohne Realmaß Ersatzweg über das Ist-Maß des Motivs im Dokument (sichtbare Grenzen, mm)
+    const mf = kx.xmp && kx.xmp.textil && kx.xmp.textil.modell ? kx.xmp.textil.modell.faktor : null, zeigen = Number((st.find(x => x.zeigen) || st[0]).mass_mm);
+    const vb = o.vb || o.gb, w0 = (vb[2] - vb[0]) * PT_MM, h0 = (vb[1] - vb[3]) * PT_MM;
+    if (!(w0 > 0 && h0 > 0)) { warn(`${wo} enthält ein nicht auswertbares Objekt (${o.typ})`, "sonstige", name); continue; }
+    const faktorVon = d => (mf > 0 ? d.mass_mm / zeigen * mf : d.mass_mm / (d.bezug === "Höhe" ? h0 : w0));
+    const m0 = messen(o.blaetter, PT_MM);
+    const fl0 = {}, tl0 = {};
+    fk.forEach(key => {
+      const bl = jeFarbe[key].blaetter, bx = bl.reduce((u, b) => union(u, box(b.gb, PT_MM)), null);
+      fl0[key] = fk.length === 1 ? m0.flaeche_m2 : m2(bx);
+      tl0[key] = fk.length === 1 ? m0.teile : messen(bl, PT_MM).teile;
+    });
+    // Komplexität (IP_Komplexitaet, ohne Tag K0) aus der Preisliste; ohne Preisliste (Summa) ohne Prozent
+    const kTag = String(tags.komplexitaet === null || tags.komplexitaet === undefined ? "" : tags.komplexitaet).trim() || "0";
+    let kst = stufenK.find(x => String(x.stufe) === kTag);
+    if (!kst && pq) warn(`${wo}: unbekannte Komplexitätsstufe „${kTag}“ – K${(stufenK[0] || { stufe: 0 }).stufe} verwendet`, "komplexitaet", name);
+    kst = kst || (pq ? stufenK[0] : null) || { stufe: Number(kTag) || 0, prozent: 0 };
+    const farben = {};
+    fk.forEach(key => jeFarbe[key].keys.forEach(c => { farben[c] = jeFarbe[key].farbe; }));
+    let versatz = 0;
+    st.forEach((s, i) => {
+      const d = dg(s, i), menge = Number(s.menge), f = faktorVon(d), kk = PT_MM * f;
+      const obj = Object.assign({}, basis, { nr: objekte.length, druckgroesse: d, anzahl: menge, serie, farben, skala: f, teile: [], folien: fk.slice(), flaeche_je_folie: {}, teile_je_folie: {},
+        komplexitaet: { stufe: kst.stufe, prozent: kst.prozent }, messung: { teile: m0.teile, schnitt_m: m0.schnitt_m * f, flaeche_m2: m0.flaeche_m2 * f * f } });
+      fk.forEach(key => { obj.flaeche_je_folie[key] = fl0[key] * f * f; obj.teile_je_folie[key] = tl0[key]; });
+      // Exemplar (einfarbig) bzw. Block je Farbe mit Passermarken (mehrfarbig, Markengröße aus dem Umriss im Realmaß der Druckgröße)
+      const boxen = {};
+      fk.forEach(key => { boxen[key] = jeFarbe[key].blaetter.filter(b => b.gb).map(b => box(b.gb, kk)); });
+      const pm = fk.length >= 2 ? PM.planen(boxen, medien.passermarken) : null;
+      const absolut = b => ({ x0: r2(b.x0 + pm.umriss.x0), y0: r2(b.y0 + pm.umriss.y0), x1: r2(b.x1 + pm.umriss.x0), y1: r2(b.y1 + pm.umriss.y0) });
+      let passt = true;
+      fk.forEach(key => {
+        const gesamt = boxen[key].reduce((u, b) => union(u, b), null), bx = pm ? absolut(pm.bloecke[key]) : gesamt;
+        const w = r2(breite(bx)), h = r2(hoehe(bx));
+        if (!((w <= B + TOL && h <= L + TOL) || (h <= B + TOL && w <= L + TOL))) {
+          fehler.push(`${wo}, Druckgröße ${d.nr}${pm ? ` (${key}): Block mit Passermarken` : ":"} ${mm(w)} × ${mm(h)} passt in keiner Lage in ${B} × ${L} mm`);
+          passt = false; return;
+        }
+        const g = gruppe("textil|" + key, { verfahren: "textil", schluessel: key, serie, farbe: jeFarbe[key].farbe, laminat: null, farbfeld: null, datei: A.dateiname(key) });
+        const t = Object.assign({ id: "T" + String(++tid).padStart(4, "0"), gruppe: g.key, objekt: obj.nr, anzahl: menge, stueck: "", versatz, skala: f,
+          b_mm: w, h_mm: h, box: bx, blaetter: jeFarbe[key].blaetter.map(b => ({ path: b.path, clips: b.clips })) },
+          pm ? { boxTeile: gesamt, ohneMarken: { b_mm: r2(breite(gesamt)), h_mm: r2(hoehe(gesamt)) }, marken: pm.marken.map(absolut), kante_mm: pm.kante } : {});
+        teile.push(t); g.teile.push(t); obj.teile.push(t.id);
+      });
+      versatz += menge;
+      if (passt) objekte.push(obj);
+    });
+  }
+  return { objekte, gruppen, teile, details, fehler, ohneZuordnung, massstab: 1, textil: true };
+}
+
+module.exports = { aufbauen, aufbauenTextil, messen, anLueckenTeilen, variantenErkennen, neueId, hinweisZeilen, anzahlVon, SAMMEL, PT_MM };

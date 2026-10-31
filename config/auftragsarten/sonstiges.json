@@ -9,8 +9,8 @@
   },
   "zeichenflaeche": {
     "art": "abfrage",
-    "breite_mm": 600,
-    "hoehe_mm": 300
+    "breite_mm": 210,
+    "hoehe_mm": 297
   },
   "quelle": {
     "sandbox": null

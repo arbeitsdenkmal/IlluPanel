@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>WEA-Etiketten</title>
+<link rel="stylesheet" href="fenster.css">
+</head>
+<body>
+  <!-- SPEZ_03_Nutzen §6, SPEZ_03_Oberflaeche §12.1–§12.2 (560 × 260): Schritt 1 Kundendateien und Stückzahl (Liste mit Kopf, Zebra), Schritt 2 Typbezeichnung je
+       Datei mit Vorschau des Etiketts (90 × 36 mm als 180 × 72 px, Sinnbild), Schritt 3 Variante wählen (Tabelle, Detailbox) -->
+  <main id="schritt1" class="nutzen">
+    <div class="lbl">Kundendateien und Stückzahl  (PDF, XLSX, TXT, CSV)</div>
+    <div class="liste"><div class="zl kopfz"><span>Datei</span><span>Anzahl</span><span></span></div><div id="liste" class="zeilen"></div></div>
+    <div><button id="hinzu">Dateien hinzufügen …</button></div>
+  </main>
+  <main id="schritt2" class="nutzen" hidden>
+    <div><div class="lbl">So steht es in der Datei</div><textarea id="kopf" readonly rows="3"></textarea></div>
+    <div class="block etikettz">
+      <div class="feldz"><span class="lbl">Obere Zeile</span><input id="oben" type="text" autocomplete="off" spellcheck="false">
+        <span class="lbl">Untere Zeile</span><input id="unten" type="text" autocomplete="off" spellcheck="false"></div>
+      <div class="etikett"><span id="vorOben"></span><span id="vorUnten" class="u"></span></div>
+    </div>
+    <div id="typHinweis" class="muted"></div>
+  </main>
+  <main id="schritt3" class="nutzen" hidden>
+    <div class="lbl">Variante</div>
+    <table class="varianten"><thead><tr><th></th><th class="l"></th><th>m Material</th><th class="l"></th><th>längster Bogen mm</th></tr></thead><tbody id="varianten"></tbody></table>
+    <div id="detail" class="vor detail"></div>
+  </main>
+  <footer class="fuss"><span id="hinweis" class="hinweis"></span><button id="abbrechen">Abbrechen</button><button id="weiter" class="primaer" disabled>Weiter</button><button id="uebernehmen" class="primaer" hidden>Übernehmen</button><button id="aufbauen" class="primaer" hidden>Aufbauen</button></footer>
+  <script src="gemeinsam.js"></script>
+  <script src="fenster.js"></script>
+  <script src="gitter.js"></script>
+</body>
+</html>

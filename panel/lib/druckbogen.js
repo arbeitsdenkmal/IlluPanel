@@ -67,7 +67,7 @@ function aufbauPlanen(analyse, nest, kx) {
       const bx = D.neu({ auftragsart: xmp.auftragsart, massstab: 1, kunde: xmp.kunde, auftragsordner: xmp.ablage.auftragsordner, rolle: "druckbogen", jetzt });
       bx.auftrag = JSON.parse(JSON.stringify(xmp.auftrag || bx.auftrag));
       bx.ablage = JSON.parse(JSON.stringify(xmp.ablage));
-      bx.bogen = { aufbau: id, medium: g.schluessel, laminat: g.laminat, breite_mm: breite, nr, gesamt, arbeitsdatei: kx.arbeitsdatei };
+      bx.bogen = D.bogen({ aufbau: id, medium: g.schluessel, laminat: g.laminat, breite_mm: breite, nr, gesamt, arbeitsdatei: kx.arbeitsdatei });
       const teile = b.teile.map(p => {
         const t = teilVon[p.id], o = analyse.objekte[t.objekt], sy = symbole[sid(o)];
         return Object.assign({ name: `${namen[sid(o)]} ${p.exemplar}`, herkunft: o.id,

@@ -24,5 +24,27 @@
   "dateien": {
     "arbeitsdatei": "Arbeitsdatei.ai"
   },
-  "zeichenflaechen_abstand_mm": 10
+  "zeichenflaechen_abstand_mm": 10,
+  "rollup": [
+    {
+      "id": "rollup_850",
+      "name": "Roll-up 850 × 2000",
+      "breite_mm": 850,
+      "hoehe_mm": 2000,
+      "vorlage": "config/vorlagen/rollup/RollUp_850.ait"
+    },
+    {
+      "id": "rollup_1000",
+      "name": "Roll-up 1000 × 2000",
+      "breite_mm": 1000,
+      "hoehe_mm": 2000,
+      "vorlage": "config/vorlagen/rollup/RollUp_1000.ait"
+    }
+  ],
+  "banner": {
+    "name": "Banner"
+  },
+  "hilfslinien": {
+    "ebenen": ["Hilfslinien", "Sicherheitsabstand"]
+  }
 }

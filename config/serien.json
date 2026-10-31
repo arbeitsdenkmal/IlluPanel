@@ -1,5 +1,6 @@
 {
   "_hinweis": "Zuordnung Oracal-Bibliothek -> Farbschlüssel und Preisserie. Farbfeldnamen in den Bibliotheken: \"NNN (<namenszusatz>)\". Farbschlüssel = <schluessel>-NNN.",
+  "standard": "751C",
   "serien": [
     { "bibliothek": "ORACAL 651",        "datei": "ORACAL 651.ase",        "namenszusatz": "651",        "schluessel": "651",  "preisserie": "651" },
     { "bibliothek": "ORACAL 751 C",      "datei": "ORACAL 751 C.ase",      "namenszusatz": "751 C",      "schluessel": "751C", "preisserie": "751C" },

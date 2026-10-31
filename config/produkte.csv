@@ -1,0 +1,12 @@
+schluessel;bezeichnung;breite_mm;hoehe_mm;zeichenflaechen;vorlage_hoch;vorlage_quer;app_typ
+falzflyer-din-lang;Falzflyer DIN lang;297;210;2;Falzflyer_din lang_hoch.ait;;
+einbruchfalz-a4;Einbruchfalz DIN A4;420;297;2;Einbruchfalz auf A4_hoch.ait;Einbruchfalz auf A4_quer.ait;
+einbruchfalz-a5;Einbruchfalz DIN A5;297;210;2;Einbruchfalz auf A5_hoch.ait;Einbruchfalz auf A5_quer.ait;
+einbruchfalz-a6;Einbruchfalz DIN A6;210;148;2;Einbruchfalz auf A6_hoch.ait;Einbruchfalz auf A6_quer.ait;
+einbruchfalz-a7;Einbruchfalz DIN A7;148;105;2;Einbruchfalz auf A7_hoch.ait;Einbruchfalz auf A7_quer.ait;
+a4;A4;210;297;1/2;A4_hoch.ait;A4_quer.ait;
+a5;A5;148;210;1/2;A5_hoch.ait;A5_quer.ait;
+a6;A6;105;148;1/2;A6_hoch.ait;A6_quer.ait;
+a7;A7;74;105;1/2;A7_hoch.ait;A7_quer.ait;
+visitenkarte-85x55;Visitenkarte 85 × 55;55;85;1/2;Visitenkarte_55x85.ait;Visitenkarte_85x55.ait;
+visitenkarte-90x50;Visitenkarte 90 × 50;50;90;1/2;Visitenkarte_50x90.ait;Visitenkarte_90x50.ait;

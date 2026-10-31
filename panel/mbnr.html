@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Bögl Nummern</title>
+<link rel="stylesheet" href="fenster.css">
+</head>
+<body>
+  <!-- SPEZ_03_Nutzen §7.1, SPEZ_03_Oberflaeche §12.3 (460 × 230): zehn Felder „Nummer 1:“ … „Nummer 10:“ in 5 Spalten × 2 Zeilen, darunter das Ergebnis beim
+       Tippen (Zeilen der Info-Ebene) -->
+  <main class="nutzen">
+    <div class="lbl">Stückzahl je Nummer</div>
+    <div id="nummern" class="nummern"></div>
+    <div id="ergebnis" class="vor"></div>
+  </main>
+  <footer class="fuss"><span id="hinweis" class="hinweis"></span><button id="abbrechen">Abbrechen</button><button id="aufbauen" class="primaer" disabled>Aufbauen</button></footer>
+  <script src="gemeinsam.js"></script>
+  <script src="fenster.js"></script>
+  <script src="mbnr.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Motiv</title>
+<link rel="stylesheet" href="fenster.css">
+</head>
+<body>
+  <!-- SPEZ_03_Textil §7, SPEZ_03_Oberflaeche §6 (MOCKUP_THEMA6_Zuordnen_2 B, 640 × 470): Positionen als Pillen auf den Silhouetten Vorn/Hinten; rechts Verfahren
+       2 × 2, bei Flex/Flock Serie (ohne Überschrift) und Komplexität, unten „Ohne Position“ nebeneinander; Farben im Objekt nur bei Flex/Flock (ohne Platzhalter);
+       Block „Druckgrößen“ als Tabelle mit Kopfzeile und Zebra, „+ Druckgröße“, Summenzeile; der Block nimmt die übrige Höhe und scrollt. -->
+  <main class="motiv">
+    <div class="oben">
+      <div class="shirt">
+        <svg viewBox="0 0 160 150" aria-hidden="true"><path d="M44 12 L12 30 L22 56 L40 50 L40 134 L120 134 L120 50 L138 56 L148 30 L116 12 C104 26 56 26 44 12 Z" stroke-linejoin="round"/><path class="kragen" d="M44 12 C56 26 104 26 116 12"/></svg>
+        <div id="pillenVorn" class="pillen" role="group" aria-label="Position vorn"></div>
+        <span class="seite">Vorn</span>
+      </div>
+      <div class="shirt">
+        <svg viewBox="0 0 160 150" aria-hidden="true"><path d="M44 12 L12 30 L22 56 L40 50 L40 134 L120 134 L120 50 L138 56 L148 30 L116 12 C104 18 56 18 44 12 Z" stroke-linejoin="round"/></svg>
+        <div id="pillenHinten" class="pillen" role="group" aria-label="Position hinten"></div>
+        <span class="seite">Hinten</span>
+      </div>
+      <div class="rechts">
+        <span class="lbl">Verfahren</span>
+        <div id="verfahren" class="v4" role="group" aria-label="Verfahren"></div>
+        <div id="flexR" class="flexr" hidden>
+          <div title="Serie"><select id="serie"></select><span id="serieFest"></span></div>
+          <span class="lbl">Komplexität</span><div id="komplex" class="seg eng" role="group" aria-label="Komplexität"></div>
+        </div>
+        <span class="lbl ab">Ohne Position</span>
+        <div id="ohnePosition" class="v4" role="group" aria-label="Position ohne Platz am Shirt"></div>
+      </div>
+    </div>
+    <div id="flexFarben" class="flexfarben" hidden>
+      <div class="lbl">Farben im Objekt</div>
+      <div id="farben" class="fxreihe"></div>
+    </div>
+    <div class="block">
+      <div class="blocktitel"><span class="lbl">Druckgrößen</span><span id="stufenSub" class="sub"></span><span class="plus"><button id="stufePlus" type="button">+ Druckgröße</button></span></div>
+      <div class="stufen">
+        <table class="dg">
+          <colgroup><col class="c-zeigen"><col class="c-mass"><col class="c-bezug"><col class="c-menge"><col class="c-gr"><col class="c-bo"><col class="c-weg"></colgroup>
+          <thead><tr><th class="zeigen">zeigen</th><th>Maß mm</th><th>Bezug</th><th>Menge</th><th>Textilgrößen</th><th id="thBlockout">blockout</th><th></th></tr></thead>
+          <tbody id="stufenBody"></tbody>
+        </table>
+      </div>
+      <div id="summe" class="summe"></div>
+    </div>
+  </main>
+  <footer class="fuss"><span id="hinweis" class="hinweis"></span><button id="abbrechen">Abbrechen</button><button id="ok" class="primaer" disabled>OK</button></footer>
+  <script src="gemeinsam.js"></script>
+  <script src="fenster.js"></script>
+  <script src="motiv.js"></script>
+</body>
+</html>

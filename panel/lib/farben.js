@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const { lesen, labZuRgb } = require("./ase");
 
-/** serien.json und die ASE-Dateien lesen; Fehler als Liste { datei, grund } (konfiguration.js macht daraus das Start-Popup). */
+/** serien.json und die ASE-Dateien lesen; Fehler als Liste { datei, grund } (konfiguration.js macht daraus das Start-Popup); standard = Feld „standard“ unverändert. */
 function serienLaden(configOrdner) {
   const datei = path.join(configOrdner, "serien.json"), fehler = [];
   let cfg;
@@ -28,7 +28,7 @@ function serienLaden(configOrdner) {
     });
     serien.push(Object.assign({}, s, { farben }));
   });
-  return { serien, fehler };
+  return { serien, fehler, standard: cfg.standard };
 }
 
 /** Nachschlagen: erkennen(Farbfeldname) und nachSchluessel(Folienschlüssel, z. B. „751C-031“) -> Bibliothekseintrag oder null. */
