@@ -69,7 +69,7 @@ Status: bestätigt 30.10. (1–40 SPEZ_02 §17.1, 41–44 Auftrag 2c); Punkt 8, 
 
 ## 2c
 
-Status: offen (zur Bestätigung). Rückfrage 31.10. beantwortet: Druckbogen-Nummer, „n von m“, NN im Dateinamen und `bogen.gesamt` zählen je Medium + Laminat + Rolle.
+Status: bestätigt 31.10. (SPEZ_02 §17.2). Rückfrage 31.10. beantwortet: Druckbogen-Nummer, „n von m“, NN im Dateinamen und `bogen.gesamt` zählen je Medium + Laminat + Rolle.
 
 1. Die Lagesuche der Passermarken rechnet mit den Begrenzungsrechtecken der Blätter (Pfad, zusammengesetzter Pfad, Textrahmen) je Farbe; Abstand ist der kürzeste Abstand zweier Rechtecke.
 2. Eine Marke gilt als „in der linken Hälfte“, wenn sie ganz innerhalb des Umrisses und ganz links der Umrissmitte liegt (rechts entsprechend).
@@ -101,3 +101,27 @@ Status: offen (zur Bestätigung). Rückfrage 31.10. beantwortet: Druckbogen-Numm
 28. Nach dem Schreiben von `aufbau` wird die Arbeitsdatei nicht erneut gespeichert; das geschieht vor dem Export.
 29. Die Startprüfung verlangt `passermarken.stufen_mm` (> 0, absteigend), `anteil` (> 0 und ≤ 1) und `abstand_mm` (≥ 0).
 30. Neue Module `passermarken.js`, `herkunft.js`, `opos.js`, `schneidedaten.js`, `druckbogen.js`; `auftrag.js` enthält die gemeinsame Analyse sowie `summa`, `druck` und `exportDruckboegen`.
+
+## 2d
+
+Status: offen (zur Bestätigung).
+
+1. Der Puffer liegt im Ordner der `rechner.json` (`konfiguration.rechnerOrt`), damit die Plattformunterscheidung des Rechnerordners in `konfiguration.js` bleibt.
+2. Schlüssel im Puffer sind Pfade in Unicode-NFC, weil macOS Umlaute in Ereignisdaten und `fsName` unterschiedlich zusammengesetzt liefern kann.
+3. Die Id eines Puffereintrags entsteht wie `IP_Id` (`teile.neueId`, zeitbasiert + Zufall).
+4. Ein fehlender oder ungültiger Puffer gilt als leer; Pfade ohne Einträge entfallen beim Schreiben.
+5. Dokumente aller Rollen außer `druckbogen` werden ihrem eigenen Pfad gutgeschrieben; ein Druckbogen ohne `bogen.arbeitsdatei` wird nicht gezählt.
+6. `von`/`bis` gehen unverändert (ISO-Zeit mit Millisekunden) aus dem Puffer ins XMP; „+m“ schreibt die ISO-Zeit mit Millisekunden.
+7. Die Übernahme läuft vor der eigenen Aktion, damit „berechnen“ die neuen Minuten im Block `grafik` hat und Summa/Export die Einträge mitspeichern; bei „+m“ in einem XMP-Schreiben zusammen mit dem manuellen Eintrag.
+8. Fehler der Übernahme bei Maus ins Panel und vor einer Aktion bleiben still (Einträge bleiben im Puffer, die Aktion läuft weiter); bei „+m“ erscheinen sie als Popup.
+9. „berechnen“ und „PDF“ im Fenster „Zusammenfassung“ übernehmen nicht aus dem Puffer, weil nach §12 nur das Panel schreibt.
+10. Bei vorderem Druckbogen übernimmt das Panel nichts, auch nicht bei Export (§12: vordere Arbeitsdatei).
+11. Nach CSEvents aus „Objekt“, „Zusammenfassung“ und „Auftrag“ liest das Panel nur neu, ohne Übernahme.
+12. „+m“ nimmt nur ganze Zahlen mit optionalem Vorzeichen; das Feld wird nach Enter immer geleert.
+13. Der Block `grafik` rundet `min_auto` und `min_manuell` auf 2 Nachkommastellen wie die übrigen Minuten im Datensatz.
+14. Ereignis-URLs unter Windows (`file:///C:/…`, `file://server/…`) werden zu Laufwerks- bzw. UNC-Pfaden und gelten nur, wenn die Datei existiert.
+15. Windows: der PowerShell-Prozess startet mit der ersten Abfrage (`-EncodedCommand`), nach seinem Ende mit der nächsten neu und wird beim Beenden der Extension geschlossen; `vorn()` und `leerlaufSekunden()` eines Takts teilen sich eine Anfrage.
+16. Eine Antwort der Aktivitätserkennung nach mehr als 3 s gilt als „nicht aktiv“ (Zeitlimit wie im alten Projekt).
+17. Die Hintergrund-Extension startet über `ApplicationActivate` wie im alten Projekt; Debug-Port 8092.
+18. Ist der Rechnerordner nicht bestimmbar, zählt die Hintergrund-Extension nicht und das Panel trägt nur „+m“ ein.
+19. Neue Module `aktivitaet.js`, `grafikzeit.js`, `dokument_xmp.js`; Version 3.1.0-2d in Manifest und `dokument.PANEL_VERSION`.

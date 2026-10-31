@@ -9,7 +9,7 @@ const path = require("path");
 const SCHEMA_JSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "config", "schema.json"), "utf8"));
 const SCHEMA = SCHEMA_JSON.xmp.schema;
 const ROLLEN = SCHEMA_JSON.rollen;
-const PANEL_VERSION = "3.1.0-2c"; // = ExtensionBundleVersion in CSXS/manifest.xml
+const PANEL_VERSION = "3.1.0-2d"; // = ExtensionBundleVersion in CSXS/manifest.xml
 const QUELLEN = ["geoeffnet", "datei", "leer"];
 // SPEZ_02 §3.2: vorauswahl, farbzuordnung je Auftrag; kalkulation = letzter Kalkulationsdatensatz (§8.4); aufbau = letzter Druckbogen-Aufbau.
 // Druckbogen-Dokumente (rolle „druckbogen“) tragen zusätzlich bogen { aufbau, medium, laminat, breite_mm, nr, gesamt, arbeitsdatei } (config/schema.json „rollenfelder“).

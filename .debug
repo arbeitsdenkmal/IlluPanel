@@ -12,4 +12,7 @@
   <Extension Id="de.pamnm.illupanels.zusammenfassung">
     <HostList><Host Name="ILST" Port="8091"/></HostList>
   </Extension>
+  <Extension Id="de.pamnm.illupanels.hintergrund">
+    <HostList><Host Name="ILST" Port="8092"/></HostList>
+  </Extension>
 </ExtensionList>

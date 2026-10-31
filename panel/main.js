@@ -4,7 +4,9 @@
  * Abruf bei Fenster-Fokus (Befund Stufe 43: der Fokus-Abruf lief während des PDF-Imports, der Inhalt landete im falschen Dokument).
  * Zustände: ohne Panel-Dokument nur Auftrag; Arbeitsdatei ohne Kalkulation plus Zeile 1 (Export bei Profil „flach“); Druckbogen vorn: Zeile 1 mit dem
  * Bogen „n/m“, nur Export und Auftrag aktiv; kalkulierte Arbeitsdatei: Objektzeile, add/edit · berechnen, Summa · Druck · Export, Preiszeile aus dem
- * Datensatz im XMP. Summa, Druck und Export der Druckbögen (Profil produktion) laufen über panel/lib/auftrag.js. */
+ * Datensatz im XMP. Summa, Druck und Export der Druckbögen (Profil produktion) laufen über panel/lib/auftrag.js.
+ * Grafikzeit (SPEZ_02 §12): bei Maus ins Panel und vor jeder eigenen Aktion (Zuordnen, berechnen, Summa, Druck, Export, „+m“) übernimmt das Panel die
+ * Puffereinträge der vorderen Arbeitsdatei ins XMP – nur wenn welche vorliegen, sonst bleibt das Dokument ungeändert. */
 (function () {
   "use strict";
   const G = window.PAM;
@@ -14,9 +16,12 @@
   const FL = G.lib("export_flach.js");
   const AU = G.lib("auftrag.js");
   const Z = G.lib("zuordnen.js");
+  const GZ = G.lib("grafikzeit.js");
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const X = D.xmpZugriff(G.host);
+  let puffer = null;
+  try { puffer = GZ.pufferDatei(); } catch (e) { puffer = null; } // ohne Rechnerordner nur „+m“
 
   let konf = null;   // { rechner, schema, arten, mapping, medien, farben }
   let info = null;   // dokumentInfo des vorderen Dokuments
@@ -46,7 +51,7 @@
   }
 
   function zeichnen() {
-    // Zeile 1: Kunde · Auftragsart (ohne Maßstab) | Grafik N min + „+m“ (Feld ohne Funktion bis 2d); Druckbogen: Kunde · Druckbogen <Medium> <Laminat> <Breite> · n/m
+    // Zeile 1: Kunde · Auftragsart (ohne Maßstab) | Grafik N min + „+m“; Druckbogen: Kunde · Druckbogen <Medium> <Laminat> <Breite> · n/m
     // (ohne bogen.gesamt nur n)
     const b = druckbogen() ? xmp.bogen || {} : null;
     $("kopf").innerHTML = !xmp ? "" : b ? `<b>${esc(xmp.kunde)}</b> · Druckbogen ${esc([b.medium, Z.laminatName(aa, b.laminat), b.breite_mm].filter(x => x !== undefined && x !== null && x !== "").join(" "))}${b.nr ? ` · ${esc(b.nr)}${b.gesamt ? `/${esc(b.gesamt)}` : ""}` : ""}`
@@ -54,7 +59,7 @@
     $("kopf").title = xmp && xmp.ablage && xmp.ablage.kundenordner ? xmp.ablage.kundenordner : "";
     const eintraege = xmp && !b && xmp.grafikzeit && Array.isArray(xmp.grafikzeit.eintraege) ? xmp.grafikzeit.eintraege : null;
     $("grafik").hidden = !eintraege;
-    $("grafikMin").textContent = eintraege ? `Grafik ${Math.round(eintraege.reduce((s, e) => s + (Number(e.minuten) || 0), 0))} min` : "";
+    $("grafikMin").textContent = eintraege ? `Grafik ${GZ.summeMinuten(xmp)} min` : "";
 
     // Zeile 2: Name der Auswahl, Folie mit Chip und „×n“ (nur wenn alle zugeordnet und gleich); „Keine Auswahl“ bzw. „Objekt in einer Unterebene“
     // gedimmt (die Auswahl gilt dann als leer); mehrere: „n Objekte“
@@ -103,22 +108,53 @@
     $("preisMontage").innerHTML = p ? preis("inkl. Mont.", p.inkl_montage) : "";
   }
 
-  async function aufAbruf() {
+  // ----- Grafikzeit: Übernahme aus dem Puffer ins XMP der vorderen Arbeitsdatei, weitere = zusätzliche Einträge („+m“) -----
+  async function grafikUebernehmen(weitere) {
+    if (!konf) return;
+    const i = await G.host("dokumentInfo");
+    if (!i.hatDokument) return;
+    let o = null;
+    try { o = D.parsen(i.xmp); } catch (e) { return; }
+    if (!o || o.rolle !== "arbeitsdatei") return;
+    const u = GZ.uebernahme(puffer, puffer && i.pfad ? i.pfad : null, o, weitere);
+    if (!u) return;
+    if (i.pfad) await G.host("xmpSchreiben", D.serialisieren(u.xmp), i.pfad); else await X.xmpSchreiben(u.xmp);
+    GZ.entfernen(puffer, i.pfad, u.ids);
+  }
+
+  // mitUebernahme nur bei Maus ins Panel (CSEvents lesen nur neu)
+  async function aufAbruf(mitUebernahme) {
     if (abrufLaeuft || beschaeftigt) return;
     abrufLaeuft = true;
-    try { await aktualisieren(); } catch (e) { /* still */ } finally { abrufLaeuft = false; }
+    try {
+      if (mitUebernahme === true) await grafikUebernehmen().catch(() => { /* still, Einträge bleiben im Puffer */ });
+      await aktualisieren();
+    } catch (e) { /* still */ } finally { abrufLaeuft = false; }
   }
-  document.documentElement.addEventListener("mouseenter", aufAbruf);
+  document.documentElement.addEventListener("mouseenter", () => aufAbruf(true));
 
-  async function aktion(knopf, fn) {
+  // eigene Aktion: vorher Übernahme der Grafikzeit (still, die Aktion läuft weiter); manuell = Einträge aus „+m“ (Fehler als Popup)
+  async function aktion(knopf, fn, manuell) {
     beschaeftigt++; document.body.classList.add("besch"); if (knopf) knopf.disabled = true;
-    try { await fn(); }
+    try {
+      if (manuell) await grafikUebernehmen(manuell);
+      else await grafikUebernehmen().catch(() => { /* still, Einträge bleiben im Puffer */ });
+      if (fn) await fn();
+    }
     catch (e) { if (!e.abgebrochen) await G.popup(e.message); }
     finally {
       beschaeftigt--; document.body.classList.remove("besch");
       try { await aktualisieren(); } catch (e) { /* still */ }
     }
   }
+
+  // ----- „+m“: ganze Minuten, auch negativ; Enter -> Eintrag { von = bis = jetzt, minuten, manuell: true }; 0 oder keine Zahl: nichts; Feld danach leer -----
+  $("plusMin").addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    const n = GZ.manuellLesen(e.target.value);
+    e.target.value = "";
+    if (n !== null) aktion(null, null, [GZ.eintragManuell(n)]);
+  });
 
   // ----- Auftrag: Dialog „ohne Auftrag“ -----
   $("btnAuftrag").addEventListener("click", () => G.cep.requestOpenExtension(G.ID.anlegen, ""));

@@ -1,6 +1,6 @@
 # PAM-Werkzeuge (Illustrator-Panel)
 
-CEP-Erweiterung für Illustrator (Bundle `de.pamnm.illupanels` 3.1.0-2c, Panel „PAM-Werkzeuge“). Stand: Stufe 1 „Fundament“ nach `Infos/SPEZ_01_Fundament.md`, Stufe 2a „Kalkulationskern“, 2b „Oberfläche“ und 2c „Produktionsdaten“ nach `Infos/SPEZ_02_Kalkulation_Produktion.md` (Fassung 5) und den MockUps `Infos/mockups/MOCKUP_STUFE2.html` (Panel A5/A7, Fenster „Objekt“ B3/B4, Fenster „Zusammenfassung“ C3, `<Kunde>_Zusammenfassung.pdf`). Supabase/SDK und Grafikzeit (2d) sind nicht enthalten.
+CEP-Erweiterung für Illustrator (Bundle `de.pamnm.illupanels` 3.1.0-2d, Panel „PAM-Werkzeuge“). Stand: Stufe 1 „Fundament“ nach `Infos/SPEZ_01_Fundament.md`, Stufe 2a „Kalkulationskern“, 2b „Oberfläche“, 2c „Produktionsdaten“ und 2d „Grafikzeit“ nach `Infos/SPEZ_02_Kalkulation_Produktion.md` (Fassung 6) und den MockUps `Infos/mockups/MOCKUP_STUFE2.html` (Panel A5/A7, Fenster „Objekt“ B3/B4, Fenster „Zusammenfassung“ C3, `<Kunde>_Zusammenfassung.pdf`). Supabase/SDK ist nicht enthalten.
 
 Eigene Festlegungen von Claude Code, die über den Auftrag hinausgehen, stehen nummeriert je Teilstufe in `FESTLEGUNGEN.md`; dieses README übernimmt sie erst nach Bestätigung durch Markus.
 
@@ -8,14 +8,15 @@ Eigene Festlegungen von Claude Code, die über den Auftrag hinausgehen, stehen n
 
 ```
 CSXS/manifest.xml        Extensions .panel (Panel 320 × 142, min. 320 × 142), .anlegen (ModalDialog 420 × 420), .objekt (ModalDialog 480 × 470),
-                         .zusammenfassung (Modeless 620 × 520, skalierbar); ILST [28.0, 99.9], CSXS 12, Node an
-.debug                   Debug-Ports 8088 (.panel), 8089 (.anlegen), 8090 (.objekt), 8091 (.zusammenfassung)
+                         .zusammenfassung (Modeless 620 × 520, skalierbar), .hintergrund (Custom, StartOn, ohne Oberfläche); ILST [28.0, 99.9], CSXS 12, Node an
+.debug                   Debug-Ports 8088 (.panel), 8089 (.anlegen), 8090 (.objekt), 8091 (.zusammenfassung), 8092 (.hintergrund)
 FESTLEGUNGEN.md          eigene Festlegungen je Teilstufe (nummeriert, Status)
 panel/
   index.html, main.js    Panel (A5/A7)
   anlegen.html, .js      Dialog „ohne Auftrag“
   objekt.html, .js       Fenster „Objekt“ (Zuordnen, B3/B4)
   zusammenfassung.html, .js  Fenster „Zusammenfassung“ (C3)
+  hintergrund.html, .js  Hintergrund-Extension der Grafikzeit (ohne evalScript)
   gemeinsam.js           Host-Aufruf (evalScript), JSX-Kern laden, Popup, Hell/Dunkel, CSEvents, Übergabedatei Panel -> „Objekt“
   fenster.js             Fenster „Objekt“/„Zusammenfassung“: Abbrechen/Schließen und Esc
   style.css, fenster.css
@@ -43,6 +44,9 @@ panel/
     zuordnen.js          Regeln des Fensters „Objekt“ (Vorauswahl, gemeinsame Werte, Farben, Medienliste, Tags), Anzeige von Folie und Zahlen
     zusammenfassung.js   Zeilen der Objekttabelle, Folien und Summen für Fenster und PDF
     zusammenfassung_pdf.js  <Kunde>_Zusammenfassung.pdf mit jsPDF (jspdf.umd.min.js, Lizenz LICENSE)
+    aktivitaet.js        Grafikzeit: „Illustrator vorn“, Sekunden seit letzter Eingabe (einzige Plattformweiche außerhalb konfiguration.js)
+    grafikzeit.js        Grafikzeit: Zähler, Puffer lesen/ändern/schreiben (atomar), Übernahme ins XMP-Objekt
+    dokument_xmp.js      Grafikzeit: Pfad aus Dokument-Ereignissen, ip:Dokument aus der gespeicherten Datei (lesend)
 jsx/illupanels.jsx       ExtendScript-Kern, nur Dokumentzugriff (XMP, Tags, Ebenen, Zeichenflächen, Objekte und Auswahl lesen und messen, Zuordnen mit Umfärben, Auswählen,
                          Schneidedokumente, Druckbögen mit Symbolen, Bogen prüfen/vorbereiten, Marken zeichnen, Speichern)
 config/
@@ -58,13 +62,13 @@ tests/*.test.js          node --test
 Infos/                   Referenz; einzige Ausnahme: Infos/Stammdaten/preisliste.csv ist die Entwicklungsquelle der Preise
 ```
 
-Plattformunterschiede stehen nur in `rechner.json`; `process.platform` wird nur in `konfiguration.js` (Pfadauflösung, Ort der rechner.json) benutzt.
+Plattformunterschiede stehen nur in `rechner.json`; `process.platform` wird nur in `konfiguration.js` (Pfadauflösung, Ort der rechner.json) und in `aktivitaet.js` (Aktivitätserkennung der Grafikzeit, Ausnahme zu R 7.2 [A-8]) benutzt.
 
 ## Panel (SPEZ_02 §13, MockUp A5/A7)
 
 - Start: lädt `rechner.json`, `schema.json`, die acht Auftragsarten, das Mapping, `medien.json` (inkl. Block `passermarken`), `serien.json` mit den fünf ASE-Dateien und prüft sie; dazu die Preisliste (allgemeine Prüfungen, jede Serie mit Standardbreite in `medien.json`). Jeder Fehler → ein Popup mit Datei und Grund, die Buttons bleiben gesperrt. Danach JSX-Kern laden und `IP.init(schema)` (Tag-Namen und Namespace kommen nur aus `schema.json`).
 - 320 × 142 (Inhalt 122 px), fünf Zeilen:
-  1. **Kunde** · Auftragsart (ohne Maßstab) · rechts „Grafik N min“ (Σ `grafikzeit.eintraege`) mit Feld „+m“ (ohne Funktion bis 2d).
+  1. **Kunde** · Auftragsart (ohne Maßstab) · rechts „Grafik N min“ (Σ `grafikzeit.eintraege`, ganzzahlig) mit Feld „+m“ (Grafikzeit, unten).
   2. Objektzeile: Name der Auswahl (fett), rechts Folie mit Chip und „×n“; „Keine Auswahl“ gedimmt; „Objekt in einer Unterebene“ gedimmt, wenn die Auswahl nicht aus obersten Objekten besteht; mehrere: „n Objekte“, Folie nur, wenn alle gleich.
   3. **add** (Auswahl nicht oder nicht vollständig zugeordnet) bzw. **edit** → Fenster „Objekt“ · **berechnen** → `auftrag.berechnen()`, öffnet bzw. aktualisiert „Zusammenfassung“, Hinweise als ein Popup. add ist ohne Auswahl gesperrt und dann nicht orange. Orange: add, sobald eine Auswahl nicht oder nicht vollständig zugeordnet ist, sonst berechnen.
   4. Werkzeugzeile: **Summa** (Schneidedaten), **Druck** (Druckbögen aufbauen) · **Export** (orange; Profil „flach“ bzw. Druckbögen des letzten Aufbaus) · **Auftrag** (Schrift orange, Dialog `.anlegen`).
@@ -96,6 +100,16 @@ Modeless 620 × 520, skalierbar; ersetzt „Objekte“ und „Details“. Liest 
 5. Fuß: **berechnen** (wie im Panel), **PDF**, **Schließen** (auch Esc).
 
 **PDF** `<Kunde>_Zusammenfassung.pdf` (jsPDF): Kopf (Kunde, Auftragsart, Datum, Maßstab), Objekttabelle und Folien wie im Fenster, Warnungen des Laufs – ohne Summen, Preise, EK und Grafik. Vorher wird automatisch berechnet; Ablage über den Exportkern in den Auftragsordner (Nummerierung `_02` bei Wiederholung), Eintrag in `exporte[]`.
+
+## Grafikzeit (SPEZ_02 §12)
+
+- **Hintergrund-Extension** `.hintergrund` (Custom, startet mit Illustrator, ohne Oberfläche, keine `evalScript`-Abfragen): aktives Dokument aus `documentAfterActivate`/`-Deactivate`/`-Save` (Pfad aus den Ereignisdaten); Rolle und `bogen.arbeitsdatei` liest `dokument_xmp.js` aus dem XMP der gespeicherten Datei (ip:Dokument, Namespace 2.0, Schema 1; stückweise bis zum ersten IP-Paket, je Pfad nach Änderungszeit/Größe zwischengespeichert). Ungespeichertes Dokument: kein Zählen.
+- **Gezählt** wird jedes gespeicherte Dokument mit Panel-XMP, alle Rollen und Auftragsarten; Druckbogen → Gutschrift an die Arbeitsdatei aus `bogen.arbeitsdatei`. Alle 5 s „Illustrator vorn“ und „Sekunden seit letzter Eingabe“; aktiv, wenn vorn und Eingabe < 30 s; Zeitstempel-Differenzen, Lücken höchstens 15 s (`grafikzeit.Zaehler`). Einträge in den Puffer alle 60 s, bei Dokumentwechsel und beim Beenden.
+- **Aktivitätserkennung** `aktivitaet.js` (`vorn()`, `leerlaufSekunden()`; Fehler → nicht aktiv): macOS `lsappinfo front` / `lsappinfo info -only bundleid` (`com.adobe.illustrator`) und `ioreg … HIDIdleTime`; Windows ein dauerhaft laufender PowerShell-Prozess je Sitzung (`GetForegroundWindow` → Prozessname `Illustrator`, `GetLastInputInfo`), Anfrage und Antwort je eine Zeile über stdin/stdout.
+- **Puffer** `grafikzeit_puffer.json` im Rechnerordner (Ordner der `rechner.json`): `{ "<Pfad Arbeitsdatei>": [ { "id", "von", "bis", "sekunden" } ] }`; Hintergrund-Extension und Panel lesen–ändern–schreiben atomar (Temp-Datei + Umbenennen); das Panel entfernt genau die übernommenen Ids.
+- **Übernahme ins XMP** nur durch das Panel: bei Maus ins Panel und vor jeder eigenen Aktion (Zuordnen, berechnen, Summa, Druck, Export, „+m“), nur für die vordere Arbeitsdatei und nur, wenn Puffereinträge vorliegen (sonst kein XMP-Schreiben). Je Puffereintrag `{ von, bis, minuten (Sekunden/60 auf 0,1), manuell: false, benutzer: null, uebertragen: false }` in `grafikzeit.eintraege`.
+- **„+m“**: ganze Minuten, auch negativ; Enter → `{ von = bis = jetzt, minuten, manuell: true, benutzer: null, uebertragen: false }`; 0 oder keine Zahl: nichts.
+- **Anzeige** „Grafik N min“ = Σ aller Einträge, ganzzahlig; bei Druckbogen vorn keine Grafikzeile. Der Block `grafik` im Kalkulationsdatensatz summiert die Einträge (`min_auto`, `min_manuell`); keine Verrechnung.
 
 ## Konfiguration je Rechner (`rechner.json`)
 
@@ -277,4 +291,4 @@ Bei vorderem Druckbogen oder vorderer kalkulierter Arbeitsdatei: alle offenen B�
 
 ## Tests
 
-`node --test tests/*.test.js` (System-Node, ohne Illustrator): Konfiguration (acht Arten, Mapping, Schema, bewusst fehlerhafte Dateien), `rechner.json` Mac und Windows, XMP-JSON, Nummerierung gegen zwei Ordner, Exportkern mit Temp-Ordnern (Erfolg, `ersetzen`, Transfer schlägt fehl → geparkt ohne `.teil`, DTF-Kopie); Preisquelle mit der echten CSV und einer fehlerhaften Kopie, Kalkulation „Streifen“ (PREISLOGIK §11) als 2 Stücke und als 1 Stück mit Anzahl 2, Nesting mit Anzahl und Plott-Nutzbreite, Varianten-Erkennung, Datensatz-Struktur über `berechnen()` mit Host-Attrappe; Passermarken an drei Rechteckfällen (Lücke, keine Lücke, kleine Gruppe), Nesting mit Block, OPOS-Regel gegen die 40 Fälle aus `Infos/OPOS_ANALYSE.md`. Ausprobieren in Illustrator macht Markus nach einem Neustart von Illustrator.
+`node --test tests/*.test.js` (System-Node, ohne Illustrator): Konfiguration (acht Arten, Mapping, Schema, bewusst fehlerhafte Dateien), `rechner.json` Mac und Windows, XMP-JSON, Nummerierung gegen zwei Ordner, Exportkern mit Temp-Ordnern (Erfolg, `ersetzen`, Transfer schlägt fehl → geparkt ohne `.teil`, DTF-Kopie); Preisquelle mit der echten CSV und einer fehlerhaften Kopie, Kalkulation „Streifen“ (PREISLOGIK §11) als 2 Stücke und als 1 Stück mit Anzahl 2, Nesting mit Anzahl und Plott-Nutzbreite, Varianten-Erkennung, Datensatz-Struktur über `berechnen()` mit Host-Attrappe; Passermarken an drei Rechteckfällen (Lücke, keine Lücke, kleine Gruppe), Nesting mit Block, OPOS-Regel gegen die 40 Fälle aus `Infos/OPOS_ANALYSE.md`; Grafikzeit: `Zaehler` mit simulierten Ticks, Pufferübernahme (Einträge entfernen, Minutenrundung) mit Temp-Ordner. Ausprobieren in Illustrator macht Markus nach einem Neustart von Illustrator.

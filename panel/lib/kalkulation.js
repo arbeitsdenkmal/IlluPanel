@@ -152,12 +152,12 @@ const rund = (v, s) => { const f = 10 ** s; return Math.round(v * f) / f; };
 const r2 = v => rund(v, 2), r4 = v => rund(v, 4);
 const preisFeld = p => ({ netto: r2(p.netto), gerundet: p.gerundet, brutto: p.brutto });
 
-/** Grafikminuten aus grafikzeit.eintraege (auto + manuell) [M 1]; Betrag nur dokumentiert */
+/** Grafikminuten aus grafikzeit.eintraege (auto = manuell false, manuell = manuell true) [M 1], auf 2 Nachkommastellen; Betrag nur dokumentiert */
 function grafik(xmp, stundensatz) {
   const e = (xmp && xmp.grafikzeit && Array.isArray(xmp.grafikzeit.eintraege)) ? xmp.grafikzeit.eintraege : [];
   const sum = f => e.filter(f).reduce((s, x) => s + (Number(x.minuten) || 0), 0);
   const auto = sum(x => !x.manuell), manuell = sum(x => !!x.manuell);
-  return { min_auto: auto, min_manuell: manuell, stundensatz, betrag: r2((auto + manuell) / 60 * stundensatz) };
+  return { min_auto: r2(auto), min_manuell: r2(manuell), stundensatz, betrag: r2((auto + manuell) / 60 * stundensatz) };
 }
 
 /**

@@ -1,5 +1,10 @@
 # Testbericht
 
+## Stufe 2d „Grafikzeit“ (31.10.2026)
+
+- `node --test tests/*.test.js`: 22 Tests, 22 bestanden, 0 fehlgeschlagen.
+- Kein Lauf in Illustrator, keine Sensor-Tests.
+
 ## Stufe 2c „Produktionsdaten“ (31.10.2026)
 
 - `node --test tests/*.test.js`: 20 Tests, 20 bestanden, 0 fehlgeschlagen (zuvor ein Zwischenlauf ohne die neuen Tests: 14/14).

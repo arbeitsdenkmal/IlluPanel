@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="12.0" ExtensionBundleId="de.pamnm.illupanels" ExtensionBundleVersion="3.1.0-2c"
+<ExtensionManifest Version="12.0" ExtensionBundleId="de.pamnm.illupanels" ExtensionBundleVersion="3.1.0-2d"
                    ExtensionBundleName="PAM-Werkzeuge" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="de.pamnm.illupanels.panel" Version="3.1.0-2c"/>
-    <Extension Id="de.pamnm.illupanels.anlegen" Version="3.1.0-2c"/>
-    <Extension Id="de.pamnm.illupanels.objekt" Version="3.1.0-2c"/>
-    <Extension Id="de.pamnm.illupanels.zusammenfassung" Version="3.1.0-2c"/>
+    <Extension Id="de.pamnm.illupanels.panel" Version="3.1.0-2d"/>
+    <Extension Id="de.pamnm.illupanels.anlegen" Version="3.1.0-2d"/>
+    <Extension Id="de.pamnm.illupanels.objekt" Version="3.1.0-2d"/>
+    <Extension Id="de.pamnm.illupanels.zusammenfassung" Version="3.1.0-2d"/>
+    <Extension Id="de.pamnm.illupanels.hintergrund" Version="3.1.0-2d"/>
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>
@@ -88,6 +89,23 @@
             <Size><Height>520</Height><Width>620</Width></Size>
             <MinSize><Height>240</Height><Width>480</Width></MinSize>
           </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- SPEZ_02 §12: Hintergrund-Extension der Grafikzeit, ohne Oberfläche, startet mit Illustrator; keine evalScript-Abfragen -->
+    <Extension Id="de.pamnm.illupanels.hintergrund">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel/hintergrund.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle><AutoVisible>false</AutoVisible><StartOn><Event>com.adobe.csxs.events.ApplicationActivate</Event><Event>applicationActivate</Event></StartOn></Lifecycle>
+        <UI>
+          <Type>Custom</Type>
+          <Geometry><Size><Height>1</Height><Width>1</Width></Size></Geometry>
         </UI>
       </DispatchInfo>
     </Extension>

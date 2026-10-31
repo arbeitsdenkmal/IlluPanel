@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.0-2d – Stufe 2d „Grafikzeit“ (31.10.2026)
+
+- Hintergrund-Extension `.hintergrund` (Custom, StartOn, ohne evalScript): zählt über `aktivitaet.js` (macOS lsappinfo/ioreg, Windows ein PowerShell-Prozess) und `grafikzeit.Zaehler`, Puffer `grafikzeit_puffer.json` im Rechnerordner; Druckbogen → `bogen.arbeitsdatei`; `dokument_xmp.js` liest ip:Dokument (Schema 1) aus der Datei.
+- Panel: Übernahme aus dem Puffer ins XMP bei Maus ins Panel und vor eigenen Aktionen, Feld „+m“; Block `grafik` mit gerundeten Minuten.
+- FESTLEGUNGEN 2c bestätigt.
+
 ## 3.1.0-2c – Stufe 2c „Produktionsdaten“ (31.10.2026)
 
 - Passermarken für mehrfarbigen Plott (`passermarken.js`), Block-Nesting in `teile.js`/Kalkulation; `medien.json` Block `passermarken` mit Startprüfung.
