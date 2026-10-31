@@ -47,11 +47,13 @@ function rolleWaehlen(teile, aa, medium, MK) {
   else if (sparsam !== std && (std.m2 - sparsam.m2) / std.m2 * 100 >= schwelle - 1e-9) { wahl = sparsam; grund = `spart ${Math.round((std.m2 - sparsam.m2) / std.m2 * 1000) / 10} % gegenüber ${std.breite} mm`; }
   return { breite: wahl.breite, n: wahl.n, m2: wahl.m2, grund, standard: std.breite, kandidaten: kandidaten.map(k => ({ breite: k.breite, m2: k.m2, passt: !!k.n })) };
 }
-/** Nesting aller Gruppen (Plott je Farbschlüssel, Druck je Medium + Laminat mit Rollenwahl); jedes Teil × Anzahl Exemplare. Für Kalkulation, Summa, Druck. */
-function nestingAlle(analyse, aa, MK) {
+/** Nesting aller Gruppen (Plott je Farbschlüssel, Druck je Medium + Laminat mit Rollenwahl); jedes Teil × Anzahl Exemplare, mehrfarbige Stücke als
+ *  Blöcke mit Passermarken (teile.js). Für Kalkulation, Summa (nur verfahren „plott“) und Druck (nur „druck“). */
+function nestingAlle(analyse, aa, MK, verfahren) {
   const r = {};
   for (const key of Object.keys(analyse.gruppen).sort()) {
     const g = analyse.gruppen[key], teile = g.teile.map(t => ({ id: t.id, b_mm: t.b_mm, h_mm: t.h_mm, anzahl: t.anzahl }));
+    if (verfahren && g.verfahren !== verfahren) continue;
     if (g.verfahren === "plott") {
       const opt = nestOptionen(aa, MK, g.serie);
       r[key] = { n: nesten(teile, opt), rollenbreite_mm: R.standardbreite(MK, g.serie), nutzbreite_mm: opt.hoehe_mm, rolle: null };
@@ -94,8 +96,8 @@ function rechnen(analyse, aa, pq, MK, nest) {
       boegen: ne.n.bogen.length, lfm, verbrauch_m2: verbrauch, flaeche_m2: 0, flaeche_tape_m2: 0, teile: 0, ek: verbrauch * se.ek_m2, vk_m2: se.vk_m2,
       ruesten_min: z("ruesten", v) + z("datei_cut", v), tape_folie_min: 0, rolle: ne.rolle };
     folien.push(zf);
-    // Rüsten nach Flächenanteil auf alle Exemplare verteilen: Begrenzung inkl. halbem Abstand rundum (wie bisher)
-    const fl = g.teile.map(t => (t.b_mm + a) * (t.h_mm + a) * t.anzahl);
+    // Rüsten nach Flächenanteil auf alle Exemplare verteilen: Begrenzung inkl. halbem Abstand rundum (wie bisher); Blöcke ohne Passermarken [B-5]
+    const fl = g.teile.map(t => { const m = t.ohneMarken || t; return (m.b_mm + a) * (m.h_mm + a) * t.anzahl; });
     const summe = fl.reduce((s, x) => s + x, 0);
     g.teile.forEach((t, i) => { ruestenAnteil[t.id] = (ruestenAnteil[t.id] || 0) + zf.ruesten_min * fl[i] / summe; });
   }

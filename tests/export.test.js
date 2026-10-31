@@ -51,6 +51,27 @@ test("Exportkern: Erfolg mit Kundenordner-Dialog, Arbeitsdatei-Kopie, Nummerieru
   fs.rmSync(t.tmp, { recursive: true, force: true });
 });
 
+test("Exportkern: ersetzen – gleicher Name, bestehende Datei lokal und auf dem Server ersetzt, kein .teil übrig", async () => {
+  const t = umgebung();
+  const server = path.join(t.kunden, "M", "Mustermann", "2026-10-30_Sonstiges");
+  const lokal = path.join(t.lokal, "Mustermann", "2026-10-30_Sonstiges");
+  const auftrag = inhalt => ({ xmp: t.xmp, dtf: [], dateien: [
+    { name: "Mustermann_751C-031_cut_01.pdf", ersetzen: true, speichern: p => fs.writeFileSync(p, inhalt) },
+    { name: "Mustermann_Zusammenfassung.pdf", speichern: p => fs.writeFileSync(p, inhalt) }] });
+  assert.strictEqual((await EX.exportieren(auftrag("%PDF-1"), t.u)).ok, true);
+  fs.mkdirSync(lokal, { recursive: true });
+  fs.writeFileSync(path.join(lokal, "Mustermann_751C-031_cut_01.pdf"), "alt-lokal"); // geparkte Fassung eines früheren Laufs
+  const r = await EX.exportieren(auftrag("%PDF-2"), t.u);
+  assert.strictEqual(r.ok, true);
+  assert.strictEqual(fs.readFileSync(path.join(server, "Mustermann_751C-031_cut_01.pdf"), "utf8"), "%PDF-2");
+  assert.ok(!fs.existsSync(path.join(server, "Mustermann_751C-031_cut_01_02.pdf")));
+  assert.ok(fs.existsSync(path.join(server, "Mustermann_Zusammenfassung_02.pdf"))); // ohne ersetzen weiter nummeriert
+  assert.ok(!fs.existsSync(path.join(lokal, "Mustermann_751C-031_cut_01.pdf")));
+  assert.deepStrictEqual(t.xmp.exporte[1].dateien.map(d => d.name), ["Mustermann_751C-031_cut_01.pdf", "Mustermann_Zusammenfassung_02.pdf"]);
+  assert.deepStrictEqual(teile(server), []);
+  fs.rmSync(t.tmp, { recursive: true, force: true });
+});
+
 test("Exportkern: Transfer schlägt fehl -> geparkt, kein .teil übrig", async t0 => {
   const t = umgebung();
   t0.mock.method(fs.promises, "rename", async () => { throw Object.assign(new Error("Testfehler"), { code: "EIO" }); });

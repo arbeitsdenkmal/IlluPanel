@@ -2,7 +2,9 @@
  * Alle Exporte aller Auftragsarten laufen hier durch; die Profile (export_flach.js …) liefern nur Dateien und ihr speichern().
  *
  * exportieren(auftrag, umgebung)
- *   auftrag  = { xmp, dateien: [{ name, speichern(lokalerPfad) }], dtf: [name …] }
+ *   auftrag  = { xmp, dateien: [{ name, speichern(lokalerPfad), ersetzen }], dtf: [name …] }
+ *              ersetzen: true (Produktionsdateien aus dem Panel, SPEZ_02 §11.3): gleicher Name ohne Hochzählen, eine bestehende Datei lokal und auf dem
+ *              Server wird ersetzt (Transfer weiterhin über .<name>.teil und Umbenennen)
  *   umgebung = { rechner (konfiguration.rechnerLaden), ordnerWaehlen(start) -> pfad|null, meldung(text), xmpSchreiben(obj),
  *                arbeitsdatei: { pfad, speichern() } | null, jetzt() (Test), zeitlimit_ms (Test) }
  *   -> { ok, ordner, dateien[], geparkt[], fehler[], meldung, xmp }   meldung nur bei Fehlern (Popup); kein Erfolgs-Popup
@@ -90,15 +92,17 @@ async function exportieren(auftrag, u) {
   const lokalOrdner = path.join(R.lokal.ausgang, A.dateiname(xmp.kunde), xmp.ablage.auftragsordner);
   fs.mkdirSync(lokalOrdner, { recursive: true });
 
-  // 4. Dateinamen: erste freie Nummer gegen lokalen und Server-Ordner, vor dem Schreiben
+  // 4. Dateinamen: erste freie Nummer gegen lokalen und Server-Ordner, vor dem Schreiben; ersetzen: der Name selbst
   const vergeben = new Set();
   const dateien = auftrag.dateien.map(d => {
-    const name = A.freierName(d.name, [lokalOrdner, serverOrdner], vergeben);
+    const name = d.ersetzen ? d.name : A.freierName(d.name, [lokalOrdner, serverOrdner], vergeben);
+    vergeben.add(name);
     return { quelle: d, name, lokal: path.join(lokalOrdner, name), uebertragen: false, ziel: null };
   });
 
-  // 5. Schreiben und prüfen (Fehler -> Abbruch vor dem Transfer)
+  // 5. Schreiben und prüfen (Fehler -> Abbruch vor dem Transfer); ersetzen: eine lokal liegende alte Fassung vorher entfernen
   for (const d of dateien) {
+    if (d.quelle.ersetzen) { try { fs.unlinkSync(d.lokal); } catch (e) { /* keine */ } }
     await d.quelle.speichern(d.lokal);
     let st = null;
     try { st = fs.statSync(d.lokal); } catch (e) { /* fehlt */ }
@@ -108,7 +112,7 @@ async function exportieren(auftrag, u) {
   // 6. Transfer: .teil, Größenvergleich, Umbenennen; Fehler -> lokal geparkt
   for (const d of dateien) {
     if (!serverOrdner) { geparkt.push(d.lokal); continue; }
-    try { d.ziel = await A.sicherKopieren(d.lokal, serverOrdner, d.name); d.uebertragen = true; }
+    try { d.ziel = await A.sicherKopieren(d.lokal, serverOrdner, d.name, !!d.quelle.ersetzen); d.uebertragen = true; }
     catch (e) { geparkt.push(d.lokal); fehler.push(`${d.name}: Übertragung fehlgeschlagen (${e.code || e.message})`); }
   }
 

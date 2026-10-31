@@ -143,7 +143,7 @@
       const z = w.tape || Z.gemeinsam(objs.map(Z.tapeZustand)), vs = objs.map(tapeVorschlag), vg = Z.gemeinsam(vs);
       const vText = vs.every(v => v === null) ? "erst nach „berechnen“" : vg === U || vg === null ? "unterschiedlich" : vg ? "Tape" : "kein Tape";
       attr.push(knopf(z === U ? TAPE_TEXT.auto : TAPE_TEXT[z], z === U ? U : z === "tape" || (z === "auto" && vg === true),
-        `Tape (VK je m² Objektfläche) – Vorschlag aus der Messung der Cutkontur, sonst des Motivumrisses: ${vText}`,
+        `Tape: ${vText}`,
         () => { w.tape = z === U ? "auto" : TAPE_WEITER[z]; zeichnen(); }));
     }
     $("attr").replaceChildren(...attr);

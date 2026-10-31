@@ -2,8 +2,9 @@
  * Start: Konfiguration laden und prüfen – jeder Fehler ein Popup mit Datei und Grund, Buttons bleiben gesperrt.
  * Aktualisierung nur bei Maus ins Panel, nach eigener Aktion und nach CSEvent aus „Objekt“ und „Zusammenfassung“; keine Dauerabfragen und kein
  * Abruf bei Fenster-Fokus (Befund Stufe 43: der Fokus-Abruf lief während des PDF-Imports, der Inhalt landete im falschen Dokument).
- * Zustände: ohne Panel-Dokument wie Stufe 1; Arbeitsdatei ohne Kalkulation wie Stufe 1 plus Zeile 1; Druckbogen vorn: Zeile 1 mit dem Bogen,
- * nur Export und Auftrag aktiv; kalkulierte Arbeitsdatei: Objektzeile, add/edit · berechnen, Preiszeile aus dem Datensatz im XMP. */
+ * Zustände: ohne Panel-Dokument nur Auftrag; Arbeitsdatei ohne Kalkulation plus Zeile 1 (Export bei Profil „flach“); Druckbogen vorn: Zeile 1 mit dem
+ * Bogen „n/m“, nur Export und Auftrag aktiv; kalkulierte Arbeitsdatei: Objektzeile, add/edit · berechnen, Summa · Druck · Export, Preiszeile aus dem
+ * Datensatz im XMP. Summa, Druck und Export der Druckbögen (Profil produktion) laufen über panel/lib/auftrag.js. */
 (function () {
   "use strict";
   const G = window.PAM;
@@ -45,9 +46,10 @@
   }
 
   function zeichnen() {
-    // Zeile 1: Kunde · Auftragsart (ohne Maßstab) | Grafik N min + „+m“ (Feld ohne Funktion bis 2d); Druckbogen: Kunde · Druckbogen <Medium> <Laminat> <Breite> · n
+    // Zeile 1: Kunde · Auftragsart (ohne Maßstab) | Grafik N min + „+m“ (Feld ohne Funktion bis 2d); Druckbogen: Kunde · Druckbogen <Medium> <Laminat> <Breite> · n/m
+    // (ohne bogen.gesamt nur n)
     const b = druckbogen() ? xmp.bogen || {} : null;
-    $("kopf").innerHTML = !xmp ? "" : b ? `<b>${esc(xmp.kunde)}</b> · Druckbogen ${esc([b.medium, Z.laminatName(aa, b.laminat), b.breite_mm].filter(x => x !== undefined && x !== null && x !== "").join(" "))}${b.nr ? ` · ${esc(b.nr)}` : ""}`
+    $("kopf").innerHTML = !xmp ? "" : b ? `<b>${esc(xmp.kunde)}</b> · Druckbogen ${esc([b.medium, Z.laminatName(aa, b.laminat), b.breite_mm].filter(x => x !== undefined && x !== null && x !== "").join(" "))}${b.nr ? ` · ${esc(b.nr)}${b.gesamt ? `/${esc(b.gesamt)}` : ""}` : ""}`
       : `<b>${esc(xmp.kunde)}</b> · ${esc(aa.name)}`;
     $("kopf").title = xmp && xmp.ablage && xmp.ablage.kundenordner ? xmp.ablage.kundenordner : "";
     const eintraege = xmp && !b && xmp.grafikzeit && Array.isArray(xmp.grafikzeit.eintraege) ? xmp.grafikzeit.eintraege : null;
@@ -88,10 +90,10 @@
     $("btnZuordnen").classList.toggle("akzent", k && zuordnenNaechst);
     $("btnBerechnen").classList.toggle("akzent", k && !zuordnenNaechst);
 
-    // Zeile 4: Summa und Druck folgen in 2c; Export bei Profil „flach“ und bei Druckbogen vorn (Profil produktion folgt in 2c); Auftrag immer
-    $("btnSumma").disabled = true;
-    $("btnDruck").disabled = true;
-    $("btnExport").disabled = !((xmp && xmp.rolle === "arbeitsdatei" && aa.export.profil === "flach") || druckbogen());
+    // Zeile 4: Summa und Druck bei kalkulierter Arbeitsdatei; Export bei Profil „flach“, bei kalkulierter Arbeitsdatei und bei Druckbogen vorn; Auftrag immer
+    $("btnSumma").disabled = !k;
+    $("btnDruck").disabled = !k;
+    $("btnExport").disabled = !((xmp && xmp.rolle === "arbeitsdatei" && aa.export.profil === "flach") || k || druckbogen());
     $("btnAuftrag").disabled = false;
 
     // Zeile 5: Preise aus dem Datensatz (VK): Material = nur Aufkleber, inkl. Mont. = inkl. Montage; gerundet netto, brutto fett; leer ohne Datensatz
@@ -153,9 +155,22 @@
     if (zeilen.length) await G.popup(zeilen.join("\n"));
   }));
 
-  // ----- Export (Profil „flach“) über den Exportkern; Druckbogen (Profil produktion) folgt in 2c -----
+  // ----- Summa, Druck, Export der Druckbögen (Profil produktion): Fehler, Hinweise und Warnungen als ein Popup -----
+  const ui = { ordnerWaehlen: async start => (await G.host("ordnerWaehlen", start)).pfad, meldung: G.popup };
+  const zeigen = async r => { if (r.zeilen.length) await G.popup(r.zeilen.join("\n")); };
+  $("btnSumma").addEventListener("click", () => aktion($("btnSumma"), async () => {
+    await aktualisieren();
+    if (kalkuliert()) await zeigen(await AU.summa(G.host, konf, ui));
+  }));
+  $("btnDruck").addEventListener("click", () => aktion($("btnDruck"), async () => {
+    await aktualisieren();
+    if (kalkuliert()) await zeigen(await AU.druck(G.host, konf));
+  }));
+
+  // ----- Export: Profil „flach“ über den Exportkern; kalkulierte Arbeitsdatei bzw. Druckbogen vorn: Druckbögen des letzten Aufbaus -----
   $("btnExport").addEventListener("click", () => aktion($("btnExport"), async () => {
     await aktualisieren();
+    if (kalkuliert() || druckbogen()) { await zeigen(await AU.exportDruckboegen(G.host, konf, ui)); return; }
     if (!xmp || xmp.rolle !== "arbeitsdatei" || aa.export.profil !== "flach") return;
     if (!info.pfad) throw new Error("Arbeitsdatei ist nicht gespeichert");
     const auftrag = FL.auftrag(aa, xmp, G.host, info.pfad);

@@ -6,6 +6,7 @@
  * Glyphenformen; Punzen zählen nicht), gb (Begrenzung). Näherung: Bei Schnittmasken zählt die volle Pfadlänge, die Fläche ist die sichtbare Begrenzung. */
 "use strict";
 const R = require("./rollen");
+const PM = require("./passermarken");
 const PT_MM = 25.4 / 72;
 
 // Illustrator-Bounds [l, t, r, b] (y nach oben) -> mm 1:1 mit y nach unten.
@@ -201,7 +202,8 @@ function aufbauen(daten, kx) {
     const obj = {
       nr: objekte.length, id: tags.id || null, original: tags.original || null, ref: o.ref, illustratorName: o.name || "", ebene: o.ebene, verfahren, anzahl,
       folie, medium: verfahren === "druck" ? medium : null, laminat: verfahren === "druck" ? tags.laminat : null, cut: !!o.cut,
-      attribute: attr.filter(x => aufschlaege[x]), tape: { vorschlag: false, gesetzt: false }, teile: [], flaeche_je_folie: {}, teile_je_folie: {}
+      attribute: attr.filter(x => aufschlaege[x]), tape: { vorschlag: false, gesetzt: false }, teile: [], flaeche_je_folie: {}, teile_je_folie: {},
+      form: o.form || null
     };
 
     if (verfahren === "plott") {
@@ -229,15 +231,24 @@ function aufbauen(daten, kx) {
         obj.flaeche_je_folie[key] = fk.length === 1 ? obj.messung.flaeche_m2 : m2(b);
         obj.teile_je_folie[key] = fk.length === 1 ? obj.messung.teile : messen(jeFolie[key].blaetter, k).teile;
       });
+      // mehrfarbig (≥ 2 Farbschlüssel, §10.1): je Farbe ein Block aus den Teilen der Farbe plus beiden Passermarken, Lage zueinander fest, nie geteilt;
+      // die Marken zählen nicht zu Teilen, Schnittlänge und Fläche
+      const mitBox = fk.filter(key => jeFolie[key].blaetter.some(b => b.box));
+      const pm = mitBox.length >= 2 ? PM.planen(Object.fromEntries(mitBox.map(key => [key, jeFolie[key].blaetter.filter(b => b.box).map(b => b.box)])), MK.passermarken) : null;
+      const absolut = b => ({ x0: r2(b.x0 + pm.umriss.x0), y0: r2(b.y0 + pm.umriss.y0), x1: r2(b.x1 + pm.umriss.x0), y1: r2(b.y1 + pm.umriss.y0) });
       for (const key of fk) {
         const bl = jeFolie[key].blaetter.filter(b => b.box);
         if (!bl.length) continue;
         const gesamt = bl.reduce((u, b) => union(u, b.box), null);
-        let stuecke = [{ blaetter: bl, box: gesamt }];
-        const w = breite(gesamt), h = hoehe(gesamt), mm = v => Math.round(v) + " mm";
+        const block = pm ? absolut(pm.bloecke[key]) : null;
+        let stuecke = [{ blaetter: bl, box: block || gesamt }];
+        const w = breite(stuecke[0].box), h = hoehe(stuecke[0].box), mm = v => Math.round(v) + " mm";
         const maxQuer = maxQuerFuer(jeFolie[key].farbe.preisserie);
         if (maxQuer === null) continue;
-        if (Math.min(w, h) > maxQuer + TOL) {
+        if (block && Math.min(w, h) > maxQuer + TOL) {
+          fehler.push(`${wo} (${key}): Block mit Passermarken ${mm(w)} × ${mm(h)} passt in keiner Lage in ${maxQuer} mm Höhe`);
+          continue;
+        } else if (Math.min(w, h) > maxQuer + TOL) {
           const geteilt = anLueckenTeilen(bl, maxQuer, maxLang);
           if (!geteilt) { fehler.push(`${wo} (${key}): ${mm(w)} × ${mm(h)} passt in keiner Lage in ${maxQuer} mm Höhe und lässt sich nicht an Lücken teilen`); continue; }
           stuecke = geteilt;
@@ -249,10 +260,10 @@ function aufbauen(daten, kx) {
         // je Farbschlüssel genestet (970G-010 und 970M-010 getrennt), Preis je Serie
         const c = jeFolie[key].farbe;
         const g = gruppe("plott|" + c.schluessel, { verfahren, schluessel: c.schluessel, serie: c.preisserie, laminat: null, farbfeld: c.name });
-        stuecke.forEach((st, i) => teilNeu(g, obj, {
+        stuecke.forEach((st, i) => teilNeu(g, obj, Object.assign({
           stueck: stuecke.length > 1 ? `${i + 1}/${stuecke.length}` : "", b_mm: r2(breite(st.box)), h_mm: r2(hoehe(st.box)), box: st.box,
           blaetter: st.blaetter.map(b => ({ path: b.path, clips: b.clips }))
-        }));
+        }, block ? { boxTeile: gesamt, ohneMarken: { b_mm: r2(breite(gesamt)), h_mm: r2(hoehe(gesamt)) }, marken: pm.marken.map(absolut), kante_mm: pm.kante } : {})));
       }
     } else {
       // Außenkante = sichtbare Begrenzung des ganzen Objekts (Motiv inkl. Anschnitt, vereinigt mit einer vorhandenen Cutkontur; durch Schnittmasken

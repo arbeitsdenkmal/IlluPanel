@@ -1,6 +1,6 @@
 # Spezifikation Stufe 2 „Zuordnen, Kalkulation, Schneidedaten, Druckbögen“ — PAM-Werkzeuge
 
-Stand: 30.10.2026, Fassung 4 (Teilstufen 2c und 2d spezifiziert: Passermarken, Summa, Druck, Export, Grafikzeit — Abschnitte 7, 10, 11, 12, 14 geändert, 18 und 19 neu). Fassung 3: Ableitungen geklärt, MockUps freigegeben, Festlegungen CC aus 2a bestätigt (Abschnitte 15–17). Grundlage: `claude/REGISTER_NEUAUFBAU.md` (Register), `claude/PREISLOGIK.md` v6 mit den Änderungen im Register, `claude/SPEZ_01_Fundament.md` (gebaut, 3.0.1), Antworten Markus vom 30.10. (Fragen 1–12 plus Nachfragen; 2c/2d: Fragen 1–12 und Ableitungen 1–17, Abschnitte 18–19), `Infos/PRODUKTIONSREGELN.md`, `Infos/OPOS_ANALYSE.md`. Nur für Fahrzeugbeschriftung und Beschriftung. SDK-unabhängig: alles, was später aus Supabase kommt oder dorthin geht, läuft in Stufe 2 über die Preisquellen-Schnittstelle (lesen) und das XMP der Arbeitsdatei (schreiben).
+Stand: 30.10.2026, Fassung 5 (Zusammenführung: Fassung 4 des 2c/2d-Chats plus Korrekturen 2b — `bogen.gesamt`, `IP_Originalfarbe`, `kein_tape`, Panel add/Unterebene, §17.1). Fassung 4 (Teilstufen 2c und 2d spezifiziert: Passermarken, Summa, Druck, Export, Grafikzeit — Abschnitte 7, 10, 11, 12, 14 geändert, 18 und 19 neu). Fassung 3: Ableitungen geklärt, MockUps freigegeben, Festlegungen CC aus 2a bestätigt (Abschnitte 15–17). Grundlage: `claude/REGISTER_NEUAUFBAU.md` (Register), `claude/PREISLOGIK.md` v6 mit den Änderungen im Register, `claude/SPEZ_01_Fundament.md` (gebaut, 3.0.1), Antworten Markus vom 30.10. (Fragen 1–12 plus Nachfragen; 2c/2d: Fragen 1–12 und Ableitungen 1–17, Abschnitte 18–19), `Infos/PRODUKTIONSREGELN.md`, `Infos/OPOS_ANALYSE.md`. Nur für Fahrzeugbeschriftung und Beschriftung. SDK-unabhängig: alles, was später aus Supabase kommt oder dorthin geht, läuft in Stufe 2 über die Preisquellen-Schnittstelle (lesen) und das XMP der Arbeitsdatei (schreiben).
 
 Kennzeichnung: **[R x.y]** Registerpunkt · **[P §n]** PREISLOGIK · **[M]** Antwort Markus 30.10. · **[A-n]** Ableitung Claude, geklärt mit Markus 30.10., Abschnitt 15 · **[B-n]** Ableitung Claude zu 2c/2d, geklärt mit Markus 30.10., Abschnitt 18 · **[PM n]** Antwort Markus zu Passermarken, Abschnitt 19.
 
@@ -37,10 +37,11 @@ MockUps `Infos/mockups/MOCKUP_STUFE2.html` (3. Fassung), von Markus am 30.10. fr
 | `IP_Laminat` | `matt` / `glaenzend`, nur Druck |
 | `IP_Anzahl` | ganze Zahl ≥ 1, Standard `1` [R 3.4] |
 | `IP_Komplexitaet` | `0`–`3`, nur wo geschnitten wird [R 1.8] |
-| `IP_Attribute` | kommagetrennt aus `sicke`, `woelbung`, `tape` |
+| `IP_Attribute` | kommagetrennt aus `sicke`, `woelbung`, `tape` (Tape manuell an), `kein_tape` (Tape manuell aus); ohne beides gilt der Vorschlag („auto“) |
 | `IP_Original` | `IP_Id` des Originals bei Varianten |
 | `IP_Herkunft` | nur auf Druckbögen: `IP_Id` des Objekts, dessen Symbolinstanz das ist |
 | `IP_Druckrichtung` | nur auf Druckbögen: Druckrichtungsdreieck (Wert `1`), kein Motiv |
+| `IP_Originalfarbe` | gesicherte Originalfarbe am Pfad/Textrahmen beim Plott-Umfärben (Schlüssel `originalfarbe` in `schema.json`); ersetzt die frühere Doppelnutzung von `IP_Original` |
 
 **Objektname** [M 3]: frei, keine Pflicht, keine Eindeutigkeit. Anzeige in „Zusammenfassung“/PDF/Bogen: Illustrator-Name des Objekts; ohne Namen „Objekt“ + laufende Nummer in Ebenenreihenfolge (nur Anzeige, nicht gespeichert). [A-1]
 
@@ -64,7 +65,7 @@ MockUps `Infos/mockups/MOCKUP_STUFE2.html` (3. Fassung), von Markus am 30.10. fr
 - `kalkulation`: letzter Kalkulationsdatensatz, ersetzt bei jedem Berechnen.
 - `aufbau`: letzter Druckbogen-Aufbau (Export verarbeitet nur Bögen dieses Aufbaus).
 
-**Druckbogen-Dokumente** (`rolle: "druckbogen"`): eigenes XMP mit `kunde`, `auftragsart`, `massstab: 1`, `auftrag`, `ablage` (Kopie aus der Arbeitsdatei) sowie `bogen: { aufbau, medium, laminat, breite_mm, nr, arbeitsdatei: "<Pfad>" }`. Der Pfad dient der Zuordnung beim Export und der Grafikzeit (Abschnitt 12).
+**Druckbogen-Dokumente** (`rolle: "druckbogen"`): eigenes XMP mit `kunde`, `auftragsart`, `massstab: 1`, `auftrag`, `ablage` (Kopie aus der Arbeitsdatei) sowie `bogen: { aufbau, medium, laminat, breite_mm, nr, gesamt, arbeitsdatei: "<Pfad>" }`. `gesamt` = Zahl der Bögen dieses Aufbaus (für „n/m“ im Panel, gesetzt beim Aufbau in 2c; 2b zeigt ohne das Feld nur „n“). Der Pfad dient der Zuordnung beim Export und der Grafikzeit (Abschnitt 12).
 
 ## 4. Konfiguration und Preisquelle
 
@@ -106,7 +107,7 @@ Gilt für Berechnen, Summa, Druck; der JSX-Kern liefert die Rohdaten, Node misst
 - **Art**: Digitaldruck | Plott (in dieser Reihenfolge) [M]. **Anzahl**: Feld, ganze Zahl ≥ 1, Standard 1; bei Mehrfachauswahl mit unterschiedlichen Werten leer („mixed“).
 - **Plott**: Block „Farben im Objekt“ — eine Zeile je Füllfarbe der ausgewählten Objekte (Chip, Name, Status „✓ <Schlüssel>“ bei erkannter Oracal-Farbe oder bekannter `farbzuordnung`, sonst „→ zuordnen“); die markierte Zeile ist die, der die nächste Wahl gilt, nach einer Zuordnung springt die Markierung zur nächsten offenen Zeile. Darunter Serie (651, 751C, 951, 970G, 970M), Feld „Farb-Nr.“ (filtert die Kacheln der gewählten Serie beim Tippen auf Teiltreffer der Nummer; ohne Serie alle Serien; genau ein Treffer + Enter übernimmt) und das Kachelraster der Serie (eine Kachel je ASE-Farbe, Farbe LAB → sRGB, Nummer als Tooltip; Klick ordnet der markierten Zeile zu). OK erst, wenn alle Zeilen zugeordnet sind. Umfärben bei OK (Farbfeld anlegen/wiederverwenden), Originalfarben als Tag am Pfad sichern und bei späterer Druck-Zuordnung zurückholen (wie bisher). Konturen, Bilder, Verläufe sperren Plott.
 - **Digitaldruck**: Medium (3162, 3551, 3951, 3676, UltraTack, MonsterTack), Laminat matt | glänzend (3676 nur glänzend).
-- **Komplexität** K0–K3 nur bei Plott und bei Druck mit Cutkontur [R 1.8]; Tooltip aus `komplexitaet()` (Bezeichnung, Prozent). **Aufschläge** Sicke, Wölbung (aus `aufschlaege()`, Tooltip mit Wert); bei Druck zusätzlich „Tape auto“ (Vorschlag aus dem letzten Berechnen; Klick setzt manuell; Tooltip wie bisher).
+- **Komplexität** K0–K3 nur bei Plott und bei Druck mit Cutkontur [R 1.8]; Tooltip aus `komplexitaet()` (Bezeichnung, Prozent). **Aufschläge** Sicke, Wölbung (aus `aufschlaege()`, Tooltip mit Wert); bei Druck zusätzlich Tape mit drei Zuständen, Klick schaltet weiter: „Tape auto“ (kein Wert, Vorschlag aus dem letzten Berechnen gilt) → „Tape“ (`tape`, manuell an) → „kein Tape“ (`kein_tape`, manuell aus); Tooltip nennt den Vorschlag.
 - **Vorauswahl**: Art nach Tag, sonst Sandbox → Digitaldruck, sonst nach Ebene; Medium/Laminat/Serie aus `vorauswahl`.
 - **Mehrfachauswahl** [M]: ein Dialog, gleiche Werte für alle; unterschiedliche Werte gestrichelt/leer („mixed“), ändern nur bei neuer Wahl; gemischte Art → Art ungewählt, Farb-/Medienbereich aus. Jedes Objekt bleibt ein eigenes Stück; Gruppen sind ein Stück mit ggf. mehreren Folien.
 - **OK**: Tags schreiben (`IP_Id` vergeben, falls fehlend; Varianten-Erkennung vorher), Objekte positionsgleich auf die Ebene der Rolle, `vorauswahl`/`farbzuordnung` ins XMP; CSEvent an das Panel, Panel und ein offenes „Zusammenfassung“ lesen neu. **Enter** = OK, **Esc** = Abbrechen; Fußzeile zeigt die erste offene Warnung, OK gesperrt.
@@ -179,7 +180,7 @@ Modeless-Extension, ersetzt „Objekte“ und „Details“ [M]; öffnet nach �
 
 ## 10. Plott-Schneidedaten (Summa) — Teilstufe 2c
 
-Ablauf über den Exportkern (Profil `produktion`, Abschnitt 11.3): Arbeitsdatei speichern (ungespeichert → Abbruch mit Popup) [B-7] → Prüfungen (§5) → Varianten-Erkennung (§3.1) → Nesting je Farbschlüssel (§7, Nutzbreite −25, Exemplare nach Anzahl, Blöcke bei mehrfarbigen Stücken) → je Bogen ein Hilfsdokument 1:1, Zeichenfläche = Umriss + 10 mm je Seite, Pfade ohne Füllungs-/Konturänderung wie bisher (Text in Pfade, Schnittmasken aufgelöst) → PDF/X-4 `<Kunde>_<Serie>-<Farbe>_cut_NN.pdf` (NN = Bogen) [R 5.9] → Hilfsdokumente schließen, Arbeitsdatei bleibt unverändert, Ist-Lage gegen Planung prüfen (Hinweis ab 0,1 mm) → ein Eintrag in `exporte[]`. Hinweise und Warnungen als ein Popup.
+Ablauf über den Exportkern (Profil `produktion`, Abschnitt 11.3; `kein_tape` schlägt den Tape-Vorschlag, `tape` setzt ihn — gilt in Kalkulation und Messung): Arbeitsdatei speichern (ungespeichert → Abbruch mit Popup) [B-7] → Prüfungen (§5) → Varianten-Erkennung (§3.1) → Nesting je Farbschlüssel (§7, Nutzbreite −25, Exemplare nach Anzahl, Blöcke bei mehrfarbigen Stücken) → je Bogen ein Hilfsdokument 1:1, Zeichenfläche = Umriss + 10 mm je Seite, Pfade ohne Füllungs-/Konturänderung wie bisher (Text in Pfade, Schnittmasken aufgelöst) → PDF/X-4 `<Kunde>_<Serie>-<Farbe>_cut_NN.pdf` (NN = Bogen) [R 5.9] → Hilfsdokumente schließen, Arbeitsdatei bleibt unverändert, Ist-Lage gegen Planung prüfen (Hinweis ab 0,1 mm) → ein Eintrag in `exporte[]`. Hinweise und Warnungen als ein Popup.
 
 - **Gruppen im Schneidedokument**: je Exemplar eine Gruppe `<Anzeigename> <k>` (k = Exemplar, 1 … Anzahl) [B-10]; bei Blöcken enthält die Gruppe die Teile der Farbe und die beiden Passermarken.
 - **Wiederholung** (gleicher Auftrag, neuer Lauf): die Dateien ersetzen die bisherigen gleichen Namens — Ausnahme zu R 5.7 nur für Produktionsdateien aus dem Panel (Abschnitt 11.3) [B-8]. Ältere Bögen mit höherer Nummer bleiben liegen und werden im Popup genannt.
@@ -236,11 +237,11 @@ Regel OPOS_ANALYSE §4 mit P = 400 mm [R 3.6]: Bezugsrechteck = sichtbare Begren
 
 320 × 142 (Inhalt 122 px), Mindesthöhe entsprechend; Aktualisierung nur bei Maus ins Panel und nach eigener Aktion [R 4.7].
 - **Zeile 1**: Kunde · Auftragsart (ohne Maßstab [M 6]) · rechts „Grafik N min“ mit Feld „+m“.
-- **Zeile 2 (Objektzeile)**: Name der Auswahl (fett), rechts Folie mit Chip und Anzahl-Marke „×n“; „Keine Auswahl“ gedimmt; bei mehreren Objekten „n Objekte“, Folie nur wenn alle gleich.
-- **Zeile 3**: **add** (Auswahl nicht oder nicht vollständig zugeordnet) bzw. **edit** · **berechnen** (rechnet, schreibt den Datensatz, öffnet/aktualisiert „Zusammenfassung“, Hinweise als ein Popup). Orange: add, solange Zuordnen der nächste Schritt ist, sonst berechnen.
+- **Zeile 2 (Objektzeile)**: Name der Auswahl (fett), rechts Folie mit Chip und Anzahl-Marke „×n“; „Keine Auswahl“ gedimmt; „Objekt in einer Unterebene“ gedimmt, wenn die Auswahl nicht aus obersten Objekten besteht; bei mehreren Objekten „n Objekte“, Folie nur wenn alle gleich.
+- **Zeile 3**: **add** (Auswahl nicht oder nicht vollständig zugeordnet) bzw. **edit** · **berechnen** (rechnet, schreibt den Datensatz, öffnet/aktualisiert „Zusammenfassung“, Hinweise als ein Popup). add ist ohne Auswahl gesperrt und dann nicht orange. Orange: add, sobald eine Auswahl nicht oder nicht vollständig zugeordnet ist, sonst berechnen.
 - **Zeile 4 (Werkzeugzeile, Linie)**: **Summa** · **Druck** · **Export** (orange) · **Auftrag** (Schrift orange). Export bei Arbeitsdatei einer kalkulierten Art: Druckbögen des letzten Aufbaus (11.2).
 - **Zeile 5**: „Material <netto> <brutto>“ links, „inkl. Mont. <netto> <brutto>“ rechts (8.3).
-- **Zustände**: ohne Panel-Dokument wie Stufe 1; Arbeitsdatei anderer Auftragsart (flach) wie Stufe 1 plus Zeile 1 mit Grafikzeit; **Druckbogen vorn**: Zeile 1 „Kunde · Druckbogen <Medium> <Laminat> <Breite> · n/m“, nur Export und Auftrag aktiv, Zeilen 2 und 5 leer.
+- **Zustände**: alle fünf Zeilen bleiben in jedem Zustand stehen, nicht zutreffende Buttons gesperrt (FESTLEGUNGEN 2b Punkt 5); ohne Panel-Dokument nur „Auftrag“ aktiv; Arbeitsdatei anderer Auftragsart (flach): Zeile 1 mit Grafikzeit, Export und Auftrag aktiv; **Druckbogen vorn**: Zeile 1 „Kunde · Druckbogen <Medium> <Laminat> <Breite> · n/m“, nur Export und Auftrag aktiv, Zeilen 2 und 5 leer.
 
 ## 14. Aufbau im Repo, Reihenfolge, Tests
 
@@ -289,6 +290,10 @@ Tests (so viel wie nötig, so wenig wie möglich [R 7.9]): `node --test tests/*.
 9. Datensatz: `netto` nach Mindestbetrag vor Rundung; Fläche/Teile je Exemplar, Minuten/Beträge für alle; Rundung 2/4 Nachkommastellen. — ok; `mindestbetrag_greift` in 2b je Preisart (`vk`, `mindest`)
 10. Varianten-Erkennung vorerst nur bei Berechnen. — ok, Zuordnen kommt in 2b dazu, Summa und Druck in 2c
 11. Neue Meldungstexte („… hat eine ungültige Folie (…) – wird nicht berechnet“, „…: Anzahl „…“ ungültig – ganze Zahl ≥ 1 erforderlich“). — freigegeben
+
+### 17.1 Teilstufe 2b — bestätigt 30.10.
+
+FESTLEGUNGEN.md Abschnitt „2b“, Punkte 1–40: bestätigt, mit drei Änderungen (Korrektur 2b): Punkt 8 — add ohne Auswahl gesperrt und nicht orange, orange erst mit Auswahl; Punkt 13 — dritter Tape-Zustand „kein Tape“ (`kein_tape` in `IP_Attribute`, §3.1/§6); Punkt 26 — Objektzeile zeigt „Objekt in einer Unterebene“, wenn die Auswahl nicht aus obersten Objekten besteht (§13). Punkt 5 (alle fünf Panel-Zeilen bleiben in jedem Zustand stehen) ersetzt in §13 „wie Stufe 1“.
 
 Künftig: eigene Festlegungen von CC, die über den Auftrag hinausgehen, stehen in `FESTLEGUNGEN.md` im Repo (Abschnitt je Teilstufe, nummeriert, je ein Satz), nicht verteilt in README-Absätzen; README übernimmt sie erst nach Bestätigung durch Markus.
 

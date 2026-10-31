@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.0-2c – Stufe 2c „Produktionsdaten“ (31.10.2026)
+
+- Passermarken für mehrfarbigen Plott (`passermarken.js`), Block-Nesting in `teile.js`/Kalkulation; `medien.json` Block `passermarken` mit Startprüfung.
+- Summa (`schneidedaten.js`, `IP.schneidebogenSpeichern`), Druck (`druckbogen.js`, `herkunft.js`, `IP.druckbogenAufbauen`, `aufbau` ins XMP, `bogen.gesamt`), Export der Druckbögen mit eigenen OPOS-Marken (`opos.js`).
+- Exportkern: `ersetzen` je Datei. `schema.json`: Tag `druckrichtung`, `bogen.gesamt`. Panel: Summa/Druck/Export aktiv, „n/m“ bei Druckbogen; Tape-Tooltip „Tape: …“.
+
 ## 3.1.0-2b – Korrektur 2b (30.10.2026)
 
 - Panel: add ohne Auswahl gesperrt und nicht orange, „Objekt in einer Unterebene“; Tape mit drei Zuständen (`kein_tape` in `IP_Attribute`); FESTLEGUNGEN 2b bestätigt.

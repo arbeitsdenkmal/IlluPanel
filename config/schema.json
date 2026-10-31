@@ -7,7 +7,7 @@
   },
   "rollen": ["arbeitsdatei", "druckbogen", "nutzenbogen", "hilfsdokument"],
   "rollenfelder": {
-    "druckbogen": { "bogen": ["aufbau", "medium", "laminat", "breite_mm", "nr", "arbeitsdatei"] }
+    "druckbogen": { "bogen": ["aufbau", "medium", "laminat", "breite_mm", "nr", "gesamt", "arbeitsdatei"] }
   },
   "tags": {
     "id": "IP_Id",
@@ -22,6 +22,7 @@
     "verfahren": "IP_Verfahren",
     "stufen": "IP_Stufen",
     "farbe": "IP_Farbe",
-    "originalfarbe": "IP_Originalfarbe"
+    "originalfarbe": "IP_Originalfarbe",
+    "druckrichtung": "IP_Druckrichtung"
   }
 }

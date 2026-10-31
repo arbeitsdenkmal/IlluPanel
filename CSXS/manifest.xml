@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="12.0" ExtensionBundleId="de.pamnm.illupanels" ExtensionBundleVersion="3.1.0-2b"
+<ExtensionManifest Version="12.0" ExtensionBundleId="de.pamnm.illupanels" ExtensionBundleVersion="3.1.0-2c"
                    ExtensionBundleName="PAM-Werkzeuge" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="de.pamnm.illupanels.panel" Version="3.1.0-2b"/>
-    <Extension Id="de.pamnm.illupanels.anlegen" Version="3.1.0-2b"/>
-    <Extension Id="de.pamnm.illupanels.objekt" Version="3.1.0-2b"/>
-    <Extension Id="de.pamnm.illupanels.zusammenfassung" Version="3.1.0-2b"/>
+    <Extension Id="de.pamnm.illupanels.panel" Version="3.1.0-2c"/>
+    <Extension Id="de.pamnm.illupanels.anlegen" Version="3.1.0-2c"/>
+    <Extension Id="de.pamnm.illupanels.objekt" Version="3.1.0-2c"/>
+    <Extension Id="de.pamnm.illupanels.zusammenfassung" Version="3.1.0-2c"/>
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>

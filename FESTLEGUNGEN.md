@@ -20,7 +20,7 @@ Status: bestätigt 30.10. (SPEZ_02 §17)
 
 ## 2b
 
-Status: 1–40 bestätigt 30.10. (SPEZ_02 §17.1), Punkt 8, 13 und 26 geändert (Korrektur 2b); 41–44 aus der Korrektur 2b offen (zur Bestätigung).
+Status: bestätigt 30.10. (1–40 SPEZ_02 §17.1, 41–44 Auftrag 2c); Punkt 8, 13 und 26 geändert (Korrektur 2b), Punkt 42 mit neuem Wortlaut (Auftrag 2c).
 
 1. Originalfarben beim Umfärben liegen im neuen Tag `IP_Originalfarbe` (Schlüssel `originalfarbe` in `config/schema.json`), weil `IP_Original` ab SPEZ_02 die Id des Originals einer Variante trägt.
 2. Das Fenster „Objekt“ hat eine feste Größe 480 × 470 für den Plott-Zustand (ORACAL 951 mit 145 Kacheln); bei Digitaldruck bleibt unten Leerraum, bei vielen Farben scrollt der Inhalt.
@@ -63,6 +63,41 @@ Status: 1–40 bestätigt 30.10. (SPEZ_02 §17.1), Punkt 8, 13 und 26 geändert 
 39. Datensätze aus 2a mit `mindestbetrag_greift` ohne Preisart werden als VK gelesen.
 40. `preise_freigegeben` wird, falls vorhanden, weiter auf 0/1 geprüft.
 41. Enthält die Auswahl ein Objekt in einer Unterebene, gilt sie im Panel als leer: „add“ ist gesperrt und nicht orange (wie ohne Auswahl).
-42. Tape-Tooltip: „Tape (VK je m² Objektfläche) – Vorschlag aus der Messung der Cutkontur, sonst des Motivumrisses: <Tape | kein Tape | unterschiedlich | erst nach „berechnen“>“.
+42. Tape-Tooltip: „Tape: <Tape | kein Tape | unterschiedlich | erst nach „berechnen“>“.
 43. Tape bei Mehrfachauswahl mit unterschiedlichen Zuständen: gestrichelt mit der Beschriftung „Tape auto“, der erste Klick setzt alle auf „Tape auto“; gedrückt ist der Button, wenn Tape wirkt („Tape“ oder „Tape auto“ mit Vorschlag Tape).
 44. Stehen `tape` und `kein_tape` beide in `IP_Attribute`, gilt `kein_tape`; „Zusammenfassung“ zeigt „Tape“ bei `tape` und bei „auto“ mit Tape im Datensatz.
+
+## 2c
+
+Status: offen (zur Bestätigung). Rückfrage 31.10. beantwortet: Druckbogen-Nummer, „n von m“, NN im Dateinamen und `bogen.gesamt` zählen je Medium + Laminat + Rolle.
+
+1. Die Lagesuche der Passermarken rechnet mit den Begrenzungsrechtecken der Blätter (Pfad, zusammengesetzter Pfad, Textrahmen) je Farbe; Abstand ist der kürzeste Abstand zweier Rechtecke.
+2. Eine Marke gilt als „in der linken Hälfte“, wenn sie ganz innerhalb des Umrisses und ganz links der Umrissmitte liegt (rechts entsprechend).
+3. Die beiden Marken halten auch zueinander mindestens `abstand_mm`; gibt es innen kein solches Paar, liegt die rechte Marke außen.
+4. Rasterreihenfolge ist Zeile für Zeile von oben links; bei gleicher Blockflächensumme entscheidet zuerst die Lage der linken, dann die der rechten Marke.
+5. Ist schon die kleinste Stufe größer als `anteil` × kürzere Umrissseite, gilt die kleinste Stufe (5 mm).
+6. Ein Block, der in keiner Lage passt, bricht ab mit „<Objekt> (<Folie>): Block mit Passermarken <b> × <h> mm passt in keiner Lage in <n> mm Höhe“.
+7. Die Rüstzeit wird bei Blöcken nach der Fläche ohne Marken verteilt, damit die Marken nur über das Nesting auf Verbrauch/EK wirken.
+8. Im Schneidedokument werden die Marken (Name „Passermarke“, Füllung Farbfeld der Farbe) an ihrer Lage im Realmaß relativ zu den Teilen gezeichnet und mit ihnen gruppiert, skaliert und gedreht.
+9. An Lücken geteilte Teile heißen im Schneidedokument „<Anzeigename> <k> <i>/<n>“.
+10. Ohne passende Objekte melden Summa „Keine Plott-Objekte“ und Druck „Keine Digitaldruck-Objekte“.
+11. Ältere Bögen mit höherer Nummer stehen im Popup unter „Ältere Bögen mit höherer Nummer (bleiben liegen):“, geprüft im Zielordner des Exports (Server-Auftragsordner, sonst lokal).
+12. Der Hinweis zur Ist-Lage bei Summa lautet wie bisher „<Datei>: „<Teil>“ weicht n mm von der Planung ab“ und gilt wie beim Druck ab 0,1 mm einschließlich.
+13. Die Aufbau-Id ist der Millisekunden-Zeitstempel als Text, `aufbau.zeit` die ISO-Zeit.
+14. Das Bogen-XMP entsteht als neues Dokumentobjekt (Rolle `druckbogen`, Maßstab 1, Quelle „leer“, leere Grafikzeit und Exporte) mit Kopien von `auftrag` und `ablage` der Arbeitsdatei.
+15. Offene Druckbögen werden über `bogen.aufbau`, `medium`, `laminat` und `nr` im XMP gefunden, nicht über den Dokumentnamen.
+16. Je `IP_Id` gibt es einen eindeutigen Namen (Anzeigename, bei Doppelung „ (2)“); Instanzen heißen „<eindeutiger Name> <k>“, auch wenn eine Variante das Symbol des Originals nutzt.
+17. Der Geometrievergleich der Varianten nutzt wie bisher 0,1 mm Toleranz im Realmaß gegen den Bezug des Original-Symbols; die Form liefert `objekteLesen` für jedes gemessene Digitaldruck-Objekt.
+18. Prüfhinweise beim Druck tragen das Präfix „<Medium> <Laminat>, Bogen n: “; „Cutkontur ragt über die Objekt-Außenkante“ und die Cutkonturen-Zahl werden am Symbolinhalt beim Anlegen des Symbols geprüft.
+19. Ist die Arbeitsdatei beim Export nicht offen, lautet das Popup „Arbeitsdatei nicht geöffnet:“ mit dem Pfad.
+20. Befunde der Sammelprüfung (keine Cutkontur, Breite) und „stammt aus einem früheren Aufbau – nicht gespeichert“ haben die Texte des alten Projekts; Cutkontur- und Breitenbefunde stehen gemeinsam in einem Popup.
+21. „Keine offenen Druckbögen“ nennt darunter offene Bögen früherer Aufbauten.
+22. Die Breite wird in der Sammelprüfung am noch nicht umgewandelten Bogen geplant und nach dem Umwandeln für das Zeichnen erneut.
+23. Mit `ersetzen` entfernt der Exportkern eine lokal liegende alte Datei gleichen Namens vor dem Schreiben.
+24. `IP.xmpLesen`, `IP.xmpSchreiben` und `IP.dokumentSpeichern` nehmen optional einen Dokumentpfad; Summa, Druck und Export schreiben XMP und speichern gezielt in der Arbeitsdatei.
+25. Name und CMYK des Cutkontur-Farbfelds kommen aus `druck.cut_farbfeld`/`cut_cmyk` der Auftragsart statt aus einer Konstante im JSX-Kern.
+26. Summa und Druck sind bei kalkulierter Arbeitsdatei immer aktiv, Export auch bei kalkulierter Arbeitsdatei.
+27. Popup-Reihenfolge bei Summa und Export: Meldung des Exportkerns, Hinweise, ältere Bögen, Warnungen der Prüfungen.
+28. Nach dem Schreiben von `aufbau` wird die Arbeitsdatei nicht erneut gespeichert; das geschieht vor dem Export.
+29. Die Startprüfung verlangt `passermarken.stufen_mm` (> 0, absteigend), `anteil` (> 0 und ≤ 1) und `abstand_mm` (≥ 0).
+30. Neue Module `passermarken.js`, `herkunft.js`, `opos.js`, `schneidedaten.js`, `druckbogen.js`; `auftrag.js` enthält die gemeinsame Analyse sowie `summa`, `druck` und `exportDruckboegen`.

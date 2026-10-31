@@ -191,6 +191,16 @@ function medienLaden(configOrdner) {
   if (!istObjekt(m.druck)) fehler.push({ datei, grund: "Bereich druck fehlt" });
   else for (const f of ["opos_zugabe_mm", "opos_marken_rand_mm", "kantenhalter_mm", "reserve_kontur_mm"]) if (typeof m.druck[f] !== "number") fehler.push({ datei, grund: `Feld druck.${f} fehlt` });
   if (typeof m.schwelle_prozent !== "number") fehler.push({ datei, grund: "Feld schwelle_prozent fehlt" });
+  // Passermarken (SPEZ_02 §10.1): Stufen > 0 absteigend, Anteil 0 … 1, Abstand ≥ 0
+  const pm = m.passermarken;
+  if (!istObjekt(pm)) fehler.push({ datei, grund: "Bereich passermarken fehlt" });
+  else {
+    const st = pm.stufen_mm;
+    if (!Array.isArray(st) || !st.length || !st.every(v => typeof v === "number" && v > 0) || st.some((v, i) => i && v >= st[i - 1]))
+      fehler.push({ datei, grund: "Feld passermarken.stufen_mm fehlt oder ist nicht absteigend" });
+    if (!(typeof pm.anteil === "number" && pm.anteil > 0 && pm.anteil <= 1)) fehler.push({ datei, grund: "Feld passermarken.anteil fehlt (Zahl > 0 und ≤ 1)" });
+    if (!(typeof pm.abstand_mm === "number" && pm.abstand_mm >= 0)) fehler.push({ datei, grund: "Feld passermarken.abstand_mm fehlt" });
+  }
   if (!istObjekt(m.medien) || !Object.keys(m.medien).length) fehler.push({ datei, grund: "Bereich medien fehlt oder ist leer" });
   if (fehler.length) throw new KonfigFehler(fehler);
   return m;

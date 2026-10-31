@@ -61,15 +61,16 @@ const unter = (wurzel, rel, P) => (P || path).join(wurzel, ...String(rel).split(
 
 /**
  * Sicherer Transfer: Kopie nach <ziel>/.<name>.teil, Größenvergleich, Umbenennen auf den Endnamen. Nie halbe Dateien unter Endnamen.
+ * ersetzen (Produktionsdateien, SPEZ_02 §11.3): eine vorhandene Datei gleichen Namens wird durch das Umbenennen ersetzt, sonst ist sie ein Fehler.
  * Fehler: .teil entfernen, Fehler weiterwerfen (Quelle bleibt unberührt).
  */
-async function sicherKopieren(quelle, zielOrdner, name) {
+async function sicherKopieren(quelle, zielOrdner, name, ersetzen) {
   const teil = path.join(zielOrdner, `.${name}.teil`), ziel = path.join(zielOrdner, name);
   try {
     await fs.promises.copyFile(quelle, teil);
     const [a, b] = await Promise.all([fs.promises.stat(quelle), fs.promises.stat(teil)]);
     if (a.size !== b.size) throw new Error(`Größe weicht ab (${b.size} statt ${a.size} Byte)`);
-    if (vorhanden(zielOrdner, name)) throw new Error(`${name} existiert bereits`);
+    if (!ersetzen && vorhanden(zielOrdner, name)) throw new Error(`${name} existiert bereits`);
     await fs.promises.rename(teil, ziel);
     return ziel;
   } catch (e) {

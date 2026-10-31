@@ -70,8 +70,13 @@ var IP = {};
         x.setProperty(schema().ns, schema().eigenschaft, String(text));
         d.XMPString = x.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
     }
-    IP.xmpLesen = wrap(function () { return ok({ text: xmpTextLesen(doc()) }); });
-    IP.xmpSchreiben = wrap(function (text) { xmpTextSchreiben(doc(), text); return ok({}); });
+    // pfad (optional): Dokument mit diesem Pfad statt des vorderen (Summa, Druck, Export schreiben in die Arbeitsdatei, auch wenn ein Bogen vorn ist)
+    function dokumentNachPfad(pfad) {
+        for (var i = 0; i < app.documents.length; i++) if (docPath(app.documents[i]) === pfad) return app.documents[i];
+        throw "Dokument nicht geöffnet: " + pfad;
+    }
+    IP.xmpLesen = wrap(function (pfad) { return ok({ text: xmpTextLesen(pfad ? dokumentNachPfad(pfad) : doc()) }); });
+    IP.xmpSchreiben = wrap(function (text, pfad) { xmpTextSchreiben(pfad ? dokumentNachPfad(pfad) : doc(), text); return ok({}); });
 
     // ---------- Tags IP_* am PageItem, Werte als Text; Namen aus dem Schema ----------
     function getTag(item, name) {
@@ -109,6 +114,12 @@ var IP = {};
     IP.dokumentInfo = wrap(function () {
         if (app.documents.length === 0) return ok({ hatDokument: false });
         return ok(infoVon(app.activeDocument));
+    });
+    // alle offenen Dokumente mit Name, Pfad und ip:Dokument (Export: Arbeitsdatei und Druckbögen finden)
+    IP.dokumenteListe = wrap(function () {
+        var r = [];
+        for (var i = 0; i < app.documents.length; i++) { var d = app.documents[i]; r.push({ name: d.name, pfad: docPath(d), xmp: xmpTextLesen(d), vorn: d === app.activeDocument }); }
+        return ok({ dokumente: r });
     });
 
     // ---------- Dateiwahl im Dialog „Auftrag“ ----------
@@ -636,7 +647,42 @@ var IP = {};
         for (var i = 0; i < leaves.length; i++) { var li = leafInfo(leaves[i], temp); if (li.cut) o.cut = true; o.blaetter.push(li); }
         o.vb = visualBounds(top);
         if (temp && !o.cut && rolle === "digitaldruck") o.umriss = motivUmriss(top, temp);
+        if (temp && rolle === "digitaldruck") o.form = formDaten(leaves); // Geometrievergleich der Varianten (§3.1, herkunft.js)
         return o;
+    }
+    // Pfadgeometrie (pt, Dokumentkoordinaten): Ankerpunkte mit Griffen [ax, ay, links x, links y, rechts x, rechts y] – aus dem alten Kern
+    function pfadDaten(it) {
+        var pf = it.typename === "CompoundPathItem" ? it.pathItems : (it.typename === "PathItem" ? [it] : []), out = [];
+        for (var i = 0; i < pf.length; i++) {
+            var pp = pf[i].pathPoints, pk = [];
+            for (var j = 0; j < pp.length; j++) { var q = pp[j]; pk.push([q.anchor[0], q.anchor[1], q.leftDirection[0], q.leftDirection[1], q.rightDirection[0], q.rightDirection[1]]); }
+            out.push({ geschlossen: pf[i].closed, punkte: pk });
+        }
+        return out;
+    }
+    // Form eines Objekts für den Geometrievergleich (aus dem alten Kern): Signatur (Aufbau) und Punkte in pt. Pfade: Anker und Griffe;
+    // Text und Bilder: drei Punkte aus ihrer Matrix (Ursprung, + 100 pt in x, + 100 pt in y), Text zusätzlich der Inhalt in der Signatur.
+    function formDaten(leaves) {
+        var sig = [], pk = [];
+        for (var i = 0; i < leaves.length; i++) {
+            var it = leaves[i].item, t = it.typename;
+            if (t === "PathItem" || t === "CompoundPathItem") {
+                var g = pfadDaten(it), z = [];
+                for (var p = 0; p < g.length; p++) {
+                    var pp = g[p].punkte; z.push(pp.length + (g[p].geschlossen ? "z" : ""));
+                    for (var j = 0; j < pp.length; j++) pk.push([pp[j][0], pp[j][1]], [pp[j][2], pp[j][3]], [pp[j][4], pp[j][5]]);
+                }
+                sig.push("P" + z.join(","));
+            } else if (t === "TextFrame" || t === "PlacedItem" || t === "RasterItem") {
+                var m = it.matrix, ox = m.mValueTX, oy = m.mValueTY;
+                if (t === "TextFrame") { ox = it.anchor[0]; oy = it.anchor[1]; }
+                pk.push([ox, oy], [ox + 100 * m.mValueA, oy + 100 * m.mValueB], [ox + 100 * m.mValueC, oy + 100 * m.mValueD]);
+                sig.push(t === "TextFrame" ? "T" + it.contents : t.charAt(0));
+            } else {
+                var b = it.geometricBounds; pk.push([b[0], b[1]], [b[2], b[3]]); sig.push(t);
+            }
+        }
+        return { signatur: sig.join("|"), punkte: pk };
     }
     // spec {rollen: {Ebenenname: Rolle}, messen: true|false, blaetter: false (nur Tags, Name, Ebene)}: oberste Objekte (ohne ausgeblendete) der Ebenen
     // mit Rolle plott, digitaldruck, sandbox in Ebenenreihenfolge. Gemessen (messen) werden nur zugeordnete Objekte (Tag folie) auf plott/digitaldruck.
@@ -853,6 +899,388 @@ var IP = {};
         return ok({ umgefaerbt: count.n, wiederhergestellt: zurueck.n });
     });
 
+    // ---------- Stufe 2c: Produktionsdaten (Summa, Druck, Export) – aus dem alten Kern übernommen ----------
+    // Koordinaten aus Node in mm, y nach unten; Zeichenflächen ab ihrer linken oberen Ecke.
+    function resolve(d, ref, path) {
+        var it = d.layers.getByName(ref.ebene).pageItems[ref.index];
+        for (var i = 0; i < path.length; i++) it = it.pageItems[path[i]];
+        return it;
+    }
+    function ohneMeldungen(fn) {
+        var ui = app.userInteractionLevel;
+        app.userInteractionLevel = UserInteractionLevel.DONTDISPLAYALERTS;
+        try { return fn(); } finally { app.userInteractionLevel = ui; }
+    }
+    function findLayer(d, name) { for (var i = 0; i < d.layers.length; i++) if (String(d.layers[i].name).replace(/^\s+|\s+$/g, "").toLowerCase() === name) return d.layers[i]; return null; }
+    function cutsIn(item, out) {
+        if (item.typename === "GroupItem") { for (var i = 0; i < item.pageItems.length; i++) cutsIn(item.pageItems[i], out); return out; }
+        if (isCutItem(item)) out.push(item);
+        return out;
+    }
+    function unionVB(a, c) { // ExtendScript: verschachteltes „!a ? c : …“ liefert für a = null null statt c – daher mit if
+        if (!a) return c;
+        if (!c) return a;
+        return [Math.min(a[0], c[0]), Math.max(a[1], c[1]), Math.max(a[2], c[2]), Math.min(a[3], c[3])];
+    }
+    // Farbfeld der Cutkontur (cut {name, cmyk} aus der Auftragsart): genau eines; weitere M100-Volltöne werden darauf umgefärbt (nurItems: nur dort)
+    function cutFarbfeld(d, cut) {
+        try { return d.spots.getByName(cut.name); } catch (e) { }
+        var sp;
+        try { app.redraw(); sp = d.spots.add(); } catch (e1) { app.redraw(); try { d.activate(); } catch (e2) { } sp = d.spots.add(); }
+        sp.name = cut.name;
+        var c = new CMYKColor(); c.cyan = cut.cmyk[0]; c.magenta = cut.cmyk[1]; c.yellow = cut.cmyk[2]; c.black = cut.cmyk[3];
+        sp.color = c; sp.colorType = ColorModel.SPOT;
+        return sp;
+    }
+    function cutPfade(items, out) {
+        for (var i = 0; i < items.length; i++) {
+            var it = items[i];
+            if (it.typename === "PathItem") out.push(it);
+            else if (it.typename === "CompoundPathItem") { for (var k = 0; k < it.pathItems.length; k++) out.push(it.pathItems[k]); }
+            else if (it.typename === "GroupItem") cutPfade(it.pageItems, out);
+        }
+        return out;
+    }
+    function cutVereinheitlichen(d, cut, nurItems) {
+        var m100 = [], ziel = null, i;
+        for (i = 0; i < d.spots.length; i++) if (istCutSpot(d.spots[i])) m100.push(d.spots[i]);
+        for (i = 0; i < m100.length && !ziel; i++) if (m100[i].name === cut.name) ziel = m100[i];
+        if (!ziel) {
+            // ein Feld „Cutkontur“ in anderer Farbe ist keine Cutkontur und gibt den Namen frei
+            try { var fremd = d.spots.getByName(cut.name); fremd.name = cut.name + " (andere Farbe)"; } catch (e) { }
+            if (m100.length) { ziel = m100[0]; ziel.name = cut.name; } else ziel = cutFarbfeld(d, cut);
+        }
+        var andere = {}, nAndere = 0;
+        for (i = 0; i < m100.length; i++) if (m100[i] !== ziel && m100[i].name !== cut.name) { andere[m100[i].name] = m100[i]; nAndere++; }
+        if (!nAndere) return;
+        var pfade = nurItems ? cutPfade(nurItems, []) : d.pathItems, n = pfade.length, fehlt = {};
+        var umfaerben = function (alt) { var sc = new SpotColor(); sc.spot = ziel; sc.tint = alt.tint; return sc; };
+        for (i = 0; i < n; i++) {
+            var p = pfade[i], name = "";
+            try { if (p.stroked && p.strokeColor.typename === "SpotColor" && andere[name = p.strokeColor.spot.name]) { var w = p.strokeWidth; p.strokeColor = umfaerben(p.strokeColor); p.strokeWidth = w; } } catch (e3) { if (name) fehlt[name] = 1; }
+            name = "";
+            try { if (p.filled && p.fillColor.typename === "SpotColor" && andere[name = p.fillColor.spot.name]) p.fillColor = umfaerben(p.fillColor); } catch (e4) { if (name) fehlt[name] = 1; }
+        }
+        if (nurItems) return;
+        for (var nm in andere) if (andere.hasOwnProperty(nm) && !fehlt[nm]) { try { andere[nm].remove(); } catch (e5) { } }
+    }
+    function pdfOptionen(preset) {
+        var o = new PDFSaveOptions();
+        o.pDFPreset = preset; o.artboardRange = "1"; o.acrobatLayers = false; o.preserveEditability = false;
+        try { o.viewAfterSaving = false; } catch (e) { }
+        return o;
+    }
+
+    // Summa (§10): ein Schneidedokument 1:1 als PDF speichern und schließen; die Arbeitsdatei bleibt unverändert.
+    // spec {massstab, preset, datei, breite_mm, hoehe_mm, farbfeld, teile: [{name, ref, blaetter: [{path, clips}], x_mm, y_mm, gedreht,
+    //       marken: [{x0, y0, x1, y1}] (Realmaß, Dokumentkoordinaten der Arbeitsdatei) | null}]}; x_mm/y_mm = linke obere Ecke des Teils bzw. Blocks
+    IP.schneidebogenSpeichern = wrap(function (spec) {
+        var work = doc(), wasSaved = work.saved, teile = [];
+        ohneMeldungen(function () {
+            var cd = newMmDoc(spec.breite_mm, spec.hoehe_mm);
+            try {
+                var ab = cd.artboards[0].artboardRect, layer = cd.layers[0];
+                var abCx = (ab[0] + ab[2]) / 2, abCy = (ab[1] + ab[3]) / 2, k = PT_MM / spec.massstab;
+                for (var t = 0; t < spec.teile.length; t++) {
+                    var tp = spec.teile[t], fertig = [], dx = null, dy = null;
+                    for (var l = 0; l < tp.blaetter.length; l++) {
+                        var bl = tp.blaetter[l], src = resolve(work, tp.ref, bl.path);
+                        var dup = src.duplicate(layer, ElementPlacement.PLACEATEND); // direkt in eine Gruppe eines anderen Dokuments geht nicht (MRAP)
+                        if (dx === null) { var sg = src.geometricBounds, dg = dup.geometricBounds; dx = sg[0] - dg[0]; dy = sg[1] - dg[1]; }
+                        if (dup.typename === "TextFrame") dup = dup.createOutline();
+                        // Schnittmasken: sichtbaren Teil per Pathfinder „Schnittmengenfläche“ (Crop); eigene Hilfsgruppe auf Ebenenebene
+                        for (var c = bl.clips.length - 1; c >= 0; c--) {
+                            var tmp = layer.groupItems.add();
+                            dup.move(tmp, ElementPlacement.PLACEATEND);
+                            var cp = resolve(work, tp.ref, bl.clips[c]).duplicate(layer, ElementPlacement.PLACEATEND);
+                            cp.clipping = false;
+                            cp.move(tmp, ElementPlacement.PLACEATBEGINNING);
+                            cd.selection = null; tmp.selected = true;
+                            app.executeMenuCommand("Live Pathfinder Crop");
+                            app.executeMenuCommand("expandStyle");
+                            if (cd.selection.length !== 1) throw "Schnittmaske in „" + tp.name + "“ ließ sich nicht auflösen";
+                            dup = cd.selection[0];
+                            cd.selection = null;
+                        }
+                        fertig.push(dup);
+                    }
+                    // Passermarken (§10.1) an ihrer Lage im Realmaß, umgerechnet in die Koordinaten der Duplikate (Versatz des ersten Blatts)
+                    for (var m = 0; tp.marken && m < tp.marken.length; m++) {
+                        var mk = tp.marken[m];
+                        var r = layer.pathItems.rectangle(-mk.y0 * k - dy, mk.x0 * k - dx, (mk.x1 - mk.x0) * k, (mk.y1 - mk.y0) * k);
+                        r.name = "Passermarke"; r.stroked = false; r.filled = true;
+                        try { r.fillColor = volltonFarbe(cd, spec.farbfeld); } catch (e) { }
+                        fertig.push(r);
+                    }
+                    // Gruppe erst NACH allen Pathfinder-Schritten anlegen: existiert beim Crop schon eine leere Gruppe, verschwindet das Ergebnis
+                    // nach dem Verschieben in diese Gruppe aus dem PDF (Befund im alten Projekt)
+                    var grp = layer.groupItems.add();
+                    grp.name = tp.name;
+                    for (var fi = 0; fi < fertig.length; fi++) fertig[fi].move(grp, ElementPlacement.PLACEATEND);
+                    var g0 = grp.geometricBounds, pct = spec.massstab * 100;
+                    grp.translate(abCx - (g0[0] + g0[2]) / 2, abCy - (g0[1] + g0[3]) / 2);
+                    grp.resize(pct, pct, true, true, true, true, pct, Transformation.CENTER);
+                    if (tp.gedreht) grp.rotate(90, true, true, true, true, Transformation.CENTER);
+                    var g1 = grp.geometricBounds;
+                    grp.translate(ab[0] + tp.x_mm * PT_MM - g1[0], ab[1] - tp.y_mm * PT_MM - g1[1]);
+                    var g2 = grp.geometricBounds;
+                    teile.push({ name: tp.name, x_mm: (g2[0] - ab[0]) / PT_MM, y_mm: (ab[1] - g2[1]) / PT_MM, b_mm: (g2[2] - g2[0]) / PT_MM, h_mm: (g2[1] - g2[3]) / PT_MM });
+                }
+                cd.selection = null;
+                cd.saveAs(new File(spec.datei), pdfOptionen(spec.preset));
+            } finally {
+                cd.close(SaveOptions.DONOTSAVECHANGES);
+                work.activate();
+            }
+        });
+        return ok({ teile: teile, arbeitsdateiUnveraendert: work.saved === wasSaved });
+    });
+
+    // Druckbogen eines Aufbaus finden: z {aufbau, medium, laminat, nr} gegen bogen im ip:Dokument; das Dokument wird aktiviert
+    // (Umwandeln der Symbole läuft über die Auswahl)
+    function bogenVon(d) { try { var o = parse(xmpTextLesen(d)); return o && o.rolle === "druckbogen" && o.bogen ? o.bogen : null; } catch (e) { return null; } }
+    function bogenDok(z) {
+        for (var i = 0; i < app.documents.length; i++) {
+            var b = bogenVon(app.documents[i]);
+            if (b && String(b.aufbau) === String(z.aufbau) && b.medium === z.medium && b.laminat === z.laminat && Number(b.nr) === Number(z.nr)) {
+                if (app.activeDocument !== app.documents[i]) app.activeDocument = app.documents[i];
+                return app.activeDocument;
+            }
+        }
+        throw "Druckbogen " + z.medium + " " + z.laminat + " " + z.nr + " nicht mehr geöffnet";
+    }
+    IP.bogenAktivieren = wrap(function (z) { var d = bogenDok(z); return ok({ dokument: d.name }); });
+
+    // Druck (§11.1): ein Bogen-Dokument (CMYK, mm; Ebenen Druck / Cut / Info) mit Symbolen je IP_Id, nicht gespeichert.
+    // spec {massstab, xmp (Text), cut {name, cmyk}, rand_mm, abstand_mm, breite_mm, laenge_mm, info: [Zeilen ohne „Objekte“, „Länge“, „Erstellt“],
+    //       laenge_m, teile: [{name, symbol: {name, ref, cuts}, M, herkunft, x_mm, y_mm, b_mm, h_mm, gedreht, obj_x_mm, obj_y_mm, obj_w_mm, obj_h_mm}]}
+    // x/y = Lage im Bogen (mm ab linker oberer Ecke der Zeichenfläche); obj_* = Lage der Objekt-Außenkante
+    IP.druckbogenAufbauen = wrap(function (spec) {
+        var work = doc(), wasSaved = work.saved, ist = [], pruef = [], pd = null;
+        ohneMeldungen(function () {
+            pd = newMmDoc(spec.breite_mm, spec.laenge_mm);
+            var ab = pd.artboards[0].artboardRect;
+            var lyDruck = pd.layers[0]; lyDruck.name = "Druck";
+            var lyCut = pd.layers.add(); lyCut.name = "Cut";
+            var abCx = (ab[0] + ab[2]) / 2, abCy = (ab[1] + ab[3]) / 2, pct = spec.massstab * 100, symbole = {};
+            for (var t = 0; t < spec.teile.length; t++) {
+                var tp = spec.teile[t], sym = symbole[tp.symbol.name];
+                if (!sym) {
+                    // Symbol = Objekt 1:1 inkl. vorhandener Cutkontur, Farbfeld vorher auf „Cutkontur“ vereinheitlicht (Symbolinhalt ist später per Skript
+                    // nicht erreichbar)
+                    var sd = resolve(work, tp.symbol.ref, []).duplicate(lyDruck, ElementPlacement.PLACEATEND), s0 = sd.geometricBounds;
+                    sd.translate(abCx - (s0[0] + s0[2]) / 2, abCy - (s0[1] + s0[3]) / 2);
+                    sd.resize(pct, pct, true, true, true, true, pct, Transformation.CENTER);
+                    cutVereinheitlichen(pd, spec.cut, [sd]);
+                    var cuts = cutsIn(sd, []), cb = null, mb = null, lv = [];
+                    for (var c = 0; c < cuts.length; c++) cb = unionVB(cb, cuts[c].geometricBounds);
+                    collectLeaves(sd, [], null, [], lv);
+                    for (var q = 0; q < lv.length; q++) if (!isCutItem(lv[q].item)) mb = unionVB(mb, inter(lv[q].item.typename === "TextFrame" ? lv[q].item.geometricBounds : lv[q].item.visibleBounds, lv[q].clip));
+                    if (cb && mb && (cb[0] < mb[0] - 0.01 || cb[1] > mb[1] + 0.01 || cb[2] > mb[2] + 0.01 || cb[3] < mb[3] - 0.01)) pruef.push("„" + tp.symbol.name + "“: Cutkontur ragt über die Objekt-Außenkante");
+                    if (cuts.length !== tp.symbol.cuts) pruef.push("„" + tp.symbol.name + "“: " + cuts.length + " Cutkonturen statt " + tp.symbol.cuts);
+                    sym = pd.symbols.add(sd); sym.name = tp.symbol.name;
+                    sd.remove();
+                    symbole[tp.symbol.name] = sym;
+                }
+                var inst = lyDruck.symbolItems.add(sym);
+                if (tp.M) {
+                    var mx = app.getIdentityMatrix();
+                    mx.mValueA = tp.M[0]; mx.mValueB = tp.M[1]; mx.mValueC = tp.M[2]; mx.mValueD = tp.M[3];
+                    inst.transform(mx, true, true, true, true, true, Transformation.CENTER);
+                }
+                inst.name = tp.name;
+                setTag(inst, schema().tags.herkunft, tp.herkunft);
+                if (tp.gedreht) inst.rotate(-90, true, true, true, true, Transformation.CENTER);
+                // ausrichten an der Objekt-Außenkante (Motiv inkl. Anschnitt und Cutkontur)
+                var vb = visualBounds(inst);
+                inst.translate(ab[0] + tp.obj_x_mm * PT_MM - vb[0], ab[1] - tp.obj_y_mm * PT_MM - vb[1]);
+                var b2 = visualBounds(inst);
+                var m = { name: tp.name, x_mm: (b2[0] - ab[0]) / PT_MM, y_mm: (ab[1] - b2[1]) / PT_MM, w_mm: (b2[2] - b2[0]) / PT_MM, h_mm: (b2[1] - b2[3]) / PT_MM };
+                ist.push(m);
+                var dv = Math.max(Math.abs(m.x_mm - tp.obj_x_mm), Math.abs(m.y_mm - tp.obj_y_mm), Math.abs(m.w_mm - tp.obj_w_mm), Math.abs(m.h_mm - tp.obj_h_mm));
+                if (dv >= 0.1) pruef.push("„" + tp.name + "“ weicht " + (Math.round(dv * 100) / 100) + " mm von der Planung ab");
+            }
+            cutVereinheitlichen(pd, spec.cut);
+            // Abstände und OPOS-Rand prüfen
+            for (var i = 0; i < ist.length; i++) {
+                var p = ist[i];
+                if (p.x_mm < spec.rand_mm - 0.05 || p.y_mm < spec.rand_mm - 0.05 || p.x_mm + p.w_mm > spec.breite_mm - spec.rand_mm + 0.05 || p.y_mm + p.h_mm > spec.laenge_mm - spec.rand_mm + 0.05) pruef.push("„" + p.name + "“ liegt im OPOS-Rand");
+                for (var j = i + 1; j < ist.length; j++) {
+                    var q2 = ist[j];
+                    var gap = Math.max(q2.x_mm - (p.x_mm + p.w_mm), p.x_mm - (q2.x_mm + q2.w_mm), q2.y_mm - (p.y_mm + p.h_mm), p.y_mm - (q2.y_mm + q2.h_mm));
+                    if (gap < spec.abstand_mm - 0.05) pruef.push("Abstand „" + p.name + "“/„" + q2.name + "“ nur " + (Math.round(gap * 10) / 10) + " mm");
+                }
+            }
+            // Ebene Info: nicht druckend, gesperrt, Text unterhalb der Zeichenfläche
+            var lyInfo = pd.layers.add(); lyInfo.name = "Info"; lyInfo.printable = false;
+            var zeilen = spec.info.slice(0);
+            zeilen.push("Objekte:");
+            for (var z = 0; z < ist.length; z++) zeilen.push("  " + ist[z].name + "  " + (Math.round(ist[z].w_mm * 10) / 10) + " × " + (Math.round(ist[z].h_mm * 10) / 10) + " mm");
+            zeilen.push("Länge:     " + spec.laenge_m + " m", "Erstellt:  " + new Date().toLocaleString());
+            var tf = lyInfo.textFrames.add(); tf.contents = zeilen.join("\r");
+            tf.position = [ab[0] + 5 * PT_MM, ab[3] - 8 * PT_MM];
+            lyInfo.locked = true;
+            xmpTextSchreiben(pd, spec.xmp);
+            pd.selection = null;
+        });
+        work.activate(); // weitere Bögen beziehen sich wieder auf die Arbeitsdatei
+        return ok({ dokument: pd.name, teile: ist, pruefung: pruef, arbeitsdateiUnveraendert: work.saved === wasSaved });
+    });
+
+    // Export (§11.2): Symbolinstanz umwandeln – breakLink liefert nichts zurück, die umgewandelten Teile stehen aber in der Auswahl (Befund im alten Projekt)
+    function umwandeln(d, si) {
+        d.selection = null; si.selected = true;
+        si.breakLink();
+        var out = [], sel = d.selection;
+        for (var i = 0; sel && i < sel.length; i++) out.push(sel[i]);
+        d.selection = null;
+        return out;
+    }
+    // Prüfen ohne zu ändern: Kopie der Instanz umwandeln, Cutkontur suchen, Teile wieder entfernen
+    function symbolHatCut(d, si) {
+        var teile = umwandeln(d, si.duplicate()), r = false;
+        for (var i = 0; i < teile.length; i++) if (cutsIn(teile[i], []).length) r = true;
+        for (var k = teile.length - 1; k >= 0; k--) teile[k].remove();
+        return r;
+    }
+    function bogenEbenen(d) {
+        var e = { druck: findLayer(d, "druck"), cut: findLayer(d, "cut"), info: findLayer(d, "info"), regmark: findLayer(d, "regmark") };
+        if (!e.druck || !e.cut) throw "Druckbogen „" + d.name + "“ ohne Ebene Druck oder Cut";
+        return e;
+    }
+    function motive(d, L) { var o = []; for (var i = 0; i < L.pageItems.length; i++) if (L.pageItems[i].parent === L && !getTag(L.pageItems[i], schema().tags.druckrichtung)) o.push(L.pageItems[i]); return o; }
+    // Sammelprüfung ohne Änderung: jedes Objekt auf „Druck“ braucht eine Cutkontur (im Symbol, im Objekt oder in „Cut <Name>“); Rückgabe der Namen ohne
+    IP.bogenPruefen = wrap(function (z) {
+        var d = bogenDok(z), e = bogenEbenen(d), ohneCut = [], gesp = d.saved;
+        ohneMeldungen(function () {
+            var lk = [e.druck.locked, e.cut.locked]; e.druck.locked = false; e.cut.locked = false;
+            try {
+                var objs = motive(d, e.druck);
+                for (var k = 0; k < objs.length; k++) {
+                    var o = objs[k], hat = o.typename === "SymbolItem" ? symbolHatCut(d, o) : cutsIn(o, []).length > 0;
+                    if (!hat) { try { hat = cutsIn(e.cut.groupItems.getByName("Cut " + o.name), []).length > 0; } catch (x) { } }
+                    if (!hat) ohneCut.push(o.name || o.typename);
+                }
+            } finally { e.druck.locked = lk[0]; e.cut.locked = lk[1]; try { d.saved = gesp; } catch (x2) { } }
+        });
+        return ok({ dokument: d.name, ohneCut: ohneCut });
+    });
+    // Instanzen umwandeln, Cutkonturen auf Ebene Cut (Gruppe „Cut <Name>“, Stapel und Lage unverändert), Farbfeld auf „Cutkontur“ vereinheitlichen [R 3.1]
+    IP.bogenVorbereiten = wrap(function (z, cut) {
+        var d = bogenDok(z), e = bogenEbenen(d), umgewandelt = 0, verschoben = 0;
+        ohneMeldungen(function () {
+            var lk = [e.druck.locked, e.cut.locked]; e.druck.locked = false; e.cut.locked = false;
+            try {
+                var objs = motive(d, e.druck);
+                for (var j = 0; j < objs.length; j++) {
+                    var it = objs[j], name = it.name, teile = [it];
+                    if (it.typename === "SymbolItem") { teile = umwandeln(d, it); umgewandelt++; }
+                    var cuts = [];
+                    for (var t = 0; t < teile.length; t++) cutsIn(teile[t], cuts);
+                    if (!cuts.length) continue;
+                    var cg; try { cg = e.cut.groupItems.getByName("Cut " + name); } catch (x) { cg = e.cut.groupItems.add(); cg.name = "Cut " + name; }
+                    for (var q = cuts.length - 1; q >= 0; q--) { cuts[q].move(cg, ElementPlacement.PLACEATBEGINNING); verschoben++; }
+                }
+                cutVereinheitlichen(d, cut);
+            } finally { e.druck.locked = lk[0]; e.cut.locked = lk[1]; }
+        });
+        return ok({ dokument: d.name, umgewandelt: umgewandelt, verschoben: verschoben });
+    });
+    // OPOS (§11.4): Blätter aller sichtbaren Objekte der Ebenen Druck und Cut (sichtbare Begrenzung, Schnittmaske = Begrenzung des Maskenpfads) in mm,
+    // y nach unten; Druckrichtungsdreieck nicht; dazu die Zeichenfläche
+    function mmBox(r) { return [r[0] / PT_MM, -r[1] / PT_MM, r[2] / PT_MM, -r[3] / PT_MM]; }
+    IP.bogenLesen = wrap(function (z) {
+        var d = bogenDok(z), bl = [];
+        for (var l = 0; l < d.layers.length; l++) {
+            var L = d.layers[l], n = String(L.name).toLowerCase();
+            if ((n !== "druck" && n !== "cut") || !L.visible) continue;
+            for (var i = 0; i < L.pageItems.length; i++) {
+                var it = L.pageItems[i];
+                if (it.parent !== L || isHidden(it) || getTag(it, schema().tags.druckrichtung)) continue;
+                var lv = []; collectLeaves(it, [], null, [], lv); // überspringt ausgeblendete Objekte und Maskenpfade, clip = Begrenzung des Maskenpfads
+                for (var k = 0; k < lv.length; k++) bl.push({ vb: mmBox(lv[k].item.typename === "TextFrame" ? lv[k].item.geometricBounds : lv[k].item.visibleBounds), clip: lv[k].clip ? mmBox(lv[k].clip) : null });
+            }
+        }
+        return ok({ dokument: d.name, blaetter: bl, zf: mmBox(d.artboards[0].artboardRect) });
+    });
+    function regmarkFarbfeld(d) {
+        try { return d.spots.getByName("Regmark"); } catch (e) { }
+        var s = d.spots.add(); s.name = "Regmark"; var c = new CMYKColor(); c.cyan = 0; c.magenta = 0; c.yellow = 0; c.black = 100; s.color = c; s.colorType = ColorModel.SPOT; return s;
+    }
+    // plan {zf: [x0, y0, x1, y1] mm, objekte: [{name, art: "rechteck" | "linie", gb, punkte, strich_mm}] (Stapel von oben), dreieck: {punkte} | null,
+    // info: {format, laenge}}. Ebene „Regmark“ oberste, danach gesperrt; ihr Inhalt und ein vorhandenes Dreieck werden vorher entfernt
+    IP.markenZeichnen = wrap(function (z, plan) {
+        var d = bogenDok(z), R = null;
+        ohneMeldungen(function () {
+            var P = function (xy) { return [xy[0] * PT_MM, -xy[1] * PT_MM]; };
+            d.artboards[0].artboardRect = [plan.zf[0] * PT_MM, -plan.zf[1] * PT_MM, plan.zf[2] * PT_MM, -plan.zf[3] * PT_MM];
+            R = findLayer(d, "regmark");
+            if (!R) { R = d.layers.add(); R.name = "Regmark"; }
+            R.locked = false; R.visible = true; R.printable = true;
+            while (R.pageItems.length) R.pageItems[0].remove();
+            while (R.layers.length) R.layers[0].remove();
+            R.zOrder(ZOrderMethod.BRINGTOFRONT);
+            var sp = regmarkFarbfeld(d), farbe = function () { var c = new SpotColor(); c.spot = sp; c.tint = 100; return c; };
+            for (var i = 0; i < plan.objekte.length; i++) {
+                var o = plan.objekte[i], p;
+                if (o.art === "linie") {
+                    p = R.pathItems.add(); p.setEntirePath([P(o.punkte[0]), P(o.punkte[1])]); p.closed = false;
+                    p.filled = false; p.stroked = true; p.strokeColor = farbe(); p.strokeWidth = o.strich_mm * PT_MM; p.strokeCap = StrokeCap.BUTTENDCAP;
+                } else {
+                    p = R.pathItems.rectangle(-o.gb[1] * PT_MM, o.gb[0] * PT_MM, (o.gb[2] - o.gb[0]) * PT_MM, (o.gb[3] - o.gb[1]) * PT_MM);
+                    p.filled = true; p.fillColor = farbe(); p.stroked = false;
+                }
+                p.name = o.name;
+                p.move(R, ElementPlacement.PLACEATEND); // in Listenfolge: erstes Objekt oben
+            }
+            var D = findLayer(d, "druck"), dl = D.locked; D.locked = false;
+            for (var k = D.pageItems.length - 1; k >= 0; k--) if (getTag(D.pageItems[k], schema().tags.druckrichtung)) D.pageItems[k].remove();
+            if (plan.dreieck) {
+                var t = D.pathItems.add(); t.setEntirePath([P(plan.dreieck.punkte[0]), P(plan.dreieck.punkte[1]), P(plan.dreieck.punkte[2])]); t.closed = true;
+                t.filled = true; t.fillColor = farbe(); t.stroked = false;
+                setTag(t, schema().tags.druckrichtung, "1"); // ohne Namen, erkannt am Tag
+            }
+            D.locked = dl;
+            R.locked = true;
+            // Info-Ebene: Zeilen „Format“ und „Länge“
+            var I = findLayer(d, "info");
+            if (I && plan.info) {
+                var il = I.locked; I.locked = false;
+                for (var f = 0; f < I.textFrames.length; f++) {
+                    var zl = String(I.textFrames[f].contents).split(/\r|\n/);
+                    for (var q = 0; q < zl.length; q++) { if (/^Format:/.test(zl[q])) zl[q] = plan.info.format; else if (/^Länge:/.test(zl[q])) zl[q] = plan.info.laenge; }
+                    I.textFrames[f].contents = zl.join("\r");
+                    I.textFrames[f].position = [plan.zf[0] * PT_MM + 5 * PT_MM, -plan.zf[3] * PT_MM - 8 * PT_MM]; // unterhalb der Zeichenfläche wie beim Aufbau
+                }
+                I.locked = il;
+            }
+            d.selection = null;
+        });
+        return ok({ dokument: d.name, regmark: R.pageItems.length });
+    });
+    // spec {ziel, art: "druck" (Ebenen Druck + Regmark) | "cut" (Cut + Regmark) | "ai" (alle Ebenen im Ausgangszustand, danach schließen), datei, preset}
+    IP.bogenSpeichern = wrap(function (spec) {
+        var d = bogenDok(spec.ziel), e = bogenEbenen(d), states = [];
+        if (!e.regmark) throw "Druckbogen „" + d.name + "“ ohne Ebene Regmark";
+        for (var li = 0; li < d.layers.length; li++) states.push({ ly: d.layers[li], vis: d.layers[li].visible, lck: d.layers[li].locked });
+        function sichtbar(ly, v) { if (!ly) return; try { ly.locked = false; } catch (x) { } try { ly.visible = v; } catch (x2) { } }
+        function zurueck() { for (var k = 0; k < states.length; k++) { try { states[k].ly.locked = false; } catch (x) { } try { states[k].ly.visible = states[k].vis; } catch (x2) { } try { states[k].ly.locked = states[k].lck; } catch (x3) { } } }
+        ohneMeldungen(function () {
+            try {
+                if (spec.art === "ai") {
+                    var ao = new IllustratorSaveOptions(); try { ao.pdfCompatible = true; } catch (x) { }
+                    d.saveAs(new File(spec.datei), ao);
+                } else {
+                    // acrobatLayers aus: sonst schreibt PDF/X-4 ausgeblendete Ebenen als unsichtbare Ebenen mit ins PDF (Befund im alten Projekt)
+                    sichtbar(e.druck, spec.art === "druck"); sichtbar(e.cut, spec.art === "cut"); sichtbar(e.info, false); sichtbar(e.regmark, true);
+                    d.saveAs(new File(spec.datei), pdfOptionen(spec.preset));
+                }
+            } finally { zurueck(); }
+        });
+        if (spec.art === "ai") d.close(SaveOptions.DONOTSAVECHANGES);
+        return ok({ datei: new File(spec.datei).fsName });
+    });
+
     // ---------- Speichern ----------
     // Profil „flach“: PDF aller Zeichenflächen mit dem Preset, ohne Bearbeitungsdaten, ohne PDF-Ebenen; danach ist das Dokument wieder
     // die Arbeitsdatei (gespeichert unter spec.arbeitsdatei). spec {datei, preset, arbeitsdatei}
@@ -872,6 +1300,12 @@ var IP = {};
         }
         return ok({ datei: new File(spec.datei).fsName, dokument: docPath(d) });
     });
-    // Arbeitsdatei unter ihrem Pfad speichern
-    IP.dokumentSpeichern = wrap(function () { var d = doc(); d.save(); return ok({ pfad: docPath(d) }); });
+    // Arbeitsdatei unter ihrem Pfad speichern; pfad (optional): dieses Dokument. save() speichert nur das vordere Dokument (Befund im alten Projekt,
+    // Stufe 24) – kurz nach vorn holen, danach das vorherige Dokument wieder
+    IP.dokumentSpeichern = wrap(function (pfad) {
+        var d = pfad ? dokumentNachPfad(pfad) : doc(), vorn = app.activeDocument;
+        if (vorn !== d) app.activeDocument = d;
+        try { d.save(); } finally { if (vorn !== d) { try { app.activeDocument = vorn; } catch (e) { } } }
+        return ok({ pfad: docPath(d), gespeichert: d.saved });
+    });
 })();

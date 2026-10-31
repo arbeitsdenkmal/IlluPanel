@@ -1,6 +1,6 @@
 # PAM-Werkzeuge (Illustrator-Panel)
 
-CEP-Erweiterung für Illustrator (Bundle `de.pamnm.illupanels` 3.1.0-2b, Panel „PAM-Werkzeuge“). Stand: Stufe 1 „Fundament“ nach `Infos/SPEZ_01_Fundament.md`, Stufe 2a „Kalkulationskern“ und Stufe 2b „Oberfläche“ nach `Infos/SPEZ_02_Kalkulation_Produktion.md` und den MockUps `Infos/mockups/MOCKUP_STUFE2.html` (Panel A5/A7, Fenster „Objekt“ B3/B4, Fenster „Zusammenfassung“ C3, `<Kunde>_Zusammenfassung.pdf`). Supabase/SDK, Summa, Druckbögen (Druck, Export Profil produktion) und Grafikzeit sind nicht enthalten.
+CEP-Erweiterung für Illustrator (Bundle `de.pamnm.illupanels` 3.1.0-2c, Panel „PAM-Werkzeuge“). Stand: Stufe 1 „Fundament“ nach `Infos/SPEZ_01_Fundament.md`, Stufe 2a „Kalkulationskern“, 2b „Oberfläche“ und 2c „Produktionsdaten“ nach `Infos/SPEZ_02_Kalkulation_Produktion.md` (Fassung 5) und den MockUps `Infos/mockups/MOCKUP_STUFE2.html` (Panel A5/A7, Fenster „Objekt“ B3/B4, Fenster „Zusammenfassung“ C3, `<Kunde>_Zusammenfassung.pdf`). Supabase/SDK und Grafikzeit (2d) sind nicht enthalten.
 
 Eigene Festlegungen von Claude Code, die über den Auftrag hinausgehen, stehen nummeriert je Teilstufe in `FESTLEGUNGEN.md`; dieses README übernimmt sie erst nach Bestätigung durch Markus.
 
@@ -24,7 +24,7 @@ panel/
     dokument.js          Dokumentschema (XMP-JSON), xmpLesen/xmpSchreiben über den JSX-Kern
     tags.js              Prüfung der IP_*-Tags gegen schema.json
     ablage.js            Dateinamen, Nummerierung, Erreichbarkeit (3 s), .teil-Transfer
-    export.js            Exportkern
+    export.js            Exportkern (mit „ersetzen“ für Produktionsdateien)
     export_flach.js      Profil „flach“
     anlegen.js           Anlegen „ohne Auftrag“
     ase.js, farben.js    Oracal-ASE lesen, Farbfeldnamen → Folienschlüssel
@@ -33,17 +33,23 @@ panel/
     teile.js             Stücke, Teile, Messung, Prüfungen, Varianten-Erkennung, Hinweise
     rollen.js            Rollenbreiten, Nutzbreiten, Druckmaße aus medien.json
     nesting.js           MaxRects-Nesting Plott und Druck, Anzahl als Exemplare
+    passermarken.js      Passermarken mehrfarbiger Plott-Stücke: Kantenlänge, Lage, Blöcke je Farbe
     kalkulation.js       Rollenwahl, Kalkulation PREISLOGIK v6, Kalkulationsdatensatz
-    auftrag.js           berechnen(host, konfiguration): Ablauf Berechnen ohne Oberfläche
+    herkunft.js          Geometrievergleich der Varianten, Symbole je IP_Id
+    opos.js              eigene OPOS-Marken (Regel OPOS_ANALYSE §4)
+    schneidedaten.js     Summa: Bögen, Dateinamen, Ist-Lage, ältere Bögen
+    druckbogen.js        Druck: Aufbau planen (Symbole, Info, Bogen-XMP); Export: Dateinamen, ältere Bögen
+    auftrag.js           Abläufe ohne Oberfläche: berechnen, summa, druck, exportDruckboegen
     zuordnen.js          Regeln des Fensters „Objekt“ (Vorauswahl, gemeinsame Werte, Farben, Medienliste, Tags), Anzeige von Folie und Zahlen
     zusammenfassung.js   Zeilen der Objekttabelle, Folien und Summen für Fenster und PDF
     zusammenfassung_pdf.js  <Kunde>_Zusammenfassung.pdf mit jsPDF (jspdf.umd.min.js, Lizenz LICENSE)
-jsx/illupanels.jsx       ExtendScript-Kern, nur Dokumentzugriff (XMP, Tags, Ebenen, Zeichenflächen, Objekte und Auswahl lesen und messen, Zuordnen mit Umfärben, Auswählen, Speichern)
+jsx/illupanels.jsx       ExtendScript-Kern, nur Dokumentzugriff (XMP, Tags, Ebenen, Zeichenflächen, Objekte und Auswahl lesen und messen, Zuordnen mit Umfärben, Auswählen,
+                         Schneidedokumente, Druckbögen mit Symbolen, Bogen prüfen/vorbereiten, Marken zeichnen, Speichern)
 config/
   schema.json            XMP-Namespace, Schemaversion, Rollen, Felder der Rolle druckbogen, Tag-Namen (einzige Quelle)
   auftragsarten/*.json   acht Auftragsarten
   mapping.json           App department/type → Auftragsart
-  medien.json            Rollenbreiten, Randabzug Plott 25, Druckmaße, Schwelle Rollenwahl, Alias
+  medien.json            Rollenbreiten, Randabzug Plott 25, Druckmaße, Schwelle Rollenwahl, Passermarken, Alias
   serien.json            Oracal-Bibliothek → Farbschlüssel und Preisserie
   farbfelder/*.ase       ORACAL 651, 751 C, 951, 970 glossy, 970 matt (Kopien; Illustrators Verknüpfungen bleiben, wie sie sind)
   rechner.beispiel.json  Vorlage für die Datei je Rechner
@@ -56,15 +62,15 @@ Plattformunterschiede stehen nur in `rechner.json`; `process.platform` wird nur 
 
 ## Panel (SPEZ_02 §13, MockUp A5/A7)
 
-- Start: lädt `rechner.json`, `schema.json`, die acht Auftragsarten, das Mapping, `medien.json`, `serien.json` mit den fünf ASE-Dateien und prüft sie; dazu die Preisliste (allgemeine Prüfungen, jede Serie mit Standardbreite in `medien.json`). Jeder Fehler → ein Popup mit Datei und Grund, die Buttons bleiben gesperrt. Danach JSX-Kern laden und `IP.init(schema)` (Tag-Namen und Namespace kommen nur aus `schema.json`).
+- Start: lädt `rechner.json`, `schema.json`, die acht Auftragsarten, das Mapping, `medien.json` (inkl. Block `passermarken`), `serien.json` mit den fünf ASE-Dateien und prüft sie; dazu die Preisliste (allgemeine Prüfungen, jede Serie mit Standardbreite in `medien.json`). Jeder Fehler → ein Popup mit Datei und Grund, die Buttons bleiben gesperrt. Danach JSX-Kern laden und `IP.init(schema)` (Tag-Namen und Namespace kommen nur aus `schema.json`).
 - 320 × 142 (Inhalt 122 px), fünf Zeilen:
   1. **Kunde** · Auftragsart (ohne Maßstab) · rechts „Grafik N min“ (Σ `grafikzeit.eintraege`) mit Feld „+m“ (ohne Funktion bis 2d).
   2. Objektzeile: Name der Auswahl (fett), rechts Folie mit Chip und „×n“; „Keine Auswahl“ gedimmt; „Objekt in einer Unterebene“ gedimmt, wenn die Auswahl nicht aus obersten Objekten besteht; mehrere: „n Objekte“, Folie nur, wenn alle gleich.
   3. **add** (Auswahl nicht oder nicht vollständig zugeordnet) bzw. **edit** → Fenster „Objekt“ · **berechnen** → `auftrag.berechnen()`, öffnet bzw. aktualisiert „Zusammenfassung“, Hinweise als ein Popup. add ist ohne Auswahl gesperrt und dann nicht orange. Orange: add, sobald eine Auswahl nicht oder nicht vollständig zugeordnet ist, sonst berechnen.
-  4. Werkzeugzeile: **Summa**, **Druck** (sichtbar, gesperrt bis 2c) · **Export** (orange) · **Auftrag** (Schrift orange, Dialog `.anlegen`).
+  4. Werkzeugzeile: **Summa** (Schneidedaten), **Druck** (Druckbögen aufbauen) · **Export** (orange; Profil „flach“ bzw. Druckbögen des letzten Aufbaus) · **Auftrag** (Schrift orange, Dialog `.anlegen`).
   5. Preiszeile aus dem Datensatz im XMP (VK): „Material <netto> <brutto>“ links (= nur Aufkleber), „inkl. Mont. <netto> <brutto>“ rechts, netto gerundet, brutto fett; leer ohne Datensatz. Kein Mindestbetrag-Hinweis im Panel.
-- Zustände (alle fünf Zeilen bleiben stehen, nicht zutreffende Buttons gesperrt): ohne Panel-Dokument nur „Auftrag“ aktiv; Arbeitsdatei einer Auftragsart ohne Kalkulation zusätzlich Zeile 1 (Export bei Profil „flach“); Druckbogen vorn: Zeile 1 „Kunde · Druckbogen <Medium> <Laminat> <Breite> · n“, nur Export und Auftrag aktiv, Zeilen 2 und 5 leer. Die Gesamtzahl „/m“ folgt mit einem Feld im Bogen-XMP in 2c; Export für Druckbögen (Profil produktion) ebenfalls in 2c.
-- Export (Profil „flach“) über den Exportkern wie in Stufe 1.
+- Zustände (alle fünf Zeilen bleiben stehen, nicht zutreffende Buttons gesperrt): ohne Panel-Dokument nur „Auftrag“ aktiv; Arbeitsdatei einer Auftragsart ohne Kalkulation zusätzlich Zeile 1 (Export bei Profil „flach“); kalkulierte Arbeitsdatei: Summa, Druck, Export aktiv; Druckbogen vorn: Zeile 1 „Kunde · Druckbogen <Medium> <Laminat> <Breite> · n/m“ (`bogen.nr`/`bogen.gesamt`), nur Export und Auftrag aktiv, Zeilen 2 und 5 leer.
+- Export: Profil „flach“ über den Exportkern wie in Stufe 1; kalkulierte Arbeitsdatei oder Druckbogen vorn: Druckbögen des letzten Aufbaus (unten).
 - Aktualisierung nur bei Maus ins Panel, nach eigener Aktion und nach CSEvent aus „Objekt“ und „Zusammenfassung“; keine Dauerabfragen, kein Abruf bei Fenster-Fokus, weil ein Fokus-Abruf während des PDF-Imports den Inhalt im falschen Dokument landen ließ (Befund Stufe 43). Hell/Dunkel über `ThemeColorChanged`.
 - Fehler als Popup, keine Erfolgsmeldungen.
 
@@ -155,11 +161,11 @@ Windows (Beschreibung, in Stufe 1 nicht ausgeführt): nur Git.
   "exporte": [ { "zeit": "…Z", "ordner": "M/Mustermann/2026-10-30_Sonstiges", "dateien": [ { "name": "Mustermann_druck.pdf", "uebertragen": true } ], "uebertragen": true } ] }
 ```
 
-Unbekannte Felder bleiben beim Ändern und Schreiben erhalten. `exporte[].ordner` ist relativ zu `server.kunden`, `null` ohne Server-Ordner. Bekannte Felder ab Stufe 2 (`vorauswahl` {}, `farbzuordnung` {}, `kalkulation` null, `aufbau` null) ergänzt `parsen()` mit Standardwert, wenn sie in einem älteren Dokument fehlen. `kalkulation` = letzter Kalkulationsdatensatz (unten), `farbzuordnung` = colorKey → Folienschlüssel. Druckbogen-Dokumente (`rolle: "druckbogen"`) tragen zusätzlich `bogen { aufbau, medium, laminat, breite_mm, nr, arbeitsdatei }` (in `schema.json` unter `rollenfelder`).
+Unbekannte Felder bleiben beim Ändern und Schreiben erhalten. `aufbau` = letzter Druckbogen-Aufbau `{ id, zeit, boegen: [{ medium, laminat, breite_mm, nr }] }`. `exporte[].ordner` ist relativ zu `server.kunden`, `null` ohne Server-Ordner. Bekannte Felder ab Stufe 2 (`vorauswahl` {}, `farbzuordnung` {}, `kalkulation` null, `aufbau` null) ergänzt `parsen()` mit Standardwert, wenn sie in einem älteren Dokument fehlen. `kalkulation` = letzter Kalkulationsdatensatz (unten), `farbzuordnung` = colorKey → Folienschlüssel. Druckbogen-Dokumente (`rolle: "druckbogen"`, Maßstab 1, `auftrag` und `ablage` aus der Arbeitsdatei) tragen zusätzlich `bogen { aufbau, medium, laminat, breite_mm, nr, gesamt, arbeitsdatei }` (in `schema.json` unter `rollenfelder`); `nr`/`gesamt` zählen je Medium + Laminat + Rolle, `arbeitsdatei` ist der Pfad der Arbeitsdatei.
 
-**Objektebene (Tags):** `IP_Id`, `IP_Folie`, `IP_Laminat`, `IP_Anzahl`, `IP_Komplexitaet`, `IP_Attribute`, `IP_Herkunft`, `IP_Original`, `IP_Position`, `IP_Verfahren`, `IP_Stufen`, `IP_Farbe`, `IP_Originalfarbe` – Namen nur in `config/schema.json` („tags“: Schlüssel → Name). JSX `IP.tagsLesen(item)` → `{schluessel: wert|null}`, `IP.tagsSchreiben(item, obj)` (null/"" entfernt); Node `tags.tagsPruefen(schema, obj)` prüft Schlüssel und Textwerte.
+**Objektebene (Tags):** `IP_Id`, `IP_Folie`, `IP_Laminat`, `IP_Anzahl`, `IP_Komplexitaet`, `IP_Attribute`, `IP_Herkunft`, `IP_Original`, `IP_Position`, `IP_Verfahren`, `IP_Stufen`, `IP_Farbe`, `IP_Originalfarbe`, `IP_Druckrichtung` – Namen nur in `config/schema.json` („tags“: Schlüssel → Name). JSX `IP.tagsLesen(item)` → `{schluessel: wert|null}`, `IP.tagsSchreiben(item, obj)` (null/"" entfernt); Node `tags.tagsPruefen(schema, obj)` prüft Schlüssel und Textwerte.
 
-Bedeutung (SPEZ_02 §3.1): `IP_Id` Schlüssel des Objekts (Text); `IP_Folie` Plott-Farbschlüssel `751C-031` bzw. Druckmedium `3551`; `IP_Laminat` `matt`/`glaenzend` (nur Druck); `IP_Anzahl` ganze Zahl ≥ 1, fehlt = 1; `IP_Komplexitaet` `0`–`3`; `IP_Attribute` kommagetrennt aus `sicke`, `woelbung`, `tape` (Tape manuell an), `kein_tape` (Tape manuell aus), ohne beides gilt der Vorschlag; `IP_Original` Id des Originals bei Varianten; `IP_Originalfarbe` gesicherte Originalfarbe eines beim Zuordnen als Plott umgefärbten Pfads bzw. Textrahmens (JSON wie bisher). Objektname frei, ohne Namen Anzeige „Objekt n“ (laufende Nummer der berechneten Stücke in Ebenenreihenfolge, nicht gespeichert).
+Bedeutung (SPEZ_02 §3.1): `IP_Id` Schlüssel des Objekts (Text); `IP_Folie` Plott-Farbschlüssel `751C-031` bzw. Druckmedium `3551`; `IP_Laminat` `matt`/`glaenzend` (nur Druck); `IP_Anzahl` ganze Zahl ≥ 1, fehlt = 1; `IP_Komplexitaet` `0`–`3`; `IP_Attribute` kommagetrennt aus `sicke`, `woelbung`, `tape` (Tape manuell an), `kein_tape` (Tape manuell aus), ohne beides gilt der Vorschlag; `IP_Original` Id des Originals bei Varianten; `IP_Herkunft` (nur auf Druckbögen) `IP_Id` des Objekts, dessen Symbolinstanz das ist; `IP_Druckrichtung` (nur auf Druckbögen) Druckrichtungsdreieck, Wert `1`; `IP_Originalfarbe` gesicherte Originalfarbe eines beim Zuordnen als Plott umgefärbten Pfads bzw. Textrahmens (JSON wie bisher). Objektname frei, ohne Namen Anzeige „Objekt n“ (laufende Nummer der berechneten Stücke in Ebenenreihenfolge, nicht gespeichert).
 
 ## Auftragsarten
 
@@ -192,12 +198,12 @@ Pflichtfelder je Datei: `id`, `name`, `reihenfolge`, `kalkulation`, `ebenen[] {n
 
 ## Exportkern (`panel/lib/export.js`)
 
-`exportieren(auftrag, umgebung)` mit `auftrag = { xmp, dateien: [{ name, speichern(lokalerPfad) }], dtf: [name …] }` → `{ ok, ordner, dateien[], geparkt[], fehler[], meldung, xmp }`.
+`exportieren(auftrag, umgebung)` mit `auftrag = { xmp, dateien: [{ name, speichern(lokalerPfad), ersetzen }], dtf: [name …] }` → `{ ok, ordner, dateien[], geparkt[], fehler[], meldung, xmp }`. `ersetzen: true` (Produktionsdateien aus dem Panel: Schneidedaten, Druckbögen): gleicher Name ohne Hochzählen, eine bestehende Datei lokal und auf dem Server wird ersetzt (Transfer weiter über `.teil` und Umbenennen); Zusammenfassung.pdf und Arbeitsdatei-Kopien bleiben nummeriert.
 
 1. Kundenordner: aus dem XMP; sonst Server prüfen (`fs.access`, 3 s). Erreichbar → Ordnerdialog ab `server.kunden`, gültig nur `<Buchstabe>/<Kunde>` (sonst Popup und erneut, Abbruch beendet ohne Popup). Nicht erreichbar: `"server"` → Popup, Abbruch; sonst ohne Kundenordner weiter (Dateien bleiben lokal).
 2. Auftragsordner auf dem Server anlegen; ist er von einem anderen Auftrag belegt, `_02`, `_03` und ins XMP. Eigener Ordner = die Arbeitsdatei liegt darin oder ein Export dieses Dokuments ging dorthin.
 3. Lokal: `<ausgang>/<Kunde>/<Auftragsordner>/`.
-4. Namen fortlaufend ohne Überschreiben, erste freie Nummer gegen lokalen und Server-Ordner.
+4. Namen fortlaufend ohne Überschreiben, erste freie Nummer gegen lokalen und Server-Ordner (außer `ersetzen`).
 5. `speichern()` je Datei, danach Existenz und Größe > 0; Fehler → Popup, Abbruch vor dem Transfer.
 6. Transfer: Kopie als `.<name>.teil`, Größenvergleich, Umbenennen, dann lokal löschen. Fehler: `.teil` weg, Datei bleibt lokal (geparkt).
 7. DTF: zusätzliche Kopie nach `server.dtf_bestellen`, gleiches Verfahren, Nummerierung gegen den Sammelordner; Fehler nur für die DTF-Kopie.
@@ -226,11 +232,16 @@ Prüfungen: Spalten der Kopfzeile, `gilt_fuer`, Zahlen ≥ 0, doppelte Einträge
 - Tape (Druck): Vorschlag bei Schnittdichte ≥ `tape.min_schnittdichte` oder Teiledichte ≥ `tape.min_teiledichte` (bezogen auf die Begrenzung der Messung); `kein_tape` in `IP_Attribute` schaltet Tape aus (schlägt den Vorschlag), `tape` schaltet es an, sonst gilt der Vorschlag. Plott wird immer getapt (Zeitanteil), `tape` im Datensatz bleibt dort false.
 - Komplexität `IP_Komplexitaet` wirkt bei Plott immer, bei Druck nur mit Cutkontur; sonst Stufe 0.
 - Prüfungen: Warnungen (es wird gerechnet) – Objekte auf der Sandbox, ohne Zuordnung, Konflikt Zuordnung ↔ Ebene/Farbe/Medium (nicht gerechnet), Kontur/Bild/Verlauf auf Plott-Objekten, an Lücken geteilte Teile, unbekannte Attribute/Komplexitätsstufe, unbekannte Ebenen. Abbruch – Teil länger als 5680 mm, Plott-Teil passt in keiner Lage in die Nutzbreite und lässt sich nicht teilen, Druckobjekt passt auf keine vorrätige Rolle, Farbe ohne Serie, Serie/Medium ohne Preis, Serie ohne Standardbreite, Tape ohne `tape_vk_m2`, ungültige Anzahl, Preisquelle fehlerhaft. Gleichartige Warnungen werden zu einer Zeile zusammengefasst (`hinweisZeilen`).
-- Varianten-Erkennung (`teile.variantenErkennen`, bei Zuordnen vor dem Schreiben der Tags und bei Berechnen; Summa/Druck folgen in 2c): Vergleich nur der `IP_Id`-Texte aller gelesenen Objekte in Ebenenreihenfolge; das erste behält die Id, jedes weitere bekommt eine neue `IP_Id` (zeitbasiert + Zufall) und `IP_Original` = bisherige Id; geschrieben über `IP.objektTagsSchreiben`.
+- Für jedes gemessene Digitaldruck-Objekt liefert `IP.objekteLesen` die Form (`signatur`, Punkte) für den Geometrievergleich der Varianten (`herkunft.js`).
+- Varianten-Erkennung (`teile.variantenErkennen`, bei Zuordnen vor dem Schreiben der Tags, bei Berechnen, Summa und Druck): Vergleich nur der `IP_Id`-Texte aller gelesenen Objekte in Ebenenreihenfolge; das erste behält die Id, jedes weitere bekommt eine neue `IP_Id` (zeitbasiert + Zufall) und `IP_Original` = bisherige Id; geschrieben über `IP.objektTagsSchreiben`.
 
 ## Nesting und Rollenwahl (`nesting.js`, `rollen.js`, `kalkulation.nestingAlle`)
 
-MaxRects mit 90°-Drehung, 20 mm Abstand, 10 mm Rand, deterministisch. Jedes Teil wird `IP_Anzahl`-mal als Exemplar genestet (Ergebnis je Exemplar `id`, `exemplar`). Plott je Farbschlüssel: Bogenhöhe = Nutzbreite = Standardbreite − `randabzug.plott` (751C 1235), Länge ≤ 5700. Druck je Medium + Laminat: mit jeder vorrätigen Breite nesten; Standardbreite, außer sie passt nicht oder eine andere spart ≥ `schwelle_prozent` Verbrauch; Grafik quer ≤ Rollenbreite − 30 − 44,353, Bogen ≤ 2500 mm, Einzelobjekt bis 5700 mm auf eigenem Bogen. Verbrauch je Folie = Σ Zeichenflächenlänge × volle Rollenbreite (nur EK und Materialbedarf).
+MaxRects mit 90°-Drehung, 20 mm Abstand, 10 mm Rand, deterministisch. Jedes Teil wird `IP_Anzahl`-mal als Exemplar genestet (Ergebnis je Exemplar `id`, `exemplar`). Mehrfarbiges Plott-Stück (Teile in ≥ 2 Farbschlüsseln): je Farbe ein Block aus den Teilen der Farbe und beiden Passermarken, Lage zueinander fest, 90° drehbar, je Exemplar ein Block, nie geteilt (passt er in keiner Lage → Abbruch). Kalkulation, Summa und Druck nutzen dasselbe Ergebnis (`nestingAlle`, für Summa nur Plott, für Druck nur Druck). Plott je Farbschlüssel: Bogenhöhe = Nutzbreite = Standardbreite − `randabzug.plott` (751C 1235), Länge ≤ 5700. Druck je Medium + Laminat: mit jeder vorrätigen Breite nesten; Standardbreite, außer sie passt nicht oder eine andere spart ≥ `schwelle_prozent` Verbrauch; Grafik quer ≤ Rollenbreite − 30 − 44,353, Bogen ≤ 2500 mm, Einzelobjekt bis 5700 mm auf eigenem Bogen. Verbrauch je Folie = Σ Zeichenflächenlänge × volle Rollenbreite (nur EK und Materialbedarf).
+
+## Passermarken (`passermarken.js`, SPEZ_02 §10.1)
+
+Quadrat, Kantenlänge aus `medien.json` `passermarken.stufen_mm` (30/20/15/10/5): größte Stufe ≤ `anteil` (0,1) × kürzere Seite des Gruppenumrisses (Realmaß), mindestens 5 mm. Zwei Marken innerhalb des Umrisses, eine links, eine rechts, mit ≥ `abstand_mm` (5) zu allen Teilen aller Farben; Kandidaten auf einem Raster (Schrittweite = Kantenlänge/2), gewählt wird das Paar mit der kleinsten Summe der Blockflächen je Farbe, bei Gleichstand das erste in Rasterreihenfolge. Ohne Lücke in einer Hälfte: Marke außerhalb, 5 mm neben dem Umriss, senkrecht mittig. Marken zählen nicht zu Teilen, Schnittlänge und Zeiten; der Block wirkt nur über das Nesting auf Verbrauch/EK.
 
 ## Kalkulation (`kalkulation.js`)
 
@@ -242,6 +253,20 @@ Felder und Struktur exakt nach §8.4: `schema` 1, `zeit`, `panel`, `preislogik` 
 
 `auftrag.berechnen(host, konfiguration)` (Button „berechnen“ in Panel und „Zusammenfassung“, vor dem PDF): XMP lesen (Arbeitsdatei mit kalkulierter Auftragsart) → Preisquelle laden → `IP.objekteLesen` → Varianten-Erkennung → Prüfen → Nesting → Kalkulation → Datensatz ins XMP → `{ datensatz, warnungen, fehler }`. Bei Fehlern kein Datensatz.
 
+## Summa (Schneidedaten, `auftrag.summa`, SPEZ_02 §10)
+
+Arbeitsdatei speichern (ungespeichert → Abbruch) → Prüfungen → Varianten-Erkennung → Nesting je Farbschlüssel (Nutzbreite − 25, Exemplare nach Anzahl, Blöcke bei mehrfarbigen Stücken) → über den Exportkern (Profil produktion, `ersetzen`) je Bogen ein Schneidedokument 1:1 (`IP.schneidebogenSpeichern`: Zeichenfläche = Umriss + 10 mm je Seite, Text in Pfade, Schnittmasken aufgelöst, Pfade ohne Füllungs-/Konturänderung), PDF/X-4 `<Kunde>_<Serie>-<Farbe>_cut_NN.pdf`, Dokument geschlossen, Arbeitsdatei unverändert; je Exemplar eine Gruppe „<Anzeigename> <k>“, bei Blöcken mit den beiden Passermarken der Farbe. Ist-Lage gegen Planung (Hinweis ab 0,1 mm), ältere Bögen mit höherer Nummer bleiben liegen und werden genannt; ein Eintrag in `exporte[]`. Hinweise und Warnungen als ein Popup.
+
+## Druck (Druckbögen aufbauen, `auftrag.druck`, SPEZ_02 §11.1)
+
+Arbeitsdatei speichern (ungespeichert → Abbruch) → Prüfungen → Varianten-Erkennung → Nesting je Medium + Laminat + Rolle (Rollenwahl wie die Kalkulation) → je Bogen ein Dokument (`IP.druckbogenAufbauen`: CMYK, mm, Ebenen Druck / Cut / Info, Bogen-XMP) → `aufbau` ins XMP der Arbeitsdatei → erster Bogen nach vorn. Je `IP_Id` ein Symbol (Objekt 1:1 inkl. Cutkontur, Farbfeld vorher auf „Cutkontur“ vereinheitlicht; Name = Anzeigename, bei Doppelung „ (2)“); jedes Exemplar eine Instanz „<Name> <k>“ mit `IP_Herkunft`; geometrisch gleiche Variante als Instanz des Original-Symbols mit ihrer Transformation, sonst eigenes Symbol. Info-Ebene (nicht druckend, gesperrt) wie bisher: Kunde, Medium, Laminat, Bogen n von m (ggf. Sonderlänge), Rolle, Format, Objekte, Länge, Erstellt. Hinweise (Abweichung von der Planung ab 0,1 mm, Cutkontur ragt über die Außenkante, Abstand/OPOS-Rand, Cutkonturen-Zahl) als ein Popup. Offene Bögen eines früheren Aufbaus bleiben offen.
+
+## Export der Druckbögen (`auftrag.exportDruckboegen`, SPEZ_02 §11.2, §11.4)
+
+Bei vorderem Druckbogen oder vorderer kalkulierter Arbeitsdatei: alle offenen Bögen des letzten Aufbaus dieser Arbeitsdatei (Abgleich `bogen.arbeitsdatei` ↔ Pfad, `bogen.aufbau` ↔ `aufbau.id`); Arbeitsdatei muss offen sein und wird vorher gespeichert; Bögen früherer Aufbauten werden gemeldet und übergangen; keine offen → „Keine offenen Druckbögen“. Sammelprüfung ohne Änderung (Cutkontur je Objekt im Symbol oder in „Cut <Name>“, Marken planen: Breite ≤ Rolle − 2 × 15) – alle Befunde in einem Popup, nichts exportiert. Sonst je Bogen Instanzen umwandeln, Cutkonturen auf Ebene Cut (Gruppe „Cut <Name>“), Farbfeld „Cutkontur“ vereinheitlichen, eigene OPOS-Marken, dann über den Exportkern (`ersetzen`) `<Kunde>_<Medium>-<Laminat>-<Breite>_<NN>_druck.pdf` (Druck + Regmark), `…_<NN>_cut.pdf` (Cut + Regmark), `…_<NN>.ai` (alle Ebenen); gespeicherte Bögen werden geschlossen, ein Eintrag in `exporte[]` der Arbeitsdatei.
+
+**OPOS-Marken** (`opos.js`, Regel `Infos/OPOS_ANALYSE.md` §4, P = 400 mm): Bezug = sichtbare Begrenzung aller sichtbaren Objekte der Ebenen Druck und Cut (Schnittmaske: Maskenpfad, Dreieck nicht); Ebene „Regmark“ oberste, gesperrt, Farbfeld „Regmark“ Vollton K 100; „Mark“ 3 × 3 mm, 9 mm neben dem Bezug, je Seite n mit n − 1 = max(1, ⌊l / 300⌋, ⌈(l + 21) / 400⌉); „OPOS XY Line“ unten bzw. zusätzlich „OPOS XY2 Line“ oben (offener 3-mm-Pfad); ab Zeichenflächenlänge 1000 mm XY2 und Druckrichtungsdreieck 8 × 6 mm (Spitze nach unten, Tag `IP_Druckrichtung`, auf Ebene Druck). Zeichenfläche: Soll = Bezug + 22,1765 mm je Seite, nur erweitern; Info-Zeilen „Format“ und „Länge“ folgen. Eine vorhandene Regmark-Ebene wird geleert und neu gezeichnet.
+
 ## Meldungstexte (sachlich formuliert, zur Prüfung)
 
 - Konfiguration: `<Datei>` + Grund: „Datei fehlt“, „nicht lesbar (…)“, „kein gültiges JSON (…)“, „Feld … fehlt“, „Umgebungsvariable … nicht gesetzt“, „Ebenenname doppelt: …“, „Rolle doppelt: …“, „Export-Profil „…“ unbekannt“, „…: Auftragsart „…“ unbekannt“, „Tag-Name doppelt: …“.
@@ -252,4 +277,4 @@ Felder und Struktur exakt nach §8.4: `schema` 1, `zeit`, `panel`, `preislogik` 
 
 ## Tests
 
-`node --test tests/*.test.js` (System-Node, ohne Illustrator): Konfiguration (acht Arten, Mapping, Schema, bewusst fehlerhafte Dateien), `rechner.json` Mac und Windows, XMP-JSON, Nummerierung gegen zwei Ordner, Exportkern mit Temp-Ordnern (Erfolg, Transfer schlägt fehl → geparkt ohne `.teil`, DTF-Kopie); Preisquelle mit der echten CSV und einer fehlerhaften Kopie, Kalkulation „Streifen“ (PREISLOGIK §11) als 2 Stücke und als 1 Stück mit Anzahl 2, Nesting mit Anzahl und Plott-Nutzbreite, Varianten-Erkennung, Datensatz-Struktur über `berechnen()` mit Host-Attrappe. Ausprobieren in Illustrator macht Markus nach einem Neustart von Illustrator.
+`node --test tests/*.test.js` (System-Node, ohne Illustrator): Konfiguration (acht Arten, Mapping, Schema, bewusst fehlerhafte Dateien), `rechner.json` Mac und Windows, XMP-JSON, Nummerierung gegen zwei Ordner, Exportkern mit Temp-Ordnern (Erfolg, `ersetzen`, Transfer schlägt fehl → geparkt ohne `.teil`, DTF-Kopie); Preisquelle mit der echten CSV und einer fehlerhaften Kopie, Kalkulation „Streifen“ (PREISLOGIK §11) als 2 Stücke und als 1 Stück mit Anzahl 2, Nesting mit Anzahl und Plott-Nutzbreite, Varianten-Erkennung, Datensatz-Struktur über `berechnen()` mit Host-Attrappe; Passermarken an drei Rechteckfällen (Lücke, keine Lücke, kleine Gruppe), Nesting mit Block, OPOS-Regel gegen die 40 Fälle aus `Infos/OPOS_ANALYSE.md`. Ausprobieren in Illustrator macht Markus nach einem Neustart von Illustrator.
